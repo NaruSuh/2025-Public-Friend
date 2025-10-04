@@ -11,6 +11,7 @@ import time
 from main import ForestBidCrawler
 import os
 from io import BytesIO
+from functools import lru_cache
 
 # 페이지 설정
 st.set_page_config(
@@ -58,6 +59,56 @@ page_delay = st.sidebar.slider(
     help="페이지 이동 시 대기 시간입니다."
 )
 
+# 사이드바 하단: 크롤링 히스토리
+if st.session_state.crawl_history:
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("📂 이전 크롤링 결과")
+
+    for idx, item in enumerate(reversed(st.session_state.crawl_history)):
+        # timestamp를 unique key로 사용
+        unique_key = item['timestamp'].replace(':', '').replace(' ', '').replace('-', '')
+
+        with st.sidebar.expander(f"🕐 {item['timestamp'].replace('_', ' ')}", expanded=False):
+            st.write(f"**수집 기간**: {item['period']}")
+            st.write(f"**항목 수**: {item['total_items']}개")
+
+            # 다운로드 버튼
+            col_a, col_b = st.columns(2)
+
+            with col_a:
+                # Excel 다운로드 (캐싱 사용)
+                try:
+                    # DataFrame을 dict로 변환하여 캐싱 가능하게
+                    df_dict = item['data'].to_dict()
+                    excel_data = generate_excel_data(df_dict, item['timestamp'])
+
+                    st.download_button(
+                        label="📥 Excel",
+                        data=excel_data,
+                        file_name=f"산림청_입찰_{item['timestamp']}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key=f"excel_{unique_key}"
+                    )
+                except Exception as e:
+                    st.error(f"Excel 생성 실패")
+
+            with col_b:
+                # CSV 다운로드 (캐싱 사용)
+                try:
+                    # DataFrame을 dict로 변환하여 캐싱 가능하게
+                    df_dict = item['data'].to_dict()
+                    csv = generate_csv_data(df_dict, item['timestamp'])
+
+                    st.download_button(
+                        label="📥 CSV",
+                        data=csv,
+                        file_name=f"산림청_입찰_{item['timestamp']}.csv",
+                        mime="text/csv",
+                        key=f"csv_{unique_key}"
+                    )
+                except Exception as e:
+                    st.error(f"CSV 생성 실패")
+
 # 메인 영역
 col1, col2 = st.columns([2, 1])
 
@@ -79,15 +130,35 @@ if 'crawl_data' not in st.session_state:
     st.session_state.crawl_data = None
 if 'crawl_completed' not in st.session_state:
     st.session_state.crawl_completed = False
+if 'crawl_history' not in st.session_state:
+    st.session_state.crawl_history = []  # 완료된 크롤링 히스토리
 
 # 로그 추가 함수
 def add_log(message, log_type="INFO"):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.session_state.crawl_logs.append(f"[{timestamp}] [{log_type}] {message}")
 
+# Excel 데이터 생성 함수 (캐싱)
+@st.cache_data
+def generate_excel_data(df_dict, timestamp):
+    """DataFrame을 Excel 바이너리로 변환 (캐싱됨)"""
+    df = pd.DataFrame(df_dict)
+    buffer = BytesIO()
+    df.to_excel(buffer, index=False, engine='openpyxl')
+    return buffer.getvalue()
+
+# CSV 데이터 생성 함수 (캐싱)
+@st.cache_data
+def generate_csv_data(df_dict, timestamp):
+    """DataFrame을 CSV로 변환 (캐싱됨)"""
+    df = pd.DataFrame(df_dict)
+    return df.to_csv(index=False, encoding='utf-8-sig')
+
 # 크롤링 실행 함수 (중복 제거)
 def run_crawling(years, days, delay, page_delay):
     """크롤링 실행 및 결과 반환"""
+    # years를 전역처럼 사용하기 위해 함수 내부에서 접근 가능하게 저장
+    crawl_years = years
     # 진행 상황 표시 영역
     progress_bar = st.progress(0)
     status_text = st.empty()
@@ -214,6 +285,19 @@ def run_crawling(years, days, delay, page_delay):
             st.session_state.crawl_data = df
             st.session_state.crawl_completed = True
 
+            # 히스토리에 추가 (최대 5개까지만 유지)
+            history_item = {
+                'timestamp': datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),  # 파일명 안전
+                'data': df.copy(),
+                'total_items': len(df),
+                'period': f"{crawl_years}년"
+            }
+            st.session_state.crawl_history.append(history_item)
+
+            # 최대 5개까지만 유지 (메모리 절약)
+            if len(st.session_state.crawl_history) > 5:
+                st.session_state.crawl_history.pop(0)  # 가장 오래된 것 제거
+
             # 결과 표시
             st.markdown("---")
             st.subheader("📊 수집 결과")
@@ -277,51 +361,10 @@ if export_data:
     st.session_state.crawl_completed = False
 
     # 크롤링 실행
-    success = run_crawling(years, days, delay, page_delay)
-
-    # 크롤링 성공 시 다운로드 버튼 표시
-    if success and st.session_state.crawl_data is not None:
-        st.markdown("---")
-        st.subheader("📥 데이터 다운로드")
-        add_log("엑셀 및 CSV 파일 생성 완료")
-
-        df = st.session_state.crawl_data
-        col1, col2 = st.columns(2)
-
-        with col1:
-            # 엑셀 다운로드
-            try:
-                buffer = BytesIO()
-                df.to_excel(buffer, index=False, engine='openpyxl')
-                excel_data = buffer.getvalue()
-
-                st.download_button(
-                    label="📥 엑셀 파일 다운로드 (.xlsx)",
-                    data=excel_data,
-                    file_name=f"산림청_입찰정보_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True
-                )
-                st.success("✅ 엑셀 파일 다운로드 준비 완료!")
-            except Exception as e:
-                st.error(f"엑셀 생성 실패: {e}")
-                add_log(f"엑셀 생성 실패: {str(e)}", "ERROR")
-
-        with col2:
-            # CSV 다운로드
-            csv = df.to_csv(index=False, encoding='utf-8-sig')
-
-            st.download_button(
-                label="📥 CSV 파일 다운로드 (.csv)",
-                data=csv,
-                file_name=f"산림청_입찰정보_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
-            st.success("✅ CSV 파일 다운로드 준비 완료!")
+    run_crawling(years, days, delay, page_delay)
 
 # 크롤링 완료 후 다운로드 섹션 (두 버튼 모두에서 사용 가능)
-if st.session_state.crawl_completed and st.session_state.crawl_data is not None and not export_data:
+if st.session_state.crawl_completed and st.session_state.crawl_data is not None:
     st.markdown("---")
     st.subheader("📥 데이터 다운로드")
 
