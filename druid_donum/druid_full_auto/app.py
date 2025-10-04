@@ -11,7 +11,6 @@ import time
 from main import ForestBidCrawler
 import os
 from io import BytesIO
-from functools import lru_cache
 
 # 페이지 설정
 st.set_page_config(
@@ -19,10 +18,6 @@ st.set_page_config(
     page_icon="🌲",
     layout="wide"
 )
-
-# 제목
-st.title("🌲 산림청 입찰정보 크롤러")
-st.markdown("---")
 
 # 세션 상태 초기화 (가장 먼저!)
 if 'crawl_logs' not in st.session_state:
@@ -33,6 +28,31 @@ if 'crawl_completed' not in st.session_state:
     st.session_state.crawl_completed = False
 if 'crawl_history' not in st.session_state:
     st.session_state.crawl_history = []  # 완료된 크롤링 히스토리
+
+# 로그 추가 함수
+def add_log(message, log_type="INFO"):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    st.session_state.crawl_logs.append(f"[{timestamp}] [{log_type}] {message}")
+
+# Excel 데이터 생성 함수 (캐싱)
+@st.cache_data
+def generate_excel_data(df_dict, timestamp):
+    """DataFrame을 Excel 바이너리로 변환 (캐싱됨)"""
+    df = pd.DataFrame(df_dict)
+    buffer = BytesIO()
+    df.to_excel(buffer, index=False, engine='openpyxl')
+    return buffer.getvalue()
+
+# CSV 데이터 생성 함수 (캐싱)
+@st.cache_data
+def generate_csv_data(df_dict, timestamp):
+    """DataFrame을 CSV로 변환 (캐싱됨)"""
+    df = pd.DataFrame(df_dict)
+    return df.to_csv(index=False, encoding='utf-8-sig')
+
+# 제목
+st.title("🌲 산림청 입찰정보 크롤러")
+st.markdown("---")
 
 # 사이드바 설정
 st.sidebar.header("⚙️ 크롤링 설정")
@@ -132,27 +152,6 @@ with col1:
 
 with col2:
     st.metric("수집 기준일", (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d'))
-
-# 로그 추가 함수
-def add_log(message, log_type="INFO"):
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    st.session_state.crawl_logs.append(f"[{timestamp}] [{log_type}] {message}")
-
-# Excel 데이터 생성 함수 (캐싱)
-@st.cache_data
-def generate_excel_data(df_dict, timestamp):
-    """DataFrame을 Excel 바이너리로 변환 (캐싱됨)"""
-    df = pd.DataFrame(df_dict)
-    buffer = BytesIO()
-    df.to_excel(buffer, index=False, engine='openpyxl')
-    return buffer.getvalue()
-
-# CSV 데이터 생성 함수 (캐싱)
-@st.cache_data
-def generate_csv_data(df_dict, timestamp):
-    """DataFrame을 CSV로 변환 (캐싱됨)"""
-    df = pd.DataFrame(df_dict)
-    return df.to_csv(index=False, encoding='utf-8-sig')
 
 # 크롤링 실행 함수 (중복 제거)
 def run_crawling(years, days, delay, page_delay):
