@@ -150,7 +150,16 @@ class ForestBidCrawler:
                         date_str = cells[3].get_text(strip=True)
                         if date_str:
                             try:
-                                post_date = date_parser.parse(date_str)
+                                # 날짜 부분만 추출 (조회수 등이 붙어있을 수 있음)
+                                # 예: "2021-02-242937" → "2021-02-24"
+                                import re
+                                date_match = re.search(r'(\d{4}[-.\s]\d{1,2}[-.\s]\d{1,2})', date_str)
+                                if date_match:
+                                    clean_date_str = date_match.group(1)
+                                    post_date = date_parser.parse(clean_date_str)
+                                    date_str = clean_date_str  # 깨끗한 날짜 문자열로 업데이트
+                                else:
+                                    post_date = date_parser.parse(date_str)
                             except Exception:
                                 post_date = None
 

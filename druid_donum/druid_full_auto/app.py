@@ -8,11 +8,17 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 import time
-from main import ForestBidCrawler
 import os
 from io import BytesIO
 import logging
 import traceback
+
+# main.py 강제 reload (코드 변경 반영)
+import sys
+import importlib
+if 'main' in sys.modules:
+    importlib.reload(sys.modules['main'])
+from main import ForestBidCrawler
 
 APP_VERSION = "Ver 1.1.02"
 
@@ -243,6 +249,7 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
     try:
         add_log(f"크롤링 시작 - 수집 기간: {period_str} ({days}일)")
         add_log(f"설정 - 요청 딜레이: {delay}초, 페이지 딜레이: {page_delay}초")
+        add_log(f"디버그 - 시작일: {start_date}, 종료일: {end_date}")
 
         # 크롤러 초기화
         crawler = ForestBidCrawler(
@@ -253,24 +260,29 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
             end_date=end_date
         )
 
+        add_log(f"디버그 - cutoff_date: {crawler.cutoff_date}, end_date: {crawler.end_date}")
+
         status_text.info("🔄 크롤링 시작...")
 
         # 크롤링 실행
         page_index = 1
         should_continue = True
         total_pages_estimate = 50
+        all_item_status = []  # 전체 항목 상태 누적
 
         while should_continue:
             status_text.info(f"📄 페이지 {page_index} 처리 중...")
             info_text.info(f"🔍 페이지 {page_index} 항목 분석 중...")
             add_log(f"페이지 {page_index} 처리 시작")
 
-            # 리스트 페이지 가져오기
+            # 리스트 페이지 가져오기 (날짜 범위 필터 추가)
             params = {
                 'mn': 'NKFS_04_01_04',
                 'bbsId': 'BBSMSTR_1033',
                 'pageIndex': page_index,
-                'pageUnit': 10
+                'pageUnit': 10,
+                'ntcStartDt': start_date.strftime('%Y-%m-%d'),
+                'ntcEndDt': end_date.strftime('%Y-%m-%d')
             }
 
             soup = crawler.fetch_page(crawler.LIST_URL, params)
@@ -287,17 +299,80 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
 
             add_log(f"페이지 {page_index}에서 {len(items)}개 항목 발견")
 
+            # 실시간 처리 상태 표시 (한 번만 생성)
+            if page_index == 1:
+                st.markdown("### 🔍 실시간 처리 상태")
+                debug_cols = st.columns(4)
+                with debug_cols[0]:
+                    metric_page = st.empty()
+                with debug_cols[1]:
+                    metric_items = st.empty()
+                with debug_cols[2]:
+                    metric_total = st.empty()
+                with debug_cols[3]:
+                    metric_range = st.empty()
+                debug_table = st.empty()
+
+            # 메트릭 업데이트
+            metric_page.metric("현재 페이지", page_index)
+            metric_items.metric("페이지 항목 수", len(items))
+            metric_total.metric("총 수집 항목", crawler.total_items)
+            metric_range.metric("설정 범위", f"{start_date.strftime('%m-%d')} ~ {end_date.strftime('%m-%d')}")
+
             # 각 항목 처리
+            item_status = []
             for idx, item in enumerate(items, 1):
                 # 상단 고정 공지는 번호가 비거나 '공지' 표기로 나타나므로 건너뛴다.
                 number_text = str(item.get('number', '')).strip()
                 is_notice = not number_text or '공지' in number_text
 
-                # 날짜 체크 (공지 제외)
-                if item['post_date'] and item['post_date'] < crawler.cutoff_date and not is_notice:
-                    add_log(f"기준일 이전 게시글 도달 ({item['post_date_str']}) - 크롤링 종료", "INFO")
+                # 공지글은 건너뛰기
+                if is_notice:
+                    item_status.append({
+                        '번호': number_text,
+                        '제목': item.get('title', '')[:40],
+                        '날짜': item.get('post_date_str', ''),
+                        '상태': '⏭️ 공지글 건너뜀'
+                    })
+                    continue
+
+                # 날짜가 없는 항목은 건너뛰기
+                if not item['post_date']:
+                    add_log(f"날짜 정보 없는 게시글 건너뜀: {item['title'][:30]}...", "WARNING")
+                    item_status.append({
+                        '번호': number_text,
+                        '제목': item.get('title', '')[:40],
+                        '날짜': item.get('post_date_str', ''),
+                        '상태': '⚠️ 날짜 없음 건너뜀'
+                    })
+                    continue
+
+                # datetime으로 변환 (비교 통일)
+                start_datetime = datetime.combine(start_date, datetime.min.time())
+                end_datetime = datetime.combine(end_date, datetime.max.time())
+
+                # start_date보다 이전 게시글이면 크롤링 종료
+                if item['post_date'] < start_datetime:
+                    add_log(f"시작일({start_date}) 이전 게시글 도달 ({item['post_date_str']}) - 크롤링 종료", "INFO")
+                    item_status.append({
+                        '번호': number_text,
+                        '제목': item.get('title', '')[:40],
+                        '날짜': item.get('post_date_str', ''),
+                        '상태': '🛑 시작일 이전 - 종료'
+                    })
                     should_continue = False
                     break
+
+                # end_date보다 이후 게시글이면 건너뛰기 (아직 수집 범위 아님)
+                if item['post_date'] > end_datetime:
+                    add_log(f"종료일({end_date}) 이후 게시글 건너뜀: {item['post_date_str']}")
+                    item_status.append({
+                        '번호': number_text,
+                        '제목': item.get('title', '')[:40],
+                        '날짜': item.get('post_date_str', ''),
+                        '상태': '⏭️ 종료일 이후 건너뜀'
+                    })
+                    continue
 
                 # 상세 페이지 가져오기
                 if item['detail_url']:
@@ -310,24 +385,55 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                         crawler.total_items += 1
                         add_log(f"항목 수집 완료: {item['title'][:30]}...")
                         info_text.text(f"✅ {page_index}페이지 {idx}/10 처리 완료: {item['title'][:30]}...")
+                        item_status.append({
+                            '번호': number_text,
+                            '제목': item.get('title', '')[:40],
+                            '날짜': item.get('post_date_str', ''),
+                            '상태': '✅ 수집 완료'
+                        })
                     else:
                         add_log(f"상세 페이지 가져오기 실패: {item['title'][:30]}...", "ERROR")
                         crawler.data.append(item)
                         crawler.total_items += 1
                         info_text.text(f"⚠️ 상세 페이지 실패: {item['title'][:30]}...")
+                        item_status.append({
+                            '번호': number_text,
+                            '제목': item.get('title', '')[:40],
+                            '날짜': item.get('post_date_str', ''),
+                            '상태': '⚠️ 상세페이지 실패'
+                        })
                 else:
                     crawler.data.append(item)
                     crawler.total_items += 1
                     info_text.text(f"ℹ️ 상세 페이지 링크 없음: {item['title'][:30]}...")
+                    item_status.append({
+                        '번호': number_text,
+                        '제목': item.get('title', '')[:40],
+                        '날짜': item.get('post_date_str', ''),
+                        '상태': 'ℹ️ 링크 없음'
+                    })
+
+                # 누적 상태 추가
+                if item_status:
+                    all_item_status.extend(item_status)
+
+            # 실시간 테이블 업데이트 (최근 100개만 표시)
+            if all_item_status:
+                recent_status = all_item_status[-100:] if len(all_item_status) > 100 else all_item_status
+                debug_table.dataframe(
+                    pd.DataFrame(recent_status),
+                    use_container_width=True,
+                    hide_index=True,
+                    height=400
+                )
 
                 # 진행률 업데이트
                 progress = min(page_index / total_pages_estimate, 0.99)
                 progress_bar.progress(progress)
 
-            # 중간 결과 표시
+            # 중간 결과 표시 (전체 데이터 - 복사 가능)
             if crawler.data:
                 df = pd.DataFrame(crawler.data)
-                latest_rows = df.tail(20)
 
                 preview_columns = [
                     ('number', '번호'),
@@ -341,18 +447,31 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                     ('has_attachment', '첨부'),
                 ]
 
-                available_preview_cols = [col for col, _ in preview_columns if col in latest_rows.columns]
-                preview_df = latest_rows[available_preview_cols].copy()
+                available_preview_cols = [col for col, _ in preview_columns if col in df.columns]
+                preview_df = df[available_preview_cols].copy()
                 rename_map = {col: label for col, label in preview_columns if col in preview_df.columns}
                 preview_df = preview_df.rename(columns=rename_map)
 
                 result_placeholder.dataframe(
                     preview_df,
                     use_container_width=True,
-                    hide_index=True
+                    hide_index=True,
+                    height=600  # 높이 고정으로 스크롤 가능
                 )
 
+            # 페이지에서 수집된 항목이 없으면 (전부 건너뛴 경우) 다음 페이지로
             if should_continue:
+                # 연속으로 N페이지(5페이지) 동안 수집 항목이 0개면 종료
+                if len([s for s in item_status if '✅' in s.get('상태', '')]) == 0:
+                    if not hasattr(crawler, 'empty_pages'):
+                        crawler.empty_pages = 0
+                    crawler.empty_pages += 1
+                    if crawler.empty_pages >= 5:
+                        add_log("연속 5페이지 동안 수집 항목 없음 - 크롤링 종료", "INFO")
+                        break
+                else:
+                    crawler.empty_pages = 0
+
                 page_index += 1
                 time.sleep(crawler.page_delay)
 
