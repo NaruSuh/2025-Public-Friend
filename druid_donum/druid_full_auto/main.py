@@ -5,6 +5,8 @@
 Target: https://www.forest.go.kr/kfsweb/cop/bbs/selectBoardList.do?mn=NKFS_04_01_04&bbsId=BBSMSTR_1033
 """
 
+import logging
+import re
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -12,7 +14,7 @@ from datetime import datetime, timedelta
 import time
 import sys
 from urllib.parse import urljoin
-import re
+from dateutil import parser as date_parser
 
 
 class ForestBidCrawler:
@@ -37,12 +39,16 @@ class ForestBidCrawler:
         self.cutoff_date = datetime.now() - timedelta(days=days)
 
         # 세션 설정
+        # 로깅 설정
+        self.logger = logging.getLogger(self.__class__.__name__)
+
         self.session = requests.Session()
+        # Note: avoid 'br' in Accept-Encoding unless brotli is ensured available in environment
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Encoding': 'gzip, deflate',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1'
         })
@@ -66,14 +72,14 @@ class ForestBidCrawler:
             try:
                 response = self.session.get(url, params=params, timeout=10)
                 response.raise_for_status()
-                response.encoding = 'utf-8'
+                # 응답 텍스트는 requests가 디코딩하므로 기본값 사용
                 return BeautifulSoup(response.text, 'html.parser')
             except requests.exceptions.RequestException as e:
-                print(f"[!] 요청 실패 (시도 {attempt + 1}/{max_retries}): {e}")
+                self.logger.warning(f"요청 실패 (시도 {attempt + 1}/{max_retries}): {e}")
                 if attempt < max_retries - 1:
                     time.sleep(2 ** attempt)  # 지수 백오프
                 else:
-                    print(f"[X] 페이지 가져오기 실패: {url}")
+                    self.logger.error(f"페이지 가져오기 실패: {url}")
                     return None
 
     def parse_list_page(self, soup):
@@ -94,41 +100,71 @@ class ForestBidCrawler:
 
             for row in rows:
                 try:
-                    # 번호
-                    num_cell = row.select_one('td:nth-of-type(1)')
-                    number = num_cell.text.strip() if num_cell else 'N/A'
+                    # 보다 견고하게 td 셀을 직접 가져와 인덱스 접근에 대비
+                    cells = row.find_all('td')
 
-                    # 제목 및 링크
-                    title_cell = row.select_one('td.left a')
-                    title = title_cell.text.strip() if title_cell else 'N/A'
-                    link = title_cell.get('href') if title_cell else None
-
-                    # 부서
-                    dept_cell = row.select_one('td:nth-of-type(3)')
-                    department = dept_cell.text.strip() if dept_cell else 'N/A'
-
-                    # 날짜
-                    date_cell = row.select_one('td:nth-of-type(4)')
-                    date_str = date_cell.text.strip() if date_cell else ''
-
-                    # 조회수
-                    view_cell = row.select_one('td:nth-of-type(6)')
-                    views_text = view_cell.text.strip() if view_cell else '0'
-                    # 숫자만 추출
-                    views_numbers = re.findall(r'\d+', views_text)
-                    views = views_numbers[0] if views_numbers else '0'
-
-                    # 첨부파일 유무
-                    attach_cell = row.select_one('td:nth-of-type(5)')
-                    has_attachment = 'O' if attach_cell and attach_cell.select_one('img') else ''
-
-                    # 날짜 파싱
+                    # 기본값
+                    number = 'N/A'
+                    title = 'N/A'
+                    link = None
+                    department = 'N/A'
+                    date_str = ''
                     post_date = None
-                    if date_str:
+                    views = 0
+                    has_attachment = ''
+
+                    # 번호 후보
+                    if len(cells) >= 1:
                         try:
-                            post_date = datetime.strptime(date_str, '%Y-%m-%d')
-                        except ValueError:
-                            pass
+                            number = cells[0].get_text(strip=True)
+                        except Exception:
+                            number = 'N/A'
+
+                    # 제목 및 링크: 테이블 안의 <a> 태그 우선 검색
+                    title_a = row.select_one('a')
+                    if title_a:
+                        title = title_a.get_text(strip=True)
+                        link = title_a.get('href')
+                    else:
+                        # 대체: 두 번째 셀 등에서 제목 추출 시도
+                        if len(cells) >= 2:
+                            title = cells[1].get_text(strip=True)
+
+                    # 부서: 존재하면 3번째 셀 시도
+                    if len(cells) >= 3:
+                        department = cells[2].get_text(strip=True)
+
+                    # 날짜: 4번째 셀 시도
+                    if len(cells) >= 4:
+                        date_str = cells[3].get_text(strip=True)
+                        if date_str:
+                            try:
+                                post_date = date_parser.parse(date_str)
+                            except Exception:
+                                post_date = None
+
+                    # 조회수: 마지막쪽 셀 또는 6번째 셀
+                    try:
+                        views_text = ''
+                        if len(cells) >= 6:
+                            views_text = cells[5].get_text(strip=True)
+                        else:
+                            # fallback: 검색으로 숫자 포함 텍스트 찾기
+                            views_text = row.get_text(' ', strip=True)
+
+                        views_numbers = re.findall(r"\d+", views_text.replace(',', ''))
+                        views = int(views_numbers[0]) if views_numbers else 0
+                    except Exception:
+                        views = 0
+
+                    # 첨부파일 유무: 5번째 셀의 <img> 또는 파일 아이콘 존재 검사
+                    if len(cells) >= 5:
+                        try:
+                            attach_cell = cells[4]
+                            if attach_cell.find('img') or attach_cell.find('a'):
+                                has_attachment = 'O'
+                        except Exception:
+                            has_attachment = ''
 
                     # 상세 페이지 URL 구성
                     detail_url = None
@@ -150,11 +186,11 @@ class ForestBidCrawler:
                     })
 
                 except Exception as e:
-                    print(f"[!] 행 파싱 오류: {e}")
+                    self.logger.exception(f"행 파싱 오류: {e}")
                     continue
 
         except Exception as e:
-            print(f"[!] 리스트 파싱 오류: {e}")
+            self.logger.exception(f"리스트 파싱 오류: {e}")
 
         return items
 
@@ -177,7 +213,6 @@ class ForestBidCrawler:
             if title_elem:
                 title_text = title_elem.get_text(strip=True)
                 # [동부지방산림청] 형태 추출
-                import re
                 office_match = re.search(r'\[([^\]]+)\]', title_text)
                 if office_match:
                     data['forest_office'] = office_match.group(1)
@@ -211,22 +246,21 @@ class ForestBidCrawler:
                 # 조회수
                 elif '조회' in label:
                     # 숫자만 추출
-                    import re
-                    numbers = re.findall(r'\d+', value)
-                    data['views'] = numbers[0] if numbers else value
+                    numbers = re.findall(r'\d+', value.replace(',', ''))
+                    data['views'] = int(numbers[0]) if numbers else 0
 
             # 본문 내용
             content_elem = soup.select_one('.b_content')
             if content_elem:
-                data['content'] = content_elem.get_text(strip=True)[:500]  # 500자까지만
+                data['content'] = content_elem.get_text(' ', strip=True)[:500]  # 500자까지만
 
             # 첨부파일 링크 추출
             attachments = []
             attach_section = soup.select_one('.file_list, .attach_file')
             if attach_section:
                 attach_links = attach_section.select('a')
-                for link in attach_links:
-                    href = link.get('href')
+                for a in attach_links:
+                    href = a.get('href')
                     if href:
                         attach_url = urljoin(self.BASE_URL, href)
                         attachments.append(attach_url)
@@ -234,15 +268,12 @@ class ForestBidCrawler:
             data['attachments'] = ', '.join(attachments) if attachments else ''
 
         except Exception as e:
-            print(f"[!] 상세 페이지 파싱 오류: {e}")
-            import traceback
-            traceback.print_exc()
+            self.logger.exception(f"상세 페이지 파싱 오류: {e}")
 
         # 기본값 설정
         data.setdefault('forest_office', 'N/A')
         data.setdefault('manager', 'N/A')
         data.setdefault('contact', 'N/A')
-        data.setdefault('category', 'N/A')
         data.setdefault('attachments', '')
 
         return data
@@ -338,23 +369,34 @@ class ForestBidCrawler:
         # DataFrame 변환
         df = pd.DataFrame(self.data)
 
-        # 컬럼 순서 정리
-        columns = [
-            'number', 'title', 'category', 'forest_office', 'department',
-            'manager', 'contact', 'post_date_str', 'views', 'has_attachment',
-            'attachments', 'detail_url'
+        # 컬럼 순서 및 출력 라벨 정의
+        column_labels = [
+            ('number', '번호'),
+            ('title', '제목'),
+            ('forest_office', '담당산림청'),
+            ('department', '담당부서'),
+            ('manager', '담당자'),
+            ('contact', '연락처'),
+            ('post_date_str', '공고일자'),
+            ('views', '조회수'),
+            ('has_attachment', '첨부파일'),
+            ('attachments', '첨부파일링크'),
+            ('detail_url', 'URL'),
         ]
 
-        # 존재하는 컬럼만 선택
-        columns = [col for col in columns if col in df.columns]
-        df = df[columns]
+        # 존재하는 컬럼만 사용하여 순서 보존
+        available_columns = [(col, label) for col, label in column_labels if col in df.columns]
 
-        # 컬럼명 한글화
-        df.columns = [
-            '번호', '제목', '분류', '담당산림청', '담당부서',
-            '담당자', '연락처', '공고일자', '조회수', '첨부파일',
-            '첨부파일링크', 'URL'
-        ][:len(columns)]
+        if not available_columns:
+            print("[!] 출력 가능한 컬럼이 없습니다.")
+            return
+
+        ordered_cols = [col for col, _ in available_columns]
+        df = df[ordered_cols]
+
+        # 가독성을 위해 라벨링 적용
+        rename_map = {col: label for col, label in available_columns}
+        df = df.rename(columns=rename_map)
 
         # 엑셀 저장
         df.to_excel(filename, index=False, engine='openpyxl')

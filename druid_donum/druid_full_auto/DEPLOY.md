@@ -253,6 +253,8 @@ response = self.session.get(url, verify=False)
 - [ ] 환경 변수 설정 (필요시)
 - [ ] 보안 설정 (API 키 등)
 - [ ] 배포 후 테스트
+ - [ ] 권장 Python 버전(3.10+)에서 테스트 완료
+ - [ ] 간단한 동작 테스트: `python3 main.py --days 7` 또는 Streamlit UI에서 작은 기간으로 검증
 
 ---
 
