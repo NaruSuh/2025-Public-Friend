@@ -24,6 +24,16 @@ st.set_page_config(
 st.title("🌲 산림청 입찰정보 크롤러")
 st.markdown("---")
 
+# 세션 상태 초기화 (가장 먼저!)
+if 'crawl_logs' not in st.session_state:
+    st.session_state.crawl_logs = []
+if 'crawl_data' not in st.session_state:
+    st.session_state.crawl_data = None
+if 'crawl_completed' not in st.session_state:
+    st.session_state.crawl_completed = False
+if 'crawl_history' not in st.session_state:
+    st.session_state.crawl_history = []  # 완료된 크롤링 히스토리
+
 # 사이드바 설정
 st.sidebar.header("⚙️ 크롤링 설정")
 
@@ -122,16 +132,6 @@ with col1:
 
 with col2:
     st.metric("수집 기준일", (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d'))
-
-# 세션 상태 초기화
-if 'crawl_logs' not in st.session_state:
-    st.session_state.crawl_logs = []
-if 'crawl_data' not in st.session_state:
-    st.session_state.crawl_data = None
-if 'crawl_completed' not in st.session_state:
-    st.session_state.crawl_completed = False
-if 'crawl_history' not in st.session_state:
-    st.session_state.crawl_history = []  # 완료된 크롤링 히스토리
 
 # 로그 추가 함수
 def add_log(message, log_type="INFO"):
