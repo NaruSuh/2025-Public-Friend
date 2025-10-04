@@ -12,6 +12,8 @@ from main import ForestBidCrawler
 import os
 from io import BytesIO
 
+APP_VERSION = "Ver 1.1.02"
+
 # 페이지 설정
 st.set_page_config(
     page_title="산림청 입찰정보 크롤러",
@@ -51,6 +53,10 @@ def generate_csv_data(df_dict, timestamp):
     return df.to_csv(index=False, encoding='utf-8-sig')
 
 # 제목
+st.markdown(
+    f"<div style='text-align: left; font-weight: 600; color: #6c757d;'>{APP_VERSION}</div>",
+    unsafe_allow_html=True
+)
 st.title("🌲 산림청 입찰정보 크롤러")
 st.markdown("---")
 
