@@ -60,18 +60,34 @@ st.markdown("---")
 # 사이드바 설정
 st.sidebar.header("⚙️ 크롤링 설정")
 
-# 수집 기간 설정 (년 단위)
-years = st.sidebar.slider(
-    "수집 기간 (년)",
-    min_value=1,
-    max_value=10,
-    value=1,
-    step=1,
-    help="지난 몇 년 동안의 입찰정보를 수집할지 설정합니다."
-)
+# 수집 기간 설정 (날짜 범위)
+st.sidebar.markdown("#### 📅 수집 기간 설정")
 
-# 년을 일로 변환
-days = years * 365
+col_date1, col_date2 = st.sidebar.columns(2)
+
+with col_date1:
+    start_date = st.date_input(
+        "시작일",
+        value=datetime.now() - timedelta(days=365),
+        max_value=datetime.now(),
+        help="크롤링 시작 날짜"
+    )
+
+with col_date2:
+    end_date = st.date_input(
+        "종료일",
+        value=datetime.now(),
+        max_value=datetime.now(),
+        help="크롤링 종료 날짜"
+    )
+
+# 날짜 유효성 검사
+if start_date > end_date:
+    st.sidebar.error("⚠️ 시작일이 종료일보다 늦습니다!")
+    days = 0
+else:
+    days = (end_date - start_date).days
+    st.sidebar.info(f"📊 수집 기간: **{days}일** ({start_date} ~ {end_date})")
 
 # 요청 간격 설정
 delay = st.sidebar.slider(
@@ -202,20 +218,22 @@ col1, col2 = st.columns([2, 1])
 
 with col1:
     st.info(f"""
-    📅 **수집 기간**: 최근 {years}년 (약 {days}일)
+    📅 **수집 기간**: {start_date} ~ {end_date} (총 {days}일)
     ⏱️ **요청 딜레이**: {delay}초
     📄 **페이지 딜레이**: {page_delay}초
     🎯 **대상**: 산림청 입찰공고 게시판
     """)
 
 with col2:
-    st.metric("수집 기준일", (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d'))
+    st.metric("시작일", start_date.strftime('%Y-%m-%d'))
+    st.metric("종료일", end_date.strftime('%Y-%m-%d'))
 
 # 크롤링 실행 함수 (중복 제거)
-def run_crawling(years, days, delay, page_delay):
+def run_crawling(start_date, end_date, days, delay, page_delay):
     """크롤링 실행 및 결과 반환"""
-    # years를 전역처럼 사용하기 위해 함수 내부에서 접근 가능하게 저장
-    crawl_years = years
+    # 기간 정보 저장
+    period_str = f"{start_date} ~ {end_date}"
+
     # 진행 상황 표시 영역
     progress_bar = st.progress(0)
     status_text = st.empty()
@@ -223,7 +241,7 @@ def run_crawling(years, days, delay, page_delay):
     result_placeholder = st.empty()
 
     try:
-        add_log(f"크롤링 시작 - 수집 기간: 최근 {years}년 ({days}일)")
+        add_log(f"크롤링 시작 - 수집 기간: {period_str} ({days}일)")
         add_log(f"설정 - 요청 딜레이: {delay}초, 페이지 딜레이: {page_delay}초")
 
         # 크롤러 초기화
@@ -336,9 +354,9 @@ def run_crawling(years, days, delay, page_delay):
                 page_index += 1
                 time.sleep(crawler.page_delay)
 
-            # 최대 페이지 제한 (무한 루프 방지)
-            if page_index > 100:
-                add_log("최대 페이지 수(100) 도달 - 크롤링 종료", "WARNING")
+            # 최대 페이지 제한 (무한 루프 방지) - 500페이지 = 5000개 항목
+            if page_index > 500:
+                add_log("최대 페이지 수(500) 도달 - 크롤링 종료", "WARNING")
                 break
 
         progress_bar.progress(1.0)
@@ -374,7 +392,7 @@ def run_crawling(years, days, delay, page_delay):
                 'timestamp': datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),  # 파일명 안전
                 'data': df.copy(),
                 'total_items': len(df),
-                'period': f"{crawl_years}년"
+                'period': period_str
             }
             st.session_state.crawl_history.append(history_item)
 
@@ -435,7 +453,7 @@ if start_crawl:
     st.session_state.crawl_completed = False
 
     # 크롤링 실행
-    run_crawling(years, days, delay, page_delay)
+    run_crawling(start_date, end_date, days, delay, page_delay)
 
 # "크롤링 및 완료시 엑셀파일 작성" 버튼 기능
 if export_data:
@@ -445,7 +463,7 @@ if export_data:
     st.session_state.crawl_completed = False
 
     # 크롤링 실행
-    run_crawling(years, days, delay, page_delay)
+    run_crawling(start_date, end_date, days, delay, page_delay)
 
 # 크롤링 완료 후 다운로드 섹션 (두 버튼 모두에서 사용 가능)
 if st.session_state.crawl_completed and st.session_state.crawl_data is not None:
