@@ -85,20 +85,13 @@ def add_log(message, log_type="INFO"):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.session_state.crawl_logs.append(f"[{timestamp}] [{log_type}] {message}")
 
-# 크롤링 시작 버튼
-if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
-
-    # 초기화
-    st.session_state.crawl_logs = []
-    st.session_state.crawl_data = None
-    st.session_state.crawl_completed = False
-
+# 크롤링 실행 함수 (중복 제거)
+def run_crawling(years, days, delay, page_delay):
+    """크롤링 실행 및 결과 반환"""
     # 진행 상황 표시 영역
     progress_bar = st.progress(0)
     status_text = st.empty()
     info_text = st.empty()
-
-    # 결과 테이블 표시 영역
     result_placeholder = st.empty()
 
     try:
@@ -114,10 +107,10 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
 
         status_text.info("🔄 크롤링 시작...")
 
-        # 크롤링 실행 (수정된 버전)
+        # 크롤링 실행
         page_index = 1
         should_continue = True
-        total_pages_estimate = 50  # 예상 페이지 수
+        total_pages_estimate = 50
 
         while should_continue:
             info_text.text(f"📄 페이지 {page_index} 처리 중...")
@@ -197,7 +190,7 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
         status_text.success(f"✅ 크롤링 완료! 총 {crawler.total_items}개 항목 수집")
         add_log(f"크롤링 완료 - 총 {crawler.total_items}개 항목 수집")
 
-        # 최종 결과 표시
+        # 데이터 처리 및 반환
         if crawler.data:
             df = pd.DataFrame(crawler.data)
 
@@ -247,18 +240,92 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
             # 데이터 테이블
             st.dataframe(df, use_container_width=True, hide_index=True)
 
+            return True
+        else:
+            return False
+
     except Exception as e:
         status_text.error(f"❌ 오류 발생: {e}")
         add_log(f"오류 발생: {str(e)}", "ERROR")
         st.exception(e)
+        return False
 
-# 크롤링 완료 후 다운로드 버튼
-if st.session_state.crawl_completed and st.session_state.crawl_data is not None:
+# 크롤링 시작 버튼
+col_btn1, col_btn2 = st.columns(2)
+
+with col_btn1:
+    start_crawl = st.button("🚀 크롤링 시작", type="primary", use_container_width=True)
+
+with col_btn2:
+    export_data = st.button("📥 크롤링 및 완료시 엑셀파일 작성", type="secondary", use_container_width=True)
+
+# 크롤링 시작 버튼
+if start_crawl:
+    # 초기화
+    st.session_state.crawl_logs = []
+    st.session_state.crawl_data = None
+    st.session_state.crawl_completed = False
+
+    # 크롤링 실행
+    run_crawling(years, days, delay, page_delay)
+
+# "크롤링 및 완료시 엑셀파일 작성" 버튼 기능
+if export_data:
+    # 초기화
+    st.session_state.crawl_logs = []
+    st.session_state.crawl_data = None
+    st.session_state.crawl_completed = False
+
+    # 크롤링 실행
+    success = run_crawling(years, days, delay, page_delay)
+
+    # 크롤링 성공 시 다운로드 버튼 표시
+    if success and st.session_state.crawl_data is not None:
+        st.markdown("---")
+        st.subheader("📥 데이터 다운로드")
+        add_log("엑셀 및 CSV 파일 생성 완료")
+
+        df = st.session_state.crawl_data
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # 엑셀 다운로드
+            try:
+                buffer = BytesIO()
+                df.to_excel(buffer, index=False, engine='openpyxl')
+                excel_data = buffer.getvalue()
+
+                st.download_button(
+                    label="📥 엑셀 파일 다운로드 (.xlsx)",
+                    data=excel_data,
+                    file_name=f"산림청_입찰정보_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+                st.success("✅ 엑셀 파일 다운로드 준비 완료!")
+            except Exception as e:
+                st.error(f"엑셀 생성 실패: {e}")
+                add_log(f"엑셀 생성 실패: {str(e)}", "ERROR")
+
+        with col2:
+            # CSV 다운로드
+            csv = df.to_csv(index=False, encoding='utf-8-sig')
+
+            st.download_button(
+                label="📥 CSV 파일 다운로드 (.csv)",
+                data=csv,
+                file_name=f"산림청_입찰정보_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+            st.success("✅ CSV 파일 다운로드 준비 완료!")
+
+# 크롤링 완료 후 다운로드 섹션 (두 버튼 모두에서 사용 가능)
+if st.session_state.crawl_completed and st.session_state.crawl_data is not None and not export_data:
     st.markdown("---")
     st.subheader("📥 데이터 다운로드")
 
     df = st.session_state.crawl_data
-
     col1, col2 = st.columns(2)
 
     with col1:
