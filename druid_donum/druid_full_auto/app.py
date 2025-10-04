@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import time
 from main import ForestBidCrawler
 import os
+from io import BytesIO
 
 # 페이지 설정
 st.set_page_config(
@@ -50,7 +51,7 @@ delay = st.sidebar.slider(
 
 page_delay = st.sidebar.slider(
     "페이지 간 딜레이 (초)",
-    min_value=1.0,
+    min_value=0.5,
     max_value=5.0,
     value=2.0,
     step=0.5,
@@ -71,8 +72,26 @@ with col1:
 with col2:
     st.metric("수집 기준일", (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d'))
 
+# 세션 상태 초기화
+if 'crawl_logs' not in st.session_state:
+    st.session_state.crawl_logs = []
+if 'crawl_data' not in st.session_state:
+    st.session_state.crawl_data = None
+if 'crawl_completed' not in st.session_state:
+    st.session_state.crawl_completed = False
+
+# 로그 추가 함수
+def add_log(message, log_type="INFO"):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    st.session_state.crawl_logs.append(f"[{timestamp}] [{log_type}] {message}")
+
 # 크롤링 시작 버튼
 if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
+
+    # 초기화
+    st.session_state.crawl_logs = []
+    st.session_state.crawl_data = None
+    st.session_state.crawl_completed = False
 
     # 진행 상황 표시 영역
     progress_bar = st.progress(0)
@@ -83,6 +102,9 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
     result_placeholder = st.empty()
 
     try:
+        add_log(f"크롤링 시작 - 수집 기간: 최근 {years}년 ({days}일)")
+        add_log(f"설정 - 요청 딜레이: {delay}초, 페이지 딜레이: {page_delay}초")
+
         # 크롤러 초기화
         crawler = ForestBidCrawler(
             days=days,
@@ -99,6 +121,7 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
 
         while should_continue:
             info_text.text(f"📄 페이지 {page_index} 처리 중...")
+            add_log(f"페이지 {page_index} 처리 시작")
 
             # 리스트 페이지 가져오기
             params = {
@@ -111,17 +134,22 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
             soup = crawler.fetch_page(crawler.LIST_URL, params)
 
             if not soup:
+                add_log(f"페이지 {page_index} 가져오기 실패", "ERROR")
                 break
 
             items = crawler.parse_list_page(soup)
 
             if not items:
+                add_log(f"페이지 {page_index}에 항목 없음", "WARNING")
                 break
+
+            add_log(f"페이지 {page_index}에서 {len(items)}개 항목 발견")
 
             # 각 항목 처리
             for idx, item in enumerate(items, 1):
                 # 날짜 체크
                 if item['post_date'] and item['post_date'] < crawler.cutoff_date:
+                    add_log(f"기준일 이전 게시글 도달 ({item['post_date_str']}) - 크롤링 종료", "INFO")
                     should_continue = False
                     break
 
@@ -133,6 +161,11 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
                     if detail_soup:
                         detail_data = crawler.parse_detail_page(detail_soup, item)
                         crawler.data.append(detail_data)
+                        crawler.total_items += 1
+                        add_log(f"항목 수집 완료: {item['title'][:30]}...")
+                    else:
+                        add_log(f"상세 페이지 가져오기 실패: {item['title'][:30]}...", "ERROR")
+                        crawler.data.append(item)
                         crawler.total_items += 1
                 else:
                     crawler.data.append(item)
@@ -157,10 +190,12 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
 
             # 최대 페이지 제한 (무한 루프 방지)
             if page_index > 100:
+                add_log("최대 페이지 수(100) 도달 - 크롤링 종료", "WARNING")
                 break
 
         progress_bar.progress(1.0)
         status_text.success(f"✅ 크롤링 완료! 총 {crawler.total_items}개 항목 수집")
+        add_log(f"크롤링 완료 - 총 {crawler.total_items}개 항목 수집")
 
         # 최종 결과 표시
         if crawler.data:
@@ -182,6 +217,10 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
                 '첨부', 'URL'
             ][:len(columns)]
 
+            # 세션에 데이터 저장
+            st.session_state.crawl_data = df
+            st.session_state.crawl_completed = True
+
             # 결과 표시
             st.markdown("---")
             st.subheader("📊 수집 결과")
@@ -195,33 +234,96 @@ if st.button("🚀 크롤링 시작", type="primary", use_container_width=True):
             with col3:
                 st.metric("수집 페이지", page_index)
             with col4:
-                st.metric("평균 조회수", int(df['조회수'].astype(str).str.extract('(\d+)')[0].astype(float).mean()) if '조회수' in df.columns else 0)
+                # 평균 조회수 계산 (안전하게 처리)
+                avg_views = 0
+                if '조회수' in df.columns and len(df) > 0:
+                    try:
+                        views_numbers = df['조회수'].astype(str).str.extract('(\d+)')[0].astype(float)
+                        avg_views = int(views_numbers.mean()) if not views_numbers.isna().all() else 0
+                    except:
+                        avg_views = 0
+                st.metric("평균 조회수", avg_views)
 
             # 데이터 테이블
             st.dataframe(df, use_container_width=True, hide_index=True)
 
-            # 엑셀 다운로드
-            filename = f"산림청_입찰정보_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-
-            # 엑셀 파일 생성
-            df.to_excel(filename, index=False, engine='openpyxl')
-
-            # 다운로드 버튼
-            with open(filename, 'rb') as f:
-                st.download_button(
-                    label="📥 엑셀 파일 다운로드",
-                    data=f.read(),
-                    file_name=filename,
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True
-                )
-
-            # 임시 파일 삭제
-            os.remove(filename)
-
     except Exception as e:
         status_text.error(f"❌ 오류 발생: {e}")
+        add_log(f"오류 발생: {str(e)}", "ERROR")
         st.exception(e)
+
+# 크롤링 완료 후 다운로드 버튼
+if st.session_state.crawl_completed and st.session_state.crawl_data is not None:
+    st.markdown("---")
+    st.subheader("📥 데이터 다운로드")
+
+    df = st.session_state.crawl_data
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # 엑셀 다운로드
+        try:
+            buffer = BytesIO()
+            df.to_excel(buffer, index=False, engine='openpyxl')
+            excel_data = buffer.getvalue()
+
+            st.download_button(
+                label="📥 엑셀 파일 다운로드 (.xlsx)",
+                data=excel_data,
+                file_name=f"산림청_입찰정보_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"엑셀 생성 실패: {e}")
+
+    with col2:
+        # CSV 다운로드
+        csv = df.to_csv(index=False, encoding='utf-8-sig')
+
+        st.download_button(
+            label="📥 CSV 파일 다운로드 (.csv)",
+            data=csv,
+            file_name=f"산림청_입찰정보_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+
+# 로그 뷰어 (좌측 하단)
+if st.session_state.crawl_logs and len(st.session_state.crawl_logs) > 0:
+    st.markdown("---")
+
+    log_col1, log_col2 = st.columns([3, 1])
+
+    with log_col1:
+        st.subheader("📋 크롤링 로그")
+
+    with log_col2:
+        # 로그 다운로드 버튼
+        log_content = "# 산림청 입찰정보 크롤링 로그\n\n"
+        log_content += f"생성일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        log_content += "## 로그 내역\n\n"
+        log_content += "\n".join(st.session_state.crawl_logs)
+
+        st.download_button(
+            label="📥 로그 다운로드 (.md)",
+            data=log_content,
+            file_name=f"크롤링_로그_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
+            mime="text/markdown",
+            use_container_width=True
+        )
+
+    # 로그 표시 (확장 가능한 형태)
+    with st.expander("로그 보기", expanded=False):
+        log_text = "\n".join(st.session_state.crawl_logs)
+        st.text_area(
+            "로그 내용",
+            value=log_text,
+            height=300,
+            disabled=True,
+            label_visibility="collapsed"
+        )
 
 # 사용 안내
 st.markdown("---")
@@ -231,7 +333,8 @@ st.markdown("""
 1. **왼쪽 사이드바**에서 크롤링 설정을 조정하세요.
 2. **크롤링 시작** 버튼을 클릭하여 데이터 수집을 시작합니다.
 3. 진행 상황을 실시간으로 확인할 수 있습니다.
-4. 완료 후 **엑셀 파일 다운로드** 버튼으로 결과를 저장하세요.
+4. 완료 후 **엑셀/CSV 파일 다운로드** 버튼으로 결과를 저장하세요.
+5. **로그 보기**에서 크롤링 과정을 확인하고, 로그를 마크다운 파일로 다운로드할 수 있습니다.
 
 ### ⚠️ 주의사항
 
