@@ -281,8 +281,12 @@ class ForestBidCrawler:
 
             # 각 항목 처리
             for idx, item in enumerate(items, 1):
-                # 날짜 체크
-                if item['post_date'] and item['post_date'] < self.cutoff_date:
+                # 상단 고정 공지는 번호가 비거나 '공지' 표기로 나타나므로 건너뛴다.
+                number_text = str(item.get('number', '')).strip()
+                is_notice = not number_text or '공지' in number_text
+
+                # 날짜 체크 (공지 제외)
+                if item['post_date'] and item['post_date'] < self.cutoff_date and not is_notice:
                     print(f"[*] 기준일 이전 게시글 도달 ({item['post_date_str']}), 크롤링 종료")
                     should_continue = False
                     break
