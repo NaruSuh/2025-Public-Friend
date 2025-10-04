@@ -24,19 +24,30 @@ class ForestBidCrawler:
     LIST_URL = "https://www.forest.go.kr/kfsweb/cop/bbs/selectBoardList.do"
     DETAIL_URL = "https://www.forest.go.kr/kfsweb/cop/bbs/selectBoardArticle.do"
 
-    def __init__(self, days=365, delay=1.0, page_delay=2.0):
+    def __init__(self, days=365, delay=1.0, page_delay=2.0, start_date=None, end_date=None):
         """
         초기화
 
         Args:
-            days (int): 수집할 기간 (일 단위)
+            days (int): 수집할 기간 (일 단위) - 하위 호환성
             delay (float): 요청 간 딜레이 (초)
             page_delay (float): 페이지 간 딜레이 (초)
+            start_date (datetime): 크롤링 시작일 (이 날짜부터 수집)
+            end_date (datetime): 크롤링 종료일 (이 날짜까지 수집)
         """
         self.days = days
         self.delay = delay
         self.page_delay = page_delay
-        self.cutoff_date = datetime.now() - timedelta(days=days)
+
+        # start_date가 제공되면 그것을 cutoff_date로 사용
+        if start_date:
+            self.cutoff_date = start_date if isinstance(start_date, datetime) else datetime.combine(start_date, datetime.min.time())
+        else:
+            # 하위 호환성: days 방식
+            self.cutoff_date = datetime.now() - timedelta(days=days)
+
+        # end_date 저장 (향후 필요시 사용)
+        self.end_date = end_date
 
         # 세션 설정
         # 로깅 설정
