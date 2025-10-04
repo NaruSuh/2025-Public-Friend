@@ -60,10 +60,12 @@ python3 main.py
 ## 설치 방법
 
 ### 1. Python 환경 확인
-Python 3.8 이상이 필요합니다.
+권장: Python 3.10 이상 (3.10/3.11 권장). 가상환경 사용 권장
 
 ```bash
 python --version
+python -m venv .venv
+source .venv/bin/activate
 ```
 
 ### 2. 의존성 설치
@@ -206,6 +208,13 @@ streamlit run app.py --server.port 8080
 ### 파싱 오류
 - 산림청 웹사이트 구조가 변경되었을 수 있습니다
 - `plan.md`를 참고하여 셀렉터를 수정하세요
+
+### 테스트
+간단한 유닛 테스트를 실행하려면(추가 필요):
+
+```bash
+python -m pytest tests/
+```
 
 ## 라이센스
 

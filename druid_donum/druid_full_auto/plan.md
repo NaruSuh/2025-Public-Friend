@@ -31,6 +31,7 @@ lxml              # 빠른 파싱
 selenium          # JavaScript 동적 로딩이 requests로 불가능할 경우
 webdriver-manager # Selenium 드라이버 자동 관리
 tqdm              # 진행률 표시
+python-dateutil   # 유연한 날짜 파싱
 ```
 
 ## 3. 페이지 구조 분석
@@ -94,7 +95,6 @@ TIMEOUT = 10                  # 요청 타임아웃
 bid_info = {
     'number': int,              # 게시글 번호
     'title': str,               # 제목
-    'category': str,            # 분류
     'forest_office': str,       # 담당산림청
     'department': str,          # 담당부서
     'manager': str,             # 담당자
@@ -109,7 +109,7 @@ bid_info = {
 
 ### 5.2 엑셀 출력 컬럼
 ```
-번호 | 제목 | 분류 | 담당산림청 | 담당부서 | 담당자 | 연락처 |
+번호 | 제목 | 담당산림청 | 담당부서 | 담당자 | 연락처 |
 공고일자 | 마감일자 | 조회수 | 첨부파일 | URL
 ```
 
@@ -123,6 +123,7 @@ try:
 except requests.exceptions.RequestException as e:
     # 재시도 로직
     # 실패 시 로그 기록 및 스킵
+    # 권장: logging 모듈로 로깅, traceback 보존
 ```
 
 ### 6.2 파싱 에러
@@ -185,6 +186,7 @@ python main.py
 python main.py --days 365        # 최근 365일 데이터
 python main.py --output custom.xlsx  # 출력 파일명 지정
 python main.py --resume          # 중단된 작업 재개
+python main.py --days 7          # 개발/테스트용 (권장)
 ```
 
 ## 10. 주의사항

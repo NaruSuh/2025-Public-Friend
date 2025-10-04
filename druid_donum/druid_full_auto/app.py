@@ -11,6 +11,8 @@ import time
 from main import ForestBidCrawler
 import os
 from io import BytesIO
+import logging
+import traceback
 
 APP_VERSION = "Ver 1.1.02"
 
@@ -37,20 +39,15 @@ def add_log(message, log_type="INFO"):
     st.session_state.crawl_logs.append(f"[{timestamp}] [{log_type}] {message}")
 
 # Excel 데이터 생성 함수 (캐싱)
-@st.cache_data
-def generate_excel_data(df_dict, timestamp):
-    """DataFrame을 Excel 바이너리로 변환 (캐싱됨)"""
-    df = pd.DataFrame(df_dict)
+def df_to_excel_bytes(df: pd.DataFrame) -> bytes:
+    """DataFrame을 Excel 바이너리로 변환(안정적 직렬화)"""
     buffer = BytesIO()
     df.to_excel(buffer, index=False, engine='openpyxl')
     return buffer.getvalue()
 
 # CSV 데이터 생성 함수 (캐싱)
-@st.cache_data
-def generate_csv_data(df_dict, timestamp):
-    """DataFrame을 CSV로 변환 (캐싱됨)"""
-    df = pd.DataFrame(df_dict)
-    return df.to_csv(index=False, encoding='utf-8-sig')
+def df_to_csv_bytes(df: pd.DataFrame) -> bytes:
+    return df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
 
 # 제목
 st.markdown(
@@ -95,6 +92,67 @@ page_delay = st.sidebar.slider(
     help="페이지 이동 시 대기 시간입니다."
 )
 
+# 사이드바: 캐시된 파일 드롭다운
+st.sidebar.subheader("📁 지금까지 캐시된 파일")
+
+history_items = list(reversed(st.session_state.crawl_history))
+history_labels = ["선택하세요"]
+history_map = {}
+
+for item in history_items:
+    label = f"{item['timestamp'].replace('_', ' ')} · {item['period']} · {item['total_items']}개"
+    history_labels.append(label)
+    history_map[label] = item
+
+if 'selected_history_label' not in st.session_state or st.session_state.selected_history_label not in history_labels:
+    st.session_state.selected_history_label = history_labels[0]
+
+selected_history_label = st.sidebar.selectbox(
+    "지금까지 캐시된 파일",
+    options=history_labels,
+    key="selected_history_label"
+)
+if selected_history_label == history_labels[0]:
+    if not history_items:
+        st.sidebar.caption("아직 캐시된 파일이 없습니다.")
+else:
+    selected_history = history_map[selected_history_label]
+    st.sidebar.markdown(
+        f"**수집 기간**: {selected_history['period']}  \
+        **항목 수**: {selected_history['total_items']}개"
+    )
+
+    # selected_history['data']는 DataFrame으로 저장되어 있음
+    df = selected_history['data']
+
+    col_a, col_b = st.sidebar.columns(2)
+
+    with col_a:
+        try:
+            excel_data = df_to_excel_bytes(df)
+            st.download_button(
+                label="📥 Excel",
+                data=excel_data,
+                file_name=f"산림청_입찰_{selected_history['timestamp']}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key=f"sidebar_excel_{selected_history['timestamp']}"
+            )
+        except Exception as e:
+            st.error(f"Excel 생성 실패: {e}")
+
+    with col_b:
+        try:
+            csv_data = df_to_csv_bytes(df)
+            st.download_button(
+                label="📥 CSV",
+                data=csv_data,
+                file_name=f"산림청_입찰_{selected_history['timestamp']}.csv",
+                mime="text/csv",
+                key=f"sidebar_csv_{selected_history['timestamp']}"
+            )
+        except Exception as e:
+            st.error(f"CSV 생성 실패: {e}")
+
 # 사이드바 하단: 크롤링 히스토리
 if st.session_state.crawl_history:
     st.sidebar.markdown("---")
@@ -114,10 +172,7 @@ if st.session_state.crawl_history:
             with col_a:
                 # Excel 다운로드 (캐싱 사용)
                 try:
-                    # DataFrame을 dict로 변환하여 캐싱 가능하게
-                    df_dict = item['data'].to_dict()
-                    excel_data = generate_excel_data(df_dict, item['timestamp'])
-
+                    excel_data = df_to_excel_bytes(item['data'])
                     st.download_button(
                         label="📥 Excel",
                         data=excel_data,
@@ -126,15 +181,12 @@ if st.session_state.crawl_history:
                         key=f"excel_{unique_key}"
                     )
                 except Exception as e:
-                    st.error(f"Excel 생성 실패")
+                    st.error(f"Excel 생성 실패: {e}")
 
             with col_b:
                 # CSV 다운로드 (캐싱 사용)
                 try:
-                    # DataFrame을 dict로 변환하여 캐싱 가능하게
-                    df_dict = item['data'].to_dict()
-                    csv = generate_csv_data(df_dict, item['timestamp'])
-
+                    csv = df_to_csv_bytes(item['data'])
                     st.download_button(
                         label="📥 CSV",
                         data=csv,
@@ -143,7 +195,7 @@ if st.session_state.crawl_history:
                         key=f"csv_{unique_key}"
                     )
                 except Exception as e:
-                    st.error(f"CSV 생성 실패")
+                    st.error(f"CSV 생성 실패: {e}")
 
 # 메인 영역
 col1, col2 = st.columns([2, 1])
@@ -189,7 +241,8 @@ def run_crawling(years, days, delay, page_delay):
         total_pages_estimate = 50
 
         while should_continue:
-            info_text.text(f"📄 페이지 {page_index} 처리 중...")
+            status_text.info(f"📄 페이지 {page_index} 처리 중...")
+            info_text.info(f"🔍 페이지 {page_index} 항목 분석 중...")
             add_log(f"페이지 {page_index} 처리 시작")
 
             # 리스트 페이지 가져오기
@@ -236,13 +289,16 @@ def run_crawling(years, days, delay, page_delay):
                         crawler.data.append(detail_data)
                         crawler.total_items += 1
                         add_log(f"항목 수집 완료: {item['title'][:30]}...")
+                        info_text.text(f"✅ {page_index}페이지 {idx}/10 처리 완료: {item['title'][:30]}...")
                     else:
                         add_log(f"상세 페이지 가져오기 실패: {item['title'][:30]}...", "ERROR")
                         crawler.data.append(item)
                         crawler.total_items += 1
+                        info_text.text(f"⚠️ 상세 페이지 실패: {item['title'][:30]}...")
                 else:
                     crawler.data.append(item)
                     crawler.total_items += 1
+                    info_text.text(f"ℹ️ 상세 페이지 링크 없음: {item['title'][:30]}...")
 
                 # 진행률 업데이트
                 progress = min(page_index / total_pages_estimate, 0.99)
@@ -251,8 +307,27 @@ def run_crawling(years, days, delay, page_delay):
             # 중간 결과 표시
             if crawler.data:
                 df = pd.DataFrame(crawler.data)
+                latest_rows = df.tail(20)
+
+                preview_columns = [
+                    ('number', '번호'),
+                    ('title', '제목'),
+                    ('forest_office', '담당산림청'),
+                    ('department', '담당부서'),
+                    ('manager', '담당자'),
+                    ('contact', '연락처'),
+                    ('post_date_str', '공고일자'),
+                    ('views', '조회수'),
+                    ('has_attachment', '첨부'),
+                ]
+
+                available_preview_cols = [col for col, _ in preview_columns if col in latest_rows.columns]
+                preview_df = latest_rows[available_preview_cols].copy()
+                rename_map = {col: label for col, label in preview_columns if col in preview_df.columns}
+                preview_df = preview_df.rename(columns=rename_map)
+
                 result_placeholder.dataframe(
-                    df.head(20),
+                    preview_df,
                     use_container_width=True,
                     hide_index=True
                 )
@@ -378,19 +453,18 @@ if st.session_state.crawl_completed and st.session_state.crawl_data is not None:
     st.subheader("📥 데이터 다운로드")
 
     df = st.session_state.crawl_data
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     col1, col2 = st.columns(2)
 
     with col1:
         # 엑셀 다운로드
         try:
-            buffer = BytesIO()
-            df.to_excel(buffer, index=False, engine='openpyxl')
-            excel_data = buffer.getvalue()
+            excel_data = df_to_excel_bytes(df)
 
             st.download_button(
                 label="📥 엑셀 파일 다운로드 (.xlsx)",
                 data=excel_data,
-                file_name=f"산림청_입찰정보_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                file_name=f"산림청_입찰정보_{timestamp.replace('-', '').replace('_', '')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True
             )
@@ -399,15 +473,18 @@ if st.session_state.crawl_completed and st.session_state.crawl_data is not None:
 
     with col2:
         # CSV 다운로드
-        csv = df.to_csv(index=False, encoding='utf-8-sig')
+        try:
+            csv_data = df_to_csv_bytes(df)
 
-        st.download_button(
-            label="📥 CSV 파일 다운로드 (.csv)",
-            data=csv,
-            file_name=f"산림청_입찰정보_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
+            st.download_button(
+                label="📥 CSV 파일 다운로드 (.csv)",
+                data=csv_data,
+                file_name=f"산림청_입찰정보_{timestamp.replace('-', '').replace('_', '')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"CSV 생성 실패: {e}")
 
 # 로그 뷰어 (좌측 하단)
 if st.session_state.crawl_logs and len(st.session_state.crawl_logs) > 0:
