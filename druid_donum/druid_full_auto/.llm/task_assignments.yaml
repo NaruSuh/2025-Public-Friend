@@ -1,0 +1,265 @@
+# Multi-LLM Task Assignments
+# Auto-generated task tracker for Claude Code, Gemini CLI, Codex CLI
+
+version: "1.0"
+project: "universal-board-crawler"
+last_updated: "2025-10-05T17:30:00+09:00"
+
+# Task Status: pending | in_progress | completed | blocked
+# Priority: P0 (critical) | P1 (high) | P2 (medium) | P3 (low)
+
+tasks:
+  # === PHASE 1: SETUP & ARCHITECTURE ===
+
+  - id: T001
+    title: "Create project documentation framework"
+    description: "Setup ARCHITECTURE.md, LLM_COLLABORATION.md, and status tracking"
+    owner: claude
+    priority: P0
+    status: completed
+    estimated_hours: 2
+    actual_hours: 1.5
+    created: "2025-10-05T17:00:00+09:00"
+    completed: "2025-10-05T17:30:00+09:00"
+    outputs:
+      - ARCHITECTURE.md
+      - LLM_COLLABORATION.md
+      - CURRENT_STATUS.md
+      - .llm/task_assignments.yaml
+    dependencies: []
+    blocks: [T002, T003, T010]
+
+  - id: T002
+    title: "Implement BaseCrawler abstract class"
+    description: "Core abstraction that all site plugins must inherit from"
+    owner: claude
+    priority: P0
+    status: pending
+    estimated_hours: 4
+    created: "2025-10-05T17:30:00+09:00"
+    outputs:
+      - src/core/base_crawler.py
+      - src/core/__init__.py
+    dependencies: [T001]
+    blocks: [T003, T004, T005]
+    acceptance_criteria:
+      - "All abstract methods defined with type hints"
+      - "Docstrings in Google format"
+      - "Example usage in docstring"
+    notes: |
+      Key methods to include:
+      - fetch_page(url, params) -> BeautifulSoup
+      - parse_list(soup) -> List[Dict]
+      - parse_detail(soup, item) -> Dict
+      - build_params(page, start_date, end_date) -> Dict
+
+  - id: T003
+    title: "Implement ParserFactory pattern"
+    description: "Factory for creating site-specific parsers"
+    owner: claude
+    priority: P0
+    status: pending
+    estimated_hours: 3
+    dependencies: [T002]
+    outputs:
+      - src/core/parser_factory.py
+    blocks: [T004]
+
+  # === PHASE 2: PLUGIN MIGRATION ===
+
+  - id: T004
+    title: "Create plugin template"
+    description: "Cookiecutter-style template for new plugins"
+    owner: gemini
+    priority: P1
+    status: pending
+    estimated_hours: 2
+    dependencies: [T002, T003]
+    outputs:
+      - src/plugins/template/crawler.py
+      - src/plugins/template/parser.py
+      - src/plugins/template/config.yaml
+      - src/plugins/template/README.md
+
+  - id: T005
+    title: "Migrate ForestKorea crawler to plugin"
+    description: "Port existing main.py to new plugin architecture"
+    owner: gemini
+    priority: P0
+    status: pending
+    estimated_hours: 6
+    dependencies: [T002, T003]
+    blocks: [T011]
+    outputs:
+      - src/plugins/forest_korea/crawler.py
+      - src/plugins/forest_korea/parser.py
+      - src/plugins/forest_korea/config.yaml
+    acceptance_criteria:
+      - "All existing functionality preserved"
+      - "Passes existing integration tests"
+      - "Config-driven (no hardcoded URLs)"
+    notes: |
+      Migration checklist:
+      - [ ] Move ForestBidCrawler to plugins/forest_korea/crawler.py
+      - [ ] Inherit from BaseCrawler
+      - [ ] Extract HTML selectors to config.yaml
+      - [ ] Add date regex pattern to config
+      - [ ] Backward compatibility: keep old API working
+
+  - id: T006
+    title: "Implement plugin loader/registry"
+    description: "Dynamic plugin discovery and loading system"
+    owner: claude
+    priority: P1
+    status: pending
+    estimated_hours: 4
+    dependencies: [T003, T004]
+    outputs:
+      - src/core/plugin_loader.py
+      - config/plugins_registry.yaml
+
+  # === PHASE 3: TESTING ===
+
+  - id: T010
+    title: "Setup pytest infrastructure"
+    description: "Configure pytest, coverage, fixtures"
+    owner: codex
+    priority: P1
+    status: pending
+    estimated_hours: 2
+    dependencies: [T001]
+    outputs:
+      - tests/conftest.py
+      - tests/__init__.py
+      - pytest.ini
+      - .coveragerc
+
+  - id: T011
+    title: "Unit tests for core modules"
+    description: "Test BaseCrawler, ParserFactory, PluginLoader"
+    owner: codex
+    priority: P0
+    status: pending
+    estimated_hours: 6
+    dependencies: [T002, T003, T006]
+    outputs:
+      - tests/unit/test_base_crawler.py
+      - tests/unit/test_parser_factory.py
+      - tests/unit/test_plugin_loader.py
+    acceptance_criteria:
+      - "Coverage > 95% for core modules"
+      - "All edge cases covered"
+      - "Mocks for external dependencies"
+
+  - id: T012
+    title: "Integration tests for ForestKorea plugin"
+    description: "E2E tests with recorded HTTP responses"
+    owner: codex
+    priority: P1
+    status: pending
+    estimated_hours: 4
+    dependencies: [T005]
+    outputs:
+      - tests/plugins/test_forest_korea.py
+      - tests/fixtures/forest_korea_*.html
+    notes: |
+      Use pytest-vcr for HTTP recording
+      Test scenarios:
+      - Happy path (successful crawl)
+      - Date filtering
+      - Pagination
+      - Error handling (404, timeout)
+
+  # === PHASE 4: UI REFACTORING ===
+
+  - id: T020
+    title: "Refactor Streamlit UI for multi-plugin support"
+    description: "Add plugin selector dropdown, dynamic config UI"
+    owner: claude
+    priority: P2
+    status: pending
+    estimated_hours: 8
+    dependencies: [T006]
+    outputs:
+      - src/ui/streamlit_app.py
+      - src/ui/components/plugin_selector.py
+      - src/ui/components/config_editor.py
+
+  # === FUTURE: ADDITIONAL PLUGINS ===
+
+  - id: T030
+    title: "Implement Naver Cafe plugin"
+    description: "New plugin for Naver Cafe boards"
+    owner: gemini
+    priority: P3
+    status: pending
+    estimated_hours: 8
+    dependencies: [T004, T006]
+    outputs:
+      - src/plugins/naver_cafe/...
+
+  - id: T031
+    title: "Implement 나라장터 plugin"
+    description: "New plugin for G2B (나라장터) procurement"
+    owner: gemini
+    priority: P3
+    status: pending
+    estimated_hours: 10
+    dependencies: [T004, T006]
+
+# === MILESTONES ===
+
+milestones:
+  - name: "M1: Core Architecture Complete"
+    date: "2025-10-12"
+    tasks: [T002, T003, T006]
+
+  - name: "M2: ForestKorea Plugin Migrated"
+    date: "2025-10-15"
+    tasks: [T005, T011, T012]
+
+  - name: "M3: Multi-Plugin UI"
+    date: "2025-10-20"
+    tasks: [T020]
+
+  - name: "M4: Production Ready"
+    date: "2025-10-25"
+    tasks: [T030, T031]
+
+# === OWNERSHIP SUMMARY ===
+
+ownership:
+  claude:
+    total_tasks: 5
+    pending: 4
+    in_progress: 0
+    completed: 1
+
+  gemini:
+    total_tasks: 4
+    pending: 4
+    in_progress: 0
+    completed: 0
+
+  codex:
+    total_tasks: 3
+    pending: 3
+    in_progress: 0
+    completed: 0
+
+# === QUICK REFERENCE ===
+
+quick_start:
+  claude: |
+    Your next tasks: T002 (BaseCrawler), T003 (ParserFactory)
+    Run: cat .llm/contexts/claude_context.md
+
+  gemini: |
+    Waiting for: T002, T003 to complete
+    Next: T004 (plugin template), T005 (ForestKorea migration)
+    Run: cat .llm/contexts/gemini_context.md
+
+  codex: |
+    Waiting for: T002, T003 to complete
+    Next: T010 (pytest setup), T011 (core tests)
+    Run: cat .llm/contexts/codex_context.md
