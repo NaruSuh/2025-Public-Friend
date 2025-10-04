@@ -248,7 +248,9 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
         crawler = ForestBidCrawler(
             days=days,
             delay=delay,
-            page_delay=page_delay
+            page_delay=page_delay,
+            start_date=start_date,
+            end_date=end_date
         )
 
         status_text.info("🔄 크롤링 시작...")
