@@ -12,11 +12,11 @@ Example:
     >>> items = crawler.parse_list(soup)
 """
 
-from typing import Dict, Any, Optional
+import re
+from typing import Dict, Any, Optional, List
 from pathlib import Path
 import yaml
 import importlib
-import sys
 
 from .base_crawler import BaseCrawler
 
@@ -68,6 +68,7 @@ class ParserFactory:
             >>> crawler = factory.create_crawler('forest_korea')
             >>> soup = crawler.fetch_page(url, params)
         """
+        self._validate_site_name(site_name)
         crawler_class = self._load_crawler_class(site_name)
 
         # Instantiate with config if provided
@@ -104,6 +105,10 @@ class ParserFactory:
                 f"Plugin '{site_name}' not found at {module_path}. "
                 f"Make sure the plugin directory exists at {self.plugins_dir / site_name}"
             ) from e
+        except Exception as e:  # pragma: no cover - defensive guard
+            raise CrawlerNotFoundError(
+                f"Failed to import plugin '{site_name}' ({module_path}): {e}"
+            ) from e
 
         # Find the crawler class (should end with 'Crawler')
         crawler_class = None
@@ -128,7 +133,7 @@ class ParserFactory:
 
         return crawler_class
 
-    def list_available_plugins(self) -> list[str]:
+    def list_available_plugins(self) -> List[str]:
         """
         List all available crawler plugins.
 
@@ -167,13 +172,33 @@ class ParserFactory:
             >>> print(config['site']['base_url'])
             https://www.forest.go.kr
         """
+        self._validate_site_name(site_name)
         config_path = self.plugins_dir / site_name / "config.yaml"
 
         if not config_path.exists():
             return None
 
-        with open(config_path, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise CrawlerNotFoundError(
+                f"Invalid YAML in plugin config '{site_name}': {e}"
+            ) from e
+        except OSError as e:
+            raise CrawlerNotFoundError(
+                f"Unable to read config for plugin '{site_name}': {e}"
+            ) from e
+
+        if config is None:
+            return None
+
+        if not isinstance(config, dict):
+            raise CrawlerNotFoundError(
+                f"Config for plugin '{site_name}' must be a mapping, got {type(config).__name__}"
+            )
+
+        return config
 
     def get_plugin_metadata(self, site_name: str) -> Dict[str, Any]:
         """
@@ -203,6 +228,17 @@ class ParserFactory:
             'version': '1.0.0',
             'description': 'No description available'
         }
+
+    @staticmethod
+    def _validate_site_name(site_name: str) -> None:
+        """Ensure plugin names cannot traverse directories or import arbitrary modules."""
+        if not site_name:
+            raise CrawlerNotFoundError("Plugin name cannot be empty")
+
+        if not re.fullmatch(r"[A-Za-z0-9_]+", site_name):
+            raise CrawlerNotFoundError(
+                "Plugin name may only contain letters, numbers, and underscores"
+            )
 
 
 if __name__ == "__main__":

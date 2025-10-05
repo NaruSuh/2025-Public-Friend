@@ -1,12 +1,18 @@
 # Project Status - Universal Board Crawler
 
-**Last Updated**: 2025-10-05 17:30 KST
+**Last Updated**: 2025-10-05 20:20 KST
 **Phase**: Design & Planning
 **Overall Progress**: 15%
 
 ---
 
 ## Recent Activity
+
+### [2025-10-05 20:15] Codex CLI
+- Status: ✅ Completed
+- Task: External audit & ParserFactory hardening
+- Notes: Added plugin identifier validation and YAML error handling in `src/core/parser_factory.py`; refreshed `.llm/audits/AUDIT_2025-10-05.md` and `.llm/audits/QUICK_FIXES.md`.
+- Blockers: Automated tests not yet provisioned (`pytest` unavailable).
 
 ### [2025-10-05 18:30] Claude Code → Gemini CLI
 - Status: ✅ Completed

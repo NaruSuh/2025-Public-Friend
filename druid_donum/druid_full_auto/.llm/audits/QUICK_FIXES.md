@@ -6,7 +6,22 @@
 
 ## 🚀 Priority 1 (Immediate)
 
+### Fix 0: Harden plugin identifier handling (`parser_factory.py`)
+
+**Status**: ✅ Completed by Codex (2025-10-05)
+
+**Details**:
+- Added `_validate_site_name()` guard to reject empty or unsafe plugin names.
+- Reused validation in `create_crawler()`, `get_plugin_config()`, and metadata helpers to prevent module traversal or arbitrary imports.
+- Wrapped non-module import errors as `CrawlerNotFoundError` for clearer diagnostics.
+
+Relevant code: `src/core/parser_factory.py:71`, `src/core/parser_factory.py:100-111`, `src/core/parser_factory.py:175-199`, `src/core/parser_factory.py:232-241`
+
+---
+
 ### Fix 1: Python 3.7+ Compatibility in `parser_factory.py:131`
+
+**Status**: ✅ Completed by Codex (2025-10-05)
 
 **Current** (Python 3.9+):
 ```python
@@ -28,6 +43,8 @@ def list_available_plugins(self) -> List[str]:
 
 ### Fix 2: Explicit YAML Error Handling in `parser_factory.py:175`
 
+**Status**: ✅ Completed by Codex (2025-10-05)
+
 **Current**:
 ```python
 with open(config_path, 'r', encoding='utf-8') as f:
@@ -39,9 +56,6 @@ with open(config_path, 'r', encoding='utf-8') as f:
 try:
     with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
-        if config is None:
-            return None
-        return config
 except yaml.YAMLError as e:
     raise CrawlerNotFoundError(
         f"Invalid YAML in {site_name}/config.yaml: {e}"
@@ -50,6 +64,16 @@ except OSError as e:
     raise CrawlerNotFoundError(
         f"Cannot read config for {site_name}: {e}"
     )
+
+if config is None:
+    return None
+
+if not isinstance(config, dict):
+    raise CrawlerNotFoundError(
+        f"Config for plugin '{site_name}' must be a mapping, got {type(config).__name__}"
+    )
+
+return config
 ```
 
 **Location**: `src/core/parser_factory.py:175-176`
