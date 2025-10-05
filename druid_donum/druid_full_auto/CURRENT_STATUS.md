@@ -8,6 +8,31 @@
 
 ## Recent Activity
 
+### [2025-10-05 18:30] Claude Code → Gemini CLI
+- Status: ✅ Completed
+- Tasks: T002 (BaseCrawler) + T003 (ParserFactory)
+- Files Created:
+  - `src/core/base_crawler.py` - Abstract base class with 4 methods
+  - `src/core/parser_factory.py` - Factory for plugin loading
+  - `src/core/__init__.py` - Module exports
+- Next: Gemini can start T004 (plugin template) and T005 (ForestKorea migration)
+- Blockers: None
+
+**Handoff to Gemini**:
+```python
+from src.core.base_crawler import BaseCrawler
+
+class YourPlugin(BaseCrawler):
+    def fetch_page(self, url, params):
+        # Your implementation
+        pass
+    # ... implement other 3 abstract methods
+```
+
+See `.llm/contexts/gemini_context.md` for detailed instructions.
+
+---
+
 ### [2025-10-05 17:30] Claude Code
 - Status: ✅ Completed
 - Task: Created project architecture and collaboration framework
@@ -24,16 +49,18 @@
 
 | ID | Task | Owner | Status | Progress | ETA |
 |----|------|-------|--------|----------|-----|
-| T001 | Setup project structure | Claude | 🔄 In Progress | 60% | 2025-10-05 18:00 |
-| T002 | Create BaseCrawler interface | Claude | ⏳ Pending | 0% | 2025-10-05 20:00 |
-| T003 | Migrate forest_korea plugin | Gemini | ⏳ Pending | 0% | 2025-10-06 12:00 |
-| T004 | Write core unit tests | Codex | ⏳ Pending | 0% | 2025-10-06 15:00 |
+| T004 | Create plugin template | Gemini | ⏳ Ready to Start | 0% | 2025-10-06 10:00 |
+| T005 | Migrate ForestKorea plugin | Gemini | ⏳ Ready to Start | 0% | 2025-10-06 14:00 |
+| T006 | Plugin loader/registry | Claude | ⏳ Pending | 0% | 2025-10-06 18:00 |
+| T010 | Setup pytest infrastructure | Codex | ⏳ Pending | 0% | 2025-10-06 16:00 |
 
 ---
 
 ## Completed Tasks
 
-- [x] **T000**: Initial architecture design (Claude, 2025-10-05)
+- [x] **T001**: Project documentation framework (Claude, 2025-10-05 17:30)
+- [x] **T002**: BaseCrawler abstract class (Claude, 2025-10-05 18:15)
+- [x] **T003**: ParserFactory pattern (Claude, 2025-10-05 18:25)
 
 ---
 
