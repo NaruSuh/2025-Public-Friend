@@ -1,0 +1,90 @@
+# 파일 소유권 명세
+# Multi-CLI 협업 시 충돌 방지용
+
+version: "1.0"
+last_updated: "2025-10-05"
+
+# 각 CLI가 수정할 수 있는 파일 패턴
+ownership:
+
+  claude:
+    description: "핵심 아키텍처 및 코어 모듈"
+    files:
+      - "src/core/*.py"
+      - "src/core/__init__.py"
+      - "src/ui/*.py"
+      - "src/ui/components/*.py"
+      - ".llm/ARCHITECTURE.md"
+      - ".llm/LLM_COLLABORATION.md"
+      - ".llm/CODE_AUDIT_PLAN.md"
+
+  gemini:
+    description: "플러그인 개발 및 설정"
+    files:
+      - "src/plugins/**/*.py"
+      - "src/plugins/**/config.yaml"
+      - "src/plugins/**/README.md"
+      - ".llm/HANDOFF_TO_GEMINI.md"
+      - ".llm/contexts/gemini_context.md"
+
+  codex:
+    description: "테스트 및 품질 관리"
+    files:
+      - "tests/**/*.py"
+      - "pytest.ini"
+      - "requirements-test.txt"
+      - ".llm/audits/*.md"
+      - ".llm/contexts/codex_context.md"
+
+# 모든 CLI가 업데이트 가능한 공유 파일
+shared:
+  files:
+    - "CURRENT_STATUS.md"
+    - ".llm/task_assignments.yaml"
+
+  rules:
+    - "업데이트 전 파일 읽고 섹션만 추가"
+    - "절대 다른 CLI의 섹션 삭제 금지"
+    - "커밋 전 git pull 필수"
+
+# 읽기 전용 (누구도 수정 금지)
+readonly:
+  files:
+    - "README.md"  # 사람이 직접 관리
+    - ".gitignore"
+    - "LICENSE"
+
+# 긴급 상황 (누구든 수정 가능하지만 신중히)
+emergency:
+  files:
+    - "app.py"  # 버그 수정 시
+    - "main.py"  # 마이그레이션 전까지
+
+  rules:
+    - "수정 전 CURRENT_STATUS.md에 경고 남기기"
+    - "수정 후 다른 CLI에게 알리기"
+
+# 충돌 해결 우선순위
+conflict_resolution:
+  priority:
+    - "codex"   # 테스트가 최우선 (망가지면 안 됨)
+    - "claude"  # 핵심 로직
+    - "gemini"  # 플러그인 (롤백 쉬움)
+
+  strategy: "충돌 시 우선순위 높은 CLI의 변경 사항 우선"
+
+# 작업 전 체크리스트
+pre_work_checklist:
+  - "git pull origin main"
+  - "내가 수정할 파일이 내 소유권인지 확인"
+  - "공유 파일이면 락 파일 체크 (.llm/locks/)"
+  - "CURRENT_STATUS.md에 작업 시작 알림"
+
+# 작업 후 체크리스트
+post_work_checklist:
+  - "변경 파일이 내 소유권 범위 내인지 재확인"
+  - "공유 파일 수정했으면 다른 섹션 건드리지 않았는지 확인"
+  - "git commit -m '[CLI이름] 작업내용'"
+  - "git push origin main (또는 브랜치)"
+  - "CURRENT_STATUS.md에 완료 표시"
+  - "락 파일 삭제 (공유 파일 사용했다면)"
