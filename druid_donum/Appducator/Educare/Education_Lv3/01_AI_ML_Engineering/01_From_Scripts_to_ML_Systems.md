@@ -601,8 +601,8 @@ model = RandomForestClassifier(random_state=42)
 
 # 버전 고정
 # requirements.txt
-scikit-learn==1.3.0  # 명확한 버전
-pandas==2.0.3
+scikit-learn==1.5.0  # 명확한 버전
+pandas==2.2.2
 ```
 
 #### 2. 설정 외부화

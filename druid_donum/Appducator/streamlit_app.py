@@ -16,6 +16,7 @@ from app_utils import (
     load_vocabulary,
     markdown_to_html,
     remove_vocabulary_term,
+    sanitize_html,
     upsert_vocabulary_term,
 )
 
@@ -215,7 +216,7 @@ glossary = st.session_state["glossary"]
 
 if st.sidebar.button("🔄 글로서리 새로고침"):
     st.session_state["glossary"] = load_glossary()
-    st.experimental_rerun()
+    st.rerun()
 
 st.sidebar.title("Appducator Navigator")
 search_query = st.sidebar.text_input("검색", placeholder="예: FastAPI, ML, 보안")
@@ -254,6 +255,7 @@ selected_path = Path(selected_item["path"])
 md_text, doc_title = load_markdown_content(selected_path)
 html = markdown_to_html(md_text)
 highlighted_html, highlighted_terms = highlight_terms(html, glossary)
+safe_html = sanitize_html(highlighted_html)
 
 st.sidebar.markdown(
     """
@@ -275,7 +277,7 @@ reader_tab, vocab_tab, about_tab = st.tabs(["📖 Reader", "🗂 Vocabulary", "�
 with reader_tab:
     st.markdown(f"<div class='info-chip'>📄 {selected_item['relative']}</div>", unsafe_allow_html=True)
     st.title(doc_title)
-    st.markdown(f"<div class='md-viewer'>{highlighted_html}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='md-viewer'>{safe_html}</div>", unsafe_allow_html=True)
 
     recognized_terms = sorted(set(highlighted_terms))
     if recognized_terms:
@@ -316,11 +318,13 @@ with vocab_tab:
         st.info("아직 저장된 용어가 없습니다. 문서를 읽으며 용어를 추가해 보세요!")
     else:
         for entry in entries:
-            term = entry.get("term")
-            definition = entry.get("definition")
+            term = entry.get("term") or ""
+            definition = entry.get("definition") or ""
             with st.container():
+                safe_term = sanitize_html(term)
+                safe_definition = sanitize_html(definition).replace("\n", "<br />")
                 st.markdown(
-                    f"""<div class='vocab-card'><h4>{term}</h4><p style='margin-top:0.4rem;'>{definition}</p></div>""",
+                    f"""<div class='vocab-card'><h4>{safe_term}</h4><p style='margin-top:0.4rem;'>{safe_definition}</p></div>""",
                     unsafe_allow_html=True,
                 )
                 cols = st.columns([0.2, 0.8, 0.2])
@@ -328,7 +332,7 @@ with vocab_tab:
                     if st.button("삭제", key=f"delete-{term}"):
                         updated = remove_vocabulary_term(term)
                         st.session_state["vocab_entries"] = updated
-                        st.experimental_rerun()
+                        st.rerun()
         st.download_button(
             "용어장 JSON 내보내기",
             data=json.dumps(entries, ensure_ascii=False, indent=2),

@@ -10,11 +10,82 @@ import re
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 import sys
 from urllib.parse import urljoin
 from dateutil import parser as date_parser
+from typing import Optional, Dict, List, Any
+import json
+from pathlib import Path
+from email.utils import parsedate_to_datetime
+
+
+class CrawlCheckpoint:
+    """크롤링 체크포인트 관리"""
+
+    def __init__(self, checkpoint_file='crawl_checkpoint.json'):
+        self.file = Path(checkpoint_file)
+        self.state = self._load()
+
+    def _load(self) -> Dict[str, Any]:
+        """저장된 체크포인트 로드"""
+        if self.file.exists():
+            try:
+                with open(self.file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception:
+                return self._empty_state()
+        return self._empty_state()
+
+    def _empty_state(self) -> Dict[str, Any]:
+        """빈 상태 반환"""
+        return {
+            'last_page': 0,
+            'collected_items': 0,
+            'last_url': None,
+            'timestamp': None,
+            'completed': False
+        }
+
+    def save(self, page: int, url: str, items_count: int):
+        """현재 상태 저장"""
+        self.state.update({
+            'last_page': page,
+            'last_url': url,
+            'collected_items': items_count,
+            'timestamp': datetime.now().isoformat(),
+            'completed': False
+        })
+
+        with open(self.file, 'w', encoding='utf-8') as f:
+            json.dump(self.state, f, indent=2, ensure_ascii=False)
+
+    def mark_completed(self):
+        """크롤링 완료 표시"""
+        self.state['completed'] = True
+        with open(self.file, 'w', encoding='utf-8') as f:
+            json.dump(self.state, f, indent=2, ensure_ascii=False)
+
+    def can_resume(self) -> bool:
+        """재개 가능 여부"""
+        return self.state['last_page'] > 0 and not self.state['completed']
+
+    def clear(self):
+        """체크포인트 삭제"""
+        if self.file.exists():
+            self.file.unlink()
+        self.state = self._empty_state()
+
+
+class CrawlerException(Exception):
+    """크롤러 관련 예외"""
+    pass
+
+
+class ParsingException(Exception):
+    """파싱 관련 예외"""
+    pass
 
 
 class ForestBidCrawler:
@@ -67,6 +138,64 @@ class ForestBidCrawler:
         self.data = []
         self.total_items = 0
 
+        # 체크포인트 시스템
+        self.checkpoint = CrawlCheckpoint()
+
+        # 입력 검증
+        self._validate_params(days, delay, page_delay, start_date, end_date)
+
+    def _validate_params(self, days, delay, page_delay, start_date, end_date):
+        """입력 파라미터 검증"""
+        # 최대 수집 기간: 10년
+        max_range_days = 3650
+
+        if start_date and end_date:
+            range_days = (end_date - start_date).days if hasattr(end_date, 'days') else (end_date - start_date).total_seconds() / 86400
+            if range_days > max_range_days:
+                raise ValueError(f"날짜 범위는 최대 {max_range_days}일({max_range_days//365}년)을 초과할 수 없습니다.")
+            if range_days < 0:
+                raise ValueError("종료일은 시작일보다 나중이어야 합니다.")
+        elif days > max_range_days:
+            raise ValueError(f"수집 기간은 최대 {max_range_days}일({max_range_days//365}년)을 초과할 수 없습니다.")
+
+        # 딜레이 최소값 검증
+        if delay < 0.5:
+            raise ValueError("요청 간 딜레이는 최소 0.5초 이상이어야 합니다 (서버 보호).")
+        if page_delay < 1.0:
+            raise ValueError("페이지 간 딜레이는 최소 1.0초 이상이어야 합니다 (서버 보호).")
+
+        self.logger.info(f"파라미터 검증 완료: days={days}, delay={delay}s, page_delay={page_delay}s")
+
+    def _parse_date_safe(self, date_str: str) -> Optional[datetime]:
+        """안전한 날짜 파싱 (타임존 처리 포함)"""
+        if not date_str or not date_str.strip():
+            return None
+
+        # 먼저 예상 포맷으로 빠른 파싱 시도
+        try:
+            dt = datetime.strptime(date_str.strip(), '%Y-%m-%d')
+            return dt
+        except ValueError:
+            pass
+
+        # 유연한 파싱 시도
+        try:
+            dt = date_parser.parse(date_str, fuzzy=False)
+
+            # 합리적인 범위 검증
+            if dt.year < 2000 or dt.year > 2100:
+                self.logger.warning(f"날짜 범위 벗어남: {date_str} (year={dt.year})")
+                return None
+
+            # 타임존이 있으면 UTC 기준으로 변환 후 naive 로 통일
+            if dt.tzinfo is not None:
+                dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+
+            return dt
+        except Exception as e:
+            self.logger.warning(f"날짜 파싱 실패: '{date_str}' - {e}")
+            return None
+
     def fetch_page(self, url, params=None, max_retries=3):
         """
         페이지 가져오기 (재시도 로직 포함)
@@ -78,20 +207,78 @@ class ForestBidCrawler:
 
         Returns:
             BeautifulSoup: 파싱된 HTML
+
+        Raises:
+            CrawlerException: 모든 재시도 실패 시
         """
+        last_exception = None
+
         for attempt in range(max_retries):
             try:
                 response = self.session.get(url, params=params, timeout=10)
                 response.raise_for_status()
+
+                # Rate limit 헤더 확인
+                retry_after_header = response.headers.get('Retry-After')
+                if retry_after_header:
+                    wait_seconds: Optional[float] = None
+                    try:
+                        wait_seconds = float(retry_after_header)
+                    except ValueError:
+                        try:
+                            retry_dt = parsedate_to_datetime(retry_after_header)
+                        except (TypeError, ValueError) as parse_err:
+                            self.logger.warning(
+                                f"Retry-After 헤더 파싱 실패: {retry_after_header} ({parse_err})"
+                            )
+                            retry_dt = None
+
+                        if retry_dt:
+                            if retry_dt.tzinfo is None:
+                                retry_dt = retry_dt.replace(tzinfo=timezone.utc)
+                            delta = (retry_dt - datetime.now(timezone.utc)).total_seconds()
+                            if delta > 0:
+                                wait_seconds = delta
+
+                    if wait_seconds is not None and wait_seconds > 0:
+                        bounded_wait = min(wait_seconds, 300.0)
+                        self.logger.warning(f"서버에서 {bounded_wait:.1f}초 대기 요청")
+                        time.sleep(bounded_wait)
+
                 # 응답 텍스트는 requests가 디코딩하므로 기본값 사용
                 return BeautifulSoup(response.text, 'html.parser')
+
+            except requests.exceptions.Timeout as e:
+                last_exception = e
+                self.logger.warning(f"타임아웃 (시도 {attempt + 1}/{max_retries}): {url}")
+
+            except requests.exceptions.HTTPError as e:
+                last_exception = e
+                status_code = e.response.status_code if e.response else 'N/A'
+                self.logger.warning(f"HTTP 오류 {status_code} (시도 {attempt + 1}/{max_retries}): {url}")
+
+                # 4xx 에러는 재시도 무의미
+                if e.response and 400 <= e.response.status_code < 500:
+                    self.logger.error(f"클라이언트 오류 (재시도 중단): {status_code}")
+                    raise CrawlerException(f"HTTP {status_code} 오류: {url}") from e
+
+            except requests.exceptions.ConnectionError as e:
+                last_exception = e
+                self.logger.warning(f"연결 오류 (시도 {attempt + 1}/{max_retries}): {e}")
+
             except requests.exceptions.RequestException as e:
+                last_exception = e
                 self.logger.warning(f"요청 실패 (시도 {attempt + 1}/{max_retries}): {e}")
-                if attempt < max_retries - 1:
-                    time.sleep(2 ** attempt)  # 지수 백오프
-                else:
-                    self.logger.error(f"페이지 가져오기 실패: {url}")
-                    return None
+
+            # 재시도 대기 (지수 백오프, 최대 60초)
+            if attempt < max_retries - 1:
+                backoff = min(2 ** attempt, 60)  # 최대 60초
+                self.logger.info(f"{backoff}초 후 재시도...")
+                time.sleep(backoff)
+
+        # 모든 재시도 실패
+        self.logger.error(f"페이지 가져오기 완전 실패 ({max_retries}회 시도): {url}")
+        raise CrawlerException(f"{max_retries}회 재시도 후 실패: {url}") from last_exception
 
     def parse_list_page(self, soup):
         """
@@ -109,6 +296,47 @@ class ForestBidCrawler:
             # 테이블 행 찾기
             rows = soup.select('table tbody tr')
 
+            table = rows[0].find_parent('table') if rows else None
+            header_map: Dict[str, int] = {}
+
+            if table:
+                header_cells = []
+
+                thead = table.find('thead')
+                if thead:
+                    header_row = thead.find('tr')
+                    if header_row:
+                        header_cells = header_row.find_all('th')
+
+                if not header_cells:
+                    tbody = table.find('tbody')
+                    candidate_row = None
+                    if tbody:
+                        candidate_row = tbody.find('tr')
+                    if not candidate_row:
+                        candidate_row = table.find('tr')
+                    if candidate_row:
+                        header_cells = candidate_row.find_all('th')
+
+                for idx, th in enumerate(header_cells):
+                    header_text = th.get_text(strip=True)
+                    if header_text:
+                        header_map[header_text] = idx
+
+            def _lookup_index(labels: List[str], default: int) -> int:
+                for header_text, idx in header_map.items():
+                    for label in labels:
+                        if label in header_text:
+                            return idx
+                return default
+
+            number_idx = _lookup_index(['번호', 'No', 'NO'], 0)
+            title_idx = _lookup_index(['제목', 'Title'], 1)
+            department_idx = _lookup_index(['부서', '담당', '기관'], 2)
+            date_idx = _lookup_index(['일자', '날짜', '등록'], 3)
+            attachment_idx = _lookup_index(['첨부', '파일'], 4)
+            views_idx = _lookup_index(['조회', 'View'], 5)
+
             for row in rows:
                 try:
                     # 보다 견고하게 td 셀을 직접 가져와 인덱스 접근에 대비
@@ -124,12 +352,15 @@ class ForestBidCrawler:
                     views = 0
                     has_attachment = ''
 
-                    # 번호 후보
-                    if len(cells) >= 1:
+                    def _cell_text(index: int, default: str = 'N/A') -> str:
                         try:
-                            number = cells[0].get_text(strip=True)
+                            if index is not None and index < len(cells):
+                                return cells[index].get_text(strip=True)
                         except Exception:
-                            number = 'N/A'
+                            pass
+                        return default
+
+                    number = _cell_text(number_idx, 'N/A')
 
                     # 제목 및 링크: 테이블 안의 <a> 태그 우선 검색
                     title_a = row.select_one('a')
@@ -137,37 +368,30 @@ class ForestBidCrawler:
                         title = title_a.get_text(strip=True)
                         link = title_a.get('href')
                     else:
-                        # 대체: 두 번째 셀 등에서 제목 추출 시도
-                        if len(cells) >= 2:
-                            title = cells[1].get_text(strip=True)
+                        title = _cell_text(title_idx, 'N/A')
 
                     # 부서: 존재하면 3번째 셀 시도
-                    if len(cells) >= 3:
-                        department = cells[2].get_text(strip=True)
+                    department = _cell_text(department_idx, 'N/A')
 
                     # 날짜: 4번째 셀 시도
-                    if len(cells) >= 4:
-                        date_str = cells[3].get_text(strip=True)
+                    if date_idx is not None and date_idx < len(cells):
+                        date_str = _cell_text(date_idx, '')
                         if date_str:
-                            try:
-                                # 날짜 부분만 추출 (조회수 등이 붙어있을 수 있음)
-                                # 예: "2021-02-242937" → "2021-02-24"
-                                import re
-                                date_match = re.search(r'(\d{4}[-.\s]\d{1,2}[-.\s]\d{1,2})', date_str)
-                                if date_match:
-                                    clean_date_str = date_match.group(1)
-                                    post_date = date_parser.parse(clean_date_str)
-                                    date_str = clean_date_str  # 깨끗한 날짜 문자열로 업데이트
-                                else:
-                                    post_date = date_parser.parse(date_str)
-                            except Exception:
-                                post_date = None
+                            # 날짜 부분만 추출 (조회수 등이 붙어있을 수 있음)
+                            # 예: "2021-02-242937" → "2021-02-24"
+                            date_match = re.search(r'(\d{4}[-.\s]\d{1,2}[-.\s]\d{1,2})', date_str)
+                            if date_match:
+                                clean_date_str = date_match.group(1)
+                                post_date = self._parse_date_safe(clean_date_str)
+                                date_str = clean_date_str  # 깨끗한 날짜 문자열로 업데이트
+                            else:
+                                post_date = self._parse_date_safe(date_str)
 
-                    # 조회수: 마지막쪽 셀 또는 6번째 셀
+                    # 조회수: 지정된 헤더 인덱스를 우선 사용
                     try:
                         views_text = ''
-                        if len(cells) >= 6:
-                            views_text = cells[5].get_text(strip=True)
+                        if views_idx is not None and views_idx < len(cells):
+                            views_text = cells[views_idx].get_text(strip=True)
                         else:
                             # fallback: 검색으로 숫자 포함 텍스트 찾기
                             views_text = row.get_text(' ', strip=True)
@@ -177,10 +401,10 @@ class ForestBidCrawler:
                     except Exception:
                         views = 0
 
-                    # 첨부파일 유무: 5번째 셀의 <img> 또는 파일 아이콘 존재 검사
-                    if len(cells) >= 5:
+                    # 첨부파일 유무: 추정 셀의 <img> 또는 파일 아이콘 존재 검사
+                    if attachment_idx is not None and attachment_idx < len(cells):
                         try:
-                            attach_cell = cells[4]
+                            attach_cell = cells[attachment_idx]
                             if attach_cell.find('img') or attach_cell.find('a'):
                                 has_attachment = 'O'
                         except Exception:
@@ -300,14 +524,25 @@ class ForestBidCrawler:
 
     def crawl(self):
         """메인 크롤링 로직"""
-        print(f"[*] 산림청 입찰정보 크롤링 시작...")
-        print(f"[*] 수집 기간: 최근 {self.days}일 (기준일: {self.cutoff_date.strftime('%Y-%m-%d')})")
+        self.logger.info("=" * 60)
+        self.logger.info("산림청 입찰정보 크롤링 시작")
+        self.logger.info(f"수집 기간: 최근 {self.days}일 (기준일: {self.cutoff_date.strftime('%Y-%m-%d')})")
+        self.logger.info("=" * 60)
 
+        # 체크포인트 확인 및 재개
         page_index = 1
+        if self.checkpoint.can_resume():
+            page_index = self.checkpoint.state['last_page'] + 1
+            self.total_items = self.checkpoint.state['collected_items']
+            self.logger.info(f"⚡ 중단된 크롤링 재개: 페이지 {page_index}부터 시작 (기존 {self.total_items}개 항목)")
+        else:
+            # 새로운 크롤링 시작 - 기존 체크포인트 삭제
+            self.checkpoint.clear()
+
         should_continue = True
 
         while should_continue:
-            print(f"\n[*] 페이지 {page_index} 처리 중...")
+            self.logger.info(f"페이지 {page_index} 처리 중...")
 
             # 리스트 페이지 가져오기
             params = {
@@ -317,17 +552,17 @@ class ForestBidCrawler:
                 'pageUnit': 10
             }
 
-            soup = self.fetch_page(self.LIST_URL, params)
-
-            if not soup:
-                print(f"[!] 페이지 {page_index} 가져오기 실패, 중단")
+            try:
+                soup = self.fetch_page(self.LIST_URL, params)
+            except CrawlerException as e:
+                self.logger.error(f"페이지 {page_index} 가져오기 실패, 크롤링 중단: {e}")
                 break
 
             # 리스트 파싱
             items = self.parse_list_page(soup)
 
             if not items:
-                print(f"[!] 페이지 {page_index}에 항목 없음, 크롤링 종료")
+                self.logger.warning(f"페이지 {page_index}에 항목 없음, 크롤링 종료")
                 break
 
             # 각 항목 처리
@@ -338,28 +573,31 @@ class ForestBidCrawler:
 
                 # 날짜 체크 (공지 제외)
                 if item['post_date'] and item['post_date'] < self.cutoff_date and not is_notice:
-                    print(f"[*] 기준일 이전 게시글 도달 ({item['post_date_str']}), 크롤링 종료")
+                    self.logger.info(f"기준일 이전 게시글 도달 ({item['post_date_str']}), 크롤링 종료")
                     should_continue = False
                     break
 
-                print(f"  [{idx}/10] {item['title'][:50]}...")
+                self.logger.debug(f"[{idx}/10] {item['title'][:50]}...")
 
                 # 상세 페이지 가져오기
                 if item['detail_url']:
                     time.sleep(self.delay)
-                    detail_soup = self.fetch_page(item['detail_url'])
-
-                    if detail_soup:
+                    try:
+                        detail_soup = self.fetch_page(item['detail_url'])
                         detail_data = self.parse_detail_page(detail_soup, item)
                         self.data.append(detail_data)
                         self.total_items += 1
-                    else:
-                        print(f"    [!] 상세 페이지 가져오기 실패")
+                    except CrawlerException as e:
+                        self.logger.warning(f"상세 페이지 가져오기 실패: {item['title'][:30]}... - {e}")
+                        # 기본 정보라도 저장
                         self.data.append(item)
                         self.total_items += 1
                 else:
                     self.data.append(item)
                     self.total_items += 1
+
+            # 체크포인트 저장 (매 페이지마다)
+            self.checkpoint.save(page_index, self.LIST_URL, self.total_items)
 
             # 다음 페이지로
             if should_continue:
@@ -368,9 +606,15 @@ class ForestBidCrawler:
 
             # 중간 저장 (10페이지마다)
             if page_index % 10 == 0:
+                self.logger.info(f"중간 저장 중 (페이지 {page_index})...")
                 self.save_to_excel(f'산림청_입찰정보_중간저장_{page_index}.xlsx')
 
-        print(f"\n[✓] 크롤링 완료: 총 {self.total_items}개 항목 수집")
+        # 크롤링 완료 - 체크포인트 완료 표시
+        self.checkpoint.mark_completed()
+
+        self.logger.info("=" * 60)
+        self.logger.info(f"크롤링 완료: 총 {self.total_items}개 항목 수집")
+        self.logger.info("=" * 60)
 
     def save_to_excel(self, filename=None):
         """
@@ -380,7 +624,7 @@ class ForestBidCrawler:
             filename (str): 출력 파일명
         """
         if not self.data:
-            print("[!] 저장할 데이터가 없습니다.")
+            self.logger.warning("저장할 데이터가 없습니다.")
             return
 
         if not filename:
@@ -408,7 +652,7 @@ class ForestBidCrawler:
         available_columns = [(col, label) for col, label in column_labels if col in df.columns]
 
         if not available_columns:
-            print("[!] 출력 가능한 컬럼이 없습니다.")
+            self.logger.error("출력 가능한 컬럼이 없습니다.")
             return
 
         ordered_cols = [col for col, _ in available_columns]
@@ -420,36 +664,85 @@ class ForestBidCrawler:
 
         # 엑셀 저장
         df.to_excel(filename, index=False, engine='openpyxl')
-        print(f"[✓] 엑셀 파일 저장: {filename}")
+        self.logger.info(f"엑셀 파일 저장 완료: {filename}")
+
+
+def setup_logging(log_level=logging.INFO):
+    """로깅 설정"""
+    # 로그 디렉토리 생성
+    import os
+    os.makedirs('logs', exist_ok=True)
+
+    # 로그 포맷 설정
+    log_format = '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+    date_format = '%Y-%m-%d %H:%M:%S'
+
+    # 루트 로거 설정
+    logging.basicConfig(
+        level=log_level,
+        format=log_format,
+        datefmt=date_format,
+        handlers=[
+            # 파일 핸들러 (모든 로그)
+            logging.FileHandler(
+                f'logs/crawler_{datetime.now().strftime("%Y%m%d")}.log',
+                encoding='utf-8'
+            ),
+            # 콘솔 핸들러 (INFO 이상)
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+
+    # 로거 가져오기
+    logger = logging.getLogger(__name__)
+    return logger
 
 
 def main():
     """실행 진입점"""
-    print("="*60)
-    print("  산림청 입찰정보 크롤러")
-    print("="*60)
+    # 로깅 설정
+    logger = setup_logging(logging.INFO)
 
-    # 크롤러 실행
-    crawler = ForestBidCrawler(
-        days=365,      # 최근 1년
-        delay=1.0,     # 요청 간 1초 대기
-        page_delay=2.0 # 페이지 간 2초 대기
-    )
+    logger.info("=" * 60)
+    logger.info("산림청 입찰정보 크롤러")
+    logger.info("=" * 60)
 
     try:
+        # 크롤러 실행
+        crawler = ForestBidCrawler(
+            days=365,      # 최근 1년
+            delay=1.0,     # 요청 간 1초 대기
+            page_delay=2.0 # 페이지 간 2초 대기
+        )
+
         crawler.crawl()
         crawler.save_to_excel()
-    except KeyboardInterrupt:
-        print("\n\n[!] 사용자에 의해 중단됨")
-        if crawler.data:
-            print("[*] 수집한 데이터 저장 중...")
-            crawler.save_to_excel(f'산림청_입찰정보_중단_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx')
-    except Exception as e:
-        print(f"\n[X] 오류 발생: {e}")
-        import traceback
-        traceback.print_exc()
 
-    print("\n[*] 프로그램 종료")
+    except KeyboardInterrupt:
+        logger.warning("사용자에 의해 중단됨")
+        if 'crawler' in locals() and crawler.data:
+            logger.info("수집한 데이터 저장 중...")
+            crawler.save_to_excel(f'산림청_입찰정보_중단_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx')
+
+    except ValueError as e:
+        # 입력 검증 오류
+        logger.error(f"입력 파라미터 오류: {e}")
+        sys.exit(1)
+
+    except CrawlerException as e:
+        # 크롤러 오류
+        logger.error(f"크롤링 오류: {e}")
+        if 'crawler' in locals() and crawler.data:
+            logger.info("수집된 데이터 저장 중...")
+            crawler.save_to_excel(f'산림청_입찰정보_오류_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx')
+        sys.exit(1)
+
+    except Exception as e:
+        logger.exception(f"예상치 못한 오류: {e}")
+        sys.exit(1)
+
+    logger.info("프로그램 정상 종료")
+    logger.info("=" * 60)
 
 
 if __name__ == '__main__':

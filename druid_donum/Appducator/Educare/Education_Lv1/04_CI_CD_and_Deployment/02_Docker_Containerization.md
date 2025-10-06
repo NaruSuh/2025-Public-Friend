@@ -39,7 +39,11 @@ Create a file named `Dockerfile` in your project root.
 # Builder Stage
 # -----------------
 # Use a specific Python version for reproducibility.
-FROM python:3.10-slim as builder
+# Use a specific, recent Python version for reproducibility.
+FROM python:3.12-slim-bookworm as builder
+
+# Apply security updates to the base image
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
@@ -71,7 +75,7 @@ RUN pip-compile requirements.in -o requirements.txt && \
 # Runner Stage
 # -----------------
 # Use the same base image for the final stage.
-FROM python:3.10-slim
+FROM python:3.12-slim-bookworm
 
 # Set the working directory
 WORKDIR /app

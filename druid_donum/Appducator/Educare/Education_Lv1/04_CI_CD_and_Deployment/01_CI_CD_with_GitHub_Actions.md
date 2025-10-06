@@ -51,12 +51,9 @@ on:
 
 jobs:
   # This job handles linting and formatting checks
-  lint:
-    name: Lint & Format Check
-    runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -79,14 +76,9 @@ jobs:
     name: Test Suite
     runs-on: ubuntu-latest
     needs: lint # This job will only start after the 'lint' job succeeds
-    strategy:
-      matrix:
-        # Run tests on multiple Python versions
-        python-version: ['3.10', '3.11']
-
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -123,7 +115,7 @@ jobs:
     
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Example: Deploying to a service like Google Cloud Run
       - name: 'Authenticate to Google Cloud'

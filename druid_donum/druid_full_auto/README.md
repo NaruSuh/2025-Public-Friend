@@ -2,14 +2,30 @@
 
 산림청 웹사이트의 입찰공고 정보를 자동으로 수집하여 엑셀/CSV 파일로 저장하는 프로그램입니다.
 
+**Version**: 1.1.1 | **Status**: Production Hardening 90% Complete | **Test Coverage**: ~42%
+
 ## ✨ 주요 기능
 
-- 🔍 **연도별 수집 기간 설정** - 1년부터 10년까지 선택 가능
+### 핵심 기능
+- 🔍 **연도별 수집 기간 설정** - 1년부터 10년까지 선택 가능 (검증됨)
 - 📥 **다중 파일 포맷** - Excel (.xlsx), CSV (.csv) 지원
-- 📋 **실시간 로그 추적** - 크롤링 과정 상세 로그 제공
+- 📋 **구조화된 로깅** - 파일 + 콘솔 이중 로깅, 일별 로그 파일
 - 💾 **로그 다운로드** - 마크다운(.md) 형식으로 저장 가능
 - ⚡ **원터치 자동화** - 크롤링부터 파일 생성까지 한 번에
 - 🎨 **웹 기반 UI** - 직관적인 Streamlit 인터페이스
+
+### 🆕 v1.1.1 신규 기능 (2025-10-06)
+- ✅ **ParserFactory 스모크 테스트**: 동적 플러그인 로딩 회귀를 방지하는 테스트 추가
+- ✅ **스트림릿 히스토리 영속화**: `logs/crawl_history.md`에 최신 수집 결과를 Markdown으로 자동 기록
+- ✅ **락 재진입 제거**: JSON read-modify-write가 중첩 타임아웃 없이 실행되도록 개선
+
+### v1.1.0 (2025-10-06)
+- ✅ **입력 검증** - 최대 10년 범위, 최소 딜레이 강제
+- ✅ **체크포인트/재개** - 중단 시 자동 재개 (JSON 기반)
+- ✅ **안전한 날짜 파싱** - 타임존 처리 및 범위 검증
+- ✅ **고급 에러 핸들링** - Rate-limit 헤더 인식, 지수 백오프 캡 (60초)
+- ✅ **27개 유닛 테스트** - 핵심 기능 테스트 커버리지 ~40%
+- ✅ **커스텀 예외** - `CrawlerException`, `ParsingException`
 
 ## 🎯 사용 방법
 
@@ -44,17 +60,37 @@ streamlit run app.py
 python3 main.py
 ```
 
-## 프로젝트 구조 (3-Files System)
+## 프로젝트 구조
 
 ```
-2025 Druid Full-auto Firing/
-├── prompt.md          # 프로젝트 명세 및 요구사항
-├── plan.md           # 구현 계획 및 아키텍처
-├── main.py           # 크롤러 엔진
-├── app.py            # Streamlit 웹 앱
-├── requirements.txt  # 의존성 라이브러리
-├── DEPLOY.md         # 배포 가이드
-└── README.md         # 사용 설명서 (본 문서)
+druid_full_auto/
+├── main.py                    # 크롤러 엔진 (체크포인트, 로깅 포함)
+├── app.py                     # Streamlit 웹 앱
+├── requirements.txt           # 프로덕션 의존성
+├── requirements-dev.txt       # 개발/테스트 의존성 (NEW)
+│
+├── tests/                     # 테스트 (NEW)
+│   ├── unit/
+│   │   ├── test_crawler.py         # 크롤러 테스트 (18 tests)
+│   │   ├── test_parsing.py         # 파싱 테스트 (9 tests)
+│   │   └── test_parser_factory.py  # ParserFactory 스모크 테스트 (1 test)
+│   └── README.md              # 테스트 가이드
+│
+├── src/core/                  # 코어 추상화 (v2.0 준비)
+│   ├── base_crawler.py
+│   └── parser_factory.py
+│
+├── logs/                      # 일별 로그 + crawl_history.md (자동 생성)
+├── crawl_checkpoint.json      # 체크포인트 (자동 생성)
+│
+├── docs/
+│   ├── README.md              # 이 파일
+│   ├── ARCHITECTURE.md        # v2.0 설계
+│   ├── CHANGELOG.md           # 변경 이력 (NEW)
+│   ├── 2nd_Audit_Report.md    # 감사 보고서 (NEW)
+│   ├── CURRENT_STATUS.md      # 프로젝트 현황
+│   └── ...
+└── .llm/                      # LLM 협업 인프라
 ```
 
 ## 설치 방법
@@ -70,15 +106,39 @@ source .venv/bin/activate
 
 ### 2. 의존성 설치
 
+#### 프로덕션 사용
 ```bash
 pip install -r requirements.txt
 ```
 
+#### 개발/테스트 (권장)
+```bash
+pip install -r requirements-dev.txt
+```
+
 또는 개별 설치:
+```bash
+# 프로덕션
+pip install requests beautifulsoup4 pandas openpyxl lxml streamlit python-dateutil
+
+# 개발 (추가)
+pip install pytest pytest-cov pytest-mock black ruff mypy pre-commit
+```
+
+### 3. 테스트 실행 (선택)
 
 ```bash
-pip install requests beautifulsoup4 pandas openpyxl lxml streamlit
+# 모든 테스트 실행
+pytest
+
+# 커버리지 포함
+pytest --cov=. --cov-report=html
+
+# 특정 테스트만
+pytest tests/unit/test_crawler.py -v
 ```
+
+자세한 내용은 [tests/README.md](tests/README.md) 참조
 
 ## CLI 사용 방법
 
@@ -115,11 +175,26 @@ python3 main.py
 [✓] 엑셀 파일 저장: 산림청_입찰정보_20241004_153022.xlsx
 ```
 
-### 중단 및 재개
+### 🆕 중단 및 재개 (v1.1.0)
 
 - **Ctrl+C**로 중단 가능
-- 중단 시 수집된 데이터는 자동으로 저장됩니다
+- 중단 시 수집된 데이터는 자동으로 저장됩니다 (`*_중단_*.xlsx`)
 - 매 10페이지마다 중간 저장 파일이 생성됩니다
+- **자동 재개**: 다음 실행 시 중단된 지점부터 자동으로 계속됩니다
+  - 체크포인트 파일: `crawl_checkpoint.json`
+  - 재개 시 메시지 표시: `⚡ 중단된 크롤링 재개: 페이지 X부터 시작`
+
+### 🆕 로그 확인 (v1.1.0)
+
+로그 파일 위치: `logs/crawler_YYYYMMDD.log`
+
+```bash
+# 오늘 로그 보기
+tail -f logs/crawler_20251006.log
+
+# 에러만 필터링
+grep ERROR logs/crawler_20251006.log
+```
 
 ## 📊 출력 파일 형식
 
@@ -161,14 +236,23 @@ crawler = ForestBidCrawler(
 
 ## ⚠️ 주의사항
 
+### 기술적 제약
 1. **서버 부하 최소화**: 기본 딜레이 설정(요청 1초, 페이지 2초) 유지 권장
+   - 🆕 **최소값 강제**: 요청 0.5초, 페이지 1.0초 이하 설정 불가
 2. **네트워크 안정성**: 안정적인 인터넷 연결 필수
-3. **장시간 실행**: 수집 기간에 따라 수 분~수십 분 소요
+   - 🆕 **자동 재시도**: 네트워크 오류 시 최대 3회 재시도 (지수 백오프, 최대 60초)
+3. **수집 기간 제한**:
+   - 🆕 **최대 10년**: 그 이상 설정 시 `ValueError` 발생
+4. **장시간 실행**: 수집 기간에 따라 수 분~수십 분 소요
    - 1년: 약 5~10분
    - 5년: 약 30~60분
    - 10년: 약 1~2시간
-4. **법적 준수**: 공개된 정보만 수집, 연구 목적으로만 사용
-5. **파일 다운로드**: 브라우저 기본 다운로드 폴더에 저장됨 (~/Downloads)
+   - 🆕 **중단 후 재개 가능**: Ctrl+C로 중단 후 재실행 시 자동 계속
+
+### 법적 준수
+5. **공개 정보만 수집**: 산림청 공개 입찰 공고만 대상
+6. **연구/학술 목적**: 상업적 이용 금지
+7. **파일 다운로드**: 브라우저 기본 다운로드 폴더에 저장됨 (~/Downloads)
 
 ## 🚀 배포 방법
 
