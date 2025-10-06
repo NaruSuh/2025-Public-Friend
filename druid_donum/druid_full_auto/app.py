@@ -12,6 +12,8 @@ import os
 from io import BytesIO
 import logging
 import traceback
+import threading
+from pathlib import Path
 
 # main.py 강제 reload (코드 변경 반영)
 import sys
@@ -22,6 +24,100 @@ from main import ForestBidCrawler
 
 APP_VERSION = "Ver 1.1.02"
 
+
+_session_lock = threading.RLock()
+_history_file_lock = threading.Lock()
+LOG_DIR = Path("logs")
+HISTORY_LOG_PATH = LOG_DIR / "crawl_history.md"
+
+
+def _init_session_state() -> None:
+    """Ensure required session keys exist."""
+    with _session_lock:
+        st.session_state.setdefault("crawl_logs", [])
+        st.session_state.setdefault("crawl_data", None)
+        st.session_state.setdefault("crawl_completed", False)
+        st.session_state.setdefault("crawl_history", [])
+
+
+def _read_session_state(key: str, default_factory):
+    """Thread-safe getter that returns a copy for mutable types."""
+    with _session_lock:
+        if key not in st.session_state:
+            st.session_state[key] = default_factory() if callable(default_factory) else default_factory
+        value = st.session_state[key]
+        if isinstance(value, list):
+            return list(value)
+        if isinstance(value, dict):
+            return dict(value)
+        return value
+
+
+def _update_session_state(key: str, updater, default_factory):
+    """Apply an updater function atomically to a session key."""
+    with _session_lock:
+        current = st.session_state.get(key)
+        if current is None:
+            current = default_factory() if callable(default_factory) else default_factory
+        new_value = updater(current)
+        st.session_state[key] = new_value
+        return new_value
+
+
+def _set_session_values(**kwargs) -> None:
+    """Atomically set multiple session values."""
+    with _session_lock:
+        for key, value in kwargs.items():
+            st.session_state[key] = value
+
+
+def _append_history(entry: dict, max_entries: int = 5) -> None:
+    """Append a history item while bounding list length."""
+
+    def _updater(items):
+        new_items = list(items)
+        new_items.append(entry)
+        if len(new_items) > max_entries:
+            new_items = new_items[-max_entries:]
+        return new_items
+
+    _update_session_state("crawl_history", _updater, list)
+    _append_history_log(entry)
+
+
+def _append_history_log(entry: dict) -> None:
+    """Persist crawl history entries to Markdown for long-term analysis."""
+
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = entry.get("timestamp", datetime.now().strftime("%Y-%m-%d_%H-%M-%S")).replace('_', ' ')
+    period = entry.get("period", "기간 정보 없음")
+    total_items = entry.get("total_items", 0)
+
+    lines = [
+        f"### {timestamp}",
+        f"- 기간: {period}",
+        f"- 수집 항목: {total_items}개",
+    ]
+
+    df = entry.get("data")
+    if hasattr(df, "head"):
+        try:
+            preview = df.head(3)
+            if not preview.empty:
+                sample_titles = preview.get('제목') or preview.get('title')
+                if sample_titles is not None:
+                    titles = [str(title) for title in sample_titles.tolist() if str(title).strip()]
+                    if titles:
+                        lines.append(f"- 대표 제목: {', '.join(titles[:3])}")
+        except Exception:
+            pass
+
+    lines.append("")
+
+    with _history_file_lock:
+        with HISTORY_LOG_PATH.open("a", encoding="utf-8") as fp:
+            fp.write("\n".join(lines) + "\n")
+
 # 페이지 설정
 st.set_page_config(
     page_title="산림청 입찰정보 크롤러",
@@ -29,20 +125,19 @@ st.set_page_config(
     layout="wide"
 )
 
-# 세션 상태 초기화 (가장 먼저!)
-if 'crawl_logs' not in st.session_state:
-    st.session_state.crawl_logs = []
-if 'crawl_data' not in st.session_state:
-    st.session_state.crawl_data = None
-if 'crawl_completed' not in st.session_state:
-    st.session_state.crawl_completed = False
-if 'crawl_history' not in st.session_state:
-    st.session_state.crawl_history = []  # 완료된 크롤링 히스토리
+_init_session_state()
 
 # 로그 추가 함수
 def add_log(message, log_type="INFO"):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    st.session_state.crawl_logs.append(f"[{timestamp}] [{log_type}] {message}")
+    entry = f"[{timestamp}] [{log_type}] {message}"
+
+    def _append(logs):
+        new_logs = list(logs)
+        new_logs.append(entry)
+        return new_logs
+
+    _update_session_state("crawl_logs", _append, list)
 
 # Excel 데이터 생성 함수 (캐싱)
 def df_to_excel_bytes(df: pd.DataFrame) -> bytes:
@@ -117,7 +212,7 @@ page_delay = st.sidebar.slider(
 # 사이드바: 캐시된 파일 드롭다운
 st.sidebar.subheader("📁 지금까지 캐시된 파일")
 
-history_items = list(reversed(st.session_state.crawl_history))
+history_items = list(reversed(_read_session_state("crawl_history", list)))
 history_labels = ["선택하세요"]
 history_map = {}
 
@@ -126,8 +221,10 @@ for item in history_items:
     history_labels.append(label)
     history_map[label] = item
 
-if 'selected_history_label' not in st.session_state or st.session_state.selected_history_label not in history_labels:
-    st.session_state.selected_history_label = history_labels[0]
+with _session_lock:
+    selected_label = st.session_state.get("selected_history_label")
+    if selected_label not in history_labels:
+        st.session_state["selected_history_label"] = history_labels[0]
 
 selected_history_label = st.sidebar.selectbox(
     "지금까지 캐시된 파일",
@@ -176,11 +273,11 @@ else:
             st.error(f"CSV 생성 실패: {e}")
 
 # 사이드바 하단: 크롤링 히스토리
-if st.session_state.crawl_history:
+if history_items:
     st.sidebar.markdown("---")
     st.sidebar.subheader("📂 이전 크롤링 결과")
 
-    for idx, item in enumerate(reversed(st.session_state.crawl_history)):
+    for idx, item in enumerate(history_items):
         # timestamp를 unique key로 사용
         unique_key = item['timestamp'].replace(':', '').replace(' ', '').replace('-', '')
 
@@ -321,6 +418,11 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
 
             # 각 항목 처리
             item_status = []
+
+            def _push_status(entry: dict) -> None:
+                item_status.append(entry)
+                all_item_status.append(entry)
+
             for idx, item in enumerate(items, 1):
                 # 상단 고정 공지는 번호가 비거나 '공지' 표기로 나타나므로 건너뛴다.
                 number_text = str(item.get('number', '')).strip()
@@ -328,7 +430,7 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
 
                 # 공지글은 건너뛰기
                 if is_notice:
-                    item_status.append({
+                    _push_status({
                         '번호': number_text,
                         '제목': item.get('title', '')[:40],
                         '날짜': item.get('post_date_str', ''),
@@ -339,7 +441,7 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                 # 날짜가 없는 항목은 건너뛰기
                 if not item['post_date']:
                     add_log(f"날짜 정보 없는 게시글 건너뜀: {item['title'][:30]}...", "WARNING")
-                    item_status.append({
+                    _push_status({
                         '번호': number_text,
                         '제목': item.get('title', '')[:40],
                         '날짜': item.get('post_date_str', ''),
@@ -354,7 +456,7 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                 # start_date보다 이전 게시글이면 크롤링 종료
                 if item['post_date'] < start_datetime:
                     add_log(f"시작일({start_date}) 이전 게시글 도달 ({item['post_date_str']}) - 크롤링 종료", "INFO")
-                    item_status.append({
+                    _push_status({
                         '번호': number_text,
                         '제목': item.get('title', '')[:40],
                         '날짜': item.get('post_date_str', ''),
@@ -366,7 +468,7 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                 # end_date보다 이후 게시글이면 건너뛰기 (아직 수집 범위 아님)
                 if item['post_date'] > end_datetime:
                     add_log(f"종료일({end_date}) 이후 게시글 건너뜀: {item['post_date_str']}")
-                    item_status.append({
+                    _push_status({
                         '번호': number_text,
                         '제목': item.get('title', '')[:40],
                         '날짜': item.get('post_date_str', ''),
@@ -385,7 +487,7 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                         crawler.total_items += 1
                         add_log(f"항목 수집 완료: {item['title'][:30]}...")
                         info_text.text(f"✅ {page_index}페이지 {idx}/10 처리 완료: {item['title'][:30]}...")
-                        item_status.append({
+                        _push_status({
                             '번호': number_text,
                             '제목': item.get('title', '')[:40],
                             '날짜': item.get('post_date_str', ''),
@@ -396,7 +498,7 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                         crawler.data.append(item)
                         crawler.total_items += 1
                         info_text.text(f"⚠️ 상세 페이지 실패: {item['title'][:30]}...")
-                        item_status.append({
+                        _push_status({
                             '번호': number_text,
                             '제목': item.get('title', '')[:40],
                             '날짜': item.get('post_date_str', ''),
@@ -406,16 +508,12 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                     crawler.data.append(item)
                     crawler.total_items += 1
                     info_text.text(f"ℹ️ 상세 페이지 링크 없음: {item['title'][:30]}...")
-                    item_status.append({
+                    _push_status({
                         '번호': number_text,
                         '제목': item.get('title', '')[:40],
                         '날짜': item.get('post_date_str', ''),
                         '상태': 'ℹ️ 링크 없음'
                     })
-
-                # 누적 상태 추가
-                if item_status:
-                    all_item_status.extend(item_status)
 
             # 실시간 테이블 업데이트 (최근 100개만 표시)
             if all_item_status:
@@ -505,8 +603,7 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
             ][:len(columns)]
 
             # 세션에 데이터 저장
-            st.session_state.crawl_data = df
-            st.session_state.crawl_completed = True
+            _set_session_values(crawl_data=df, crawl_completed=True)
 
             # 히스토리에 추가 (최대 5개까지만 유지)
             history_item = {
@@ -515,11 +612,7 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                 'total_items': len(df),
                 'period': period_str
             }
-            st.session_state.crawl_history.append(history_item)
-
-            # 최대 5개까지만 유지 (메모리 절약)
-            if len(st.session_state.crawl_history) > 5:
-                st.session_state.crawl_history.pop(0)  # 가장 오래된 것 제거
+            _append_history(history_item)
 
             # 결과 표시
             st.markdown("---")
@@ -569,9 +662,7 @@ with col_btn2:
 # 크롤링 시작 버튼
 if start_crawl:
     # 초기화
-    st.session_state.crawl_logs = []
-    st.session_state.crawl_data = None
-    st.session_state.crawl_completed = False
+    _set_session_values(crawl_logs=[], crawl_data=None, crawl_completed=False)
 
     # 크롤링 실행
     run_crawling(start_date, end_date, days, delay, page_delay)
@@ -579,19 +670,20 @@ if start_crawl:
 # "크롤링 및 완료시 엑셀파일 작성" 버튼 기능
 if export_data:
     # 초기화
-    st.session_state.crawl_logs = []
-    st.session_state.crawl_data = None
-    st.session_state.crawl_completed = False
+    _set_session_values(crawl_logs=[], crawl_data=None, crawl_completed=False)
 
     # 크롤링 실행
     run_crawling(start_date, end_date, days, delay, page_delay)
 
 # 크롤링 완료 후 다운로드 섹션 (두 버튼 모두에서 사용 가능)
-if st.session_state.crawl_completed and st.session_state.crawl_data is not None:
+session_crawl_completed = _read_session_state("crawl_completed", lambda: False)
+session_crawl_data = _read_session_state("crawl_data", lambda: None)
+
+if session_crawl_completed and session_crawl_data is not None:
     st.markdown("---")
     st.subheader("📥 데이터 다운로드")
 
-    df = st.session_state.crawl_data
+    df = session_crawl_data
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     col1, col2 = st.columns(2)
 
@@ -626,7 +718,8 @@ if st.session_state.crawl_completed and st.session_state.crawl_data is not None:
             st.error(f"CSV 생성 실패: {e}")
 
 # 로그 뷰어 (좌측 하단)
-if st.session_state.crawl_logs and len(st.session_state.crawl_logs) > 0:
+session_logs = _read_session_state("crawl_logs", list)
+if session_logs:
     st.markdown("---")
 
     log_col1, log_col2 = st.columns([3, 1])
@@ -639,7 +732,7 @@ if st.session_state.crawl_logs and len(st.session_state.crawl_logs) > 0:
         log_content = "# 산림청 입찰정보 크롤링 로그\n\n"
         log_content += f"생성일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
         log_content += "## 로그 내역\n\n"
-        log_content += "\n".join(st.session_state.crawl_logs)
+        log_content += "\n".join(session_logs)
 
         st.download_button(
             label="📥 로그 다운로드 (.md)",
@@ -651,7 +744,7 @@ if st.session_state.crawl_logs and len(st.session_state.crawl_logs) > 0:
 
     # 로그 표시 (확장 가능한 형태)
     with st.expander("로그 보기", expanded=False):
-        log_text = "\n".join(st.session_state.crawl_logs)
+        log_text = "\n".join(session_logs)
         st.text_area(
             "로그 내용",
             value=log_text,
