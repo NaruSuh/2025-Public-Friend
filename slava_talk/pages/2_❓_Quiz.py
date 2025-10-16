@@ -119,7 +119,7 @@ with st.sidebar:
 
     if st.button("Reset progress"):
         reset_quiz_state()
-        st.experimental_rerun()
+        st.rerun()
 
 if QUESTION_MODES[question_mode]["type"] == "text":
     n_options = 0
@@ -211,12 +211,12 @@ col_next, col_skip = st.columns([1, 1])
 with col_next:
     if st.button("Next ▶️"):
         generate_new_question(st.session_state.quiz_mode, max(n_options, 3) if n_options else 0)
-        st.experimental_rerun()
+        st.rerun()
 
 with col_skip:
     if st.button("Skip ❌"):
         generate_new_question(st.session_state.quiz_mode, max(n_options, 3) if n_options else 0)
-        st.experimental_rerun()
+        st.rerun()
 
 st.markdown("---")
 

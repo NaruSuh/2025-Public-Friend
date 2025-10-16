@@ -32,7 +32,7 @@ with st.sidebar:
 
     if st.button("Start fresh"):
         reset_dialogue()
-        st.experimental_rerun()
+        st.rerun()
 
 if auto_reset and (st.session_state.get("tutor_system") != scenario):
     reset_dialogue()
@@ -77,7 +77,7 @@ if user_input:
         st.error(f"AI tutor error: {exc}")
     else:
         st.session_state.tutor_history.append({"role": "assistant", "content": reply})
-    st.experimental_rerun()
+    st.rerun()
 
 st.markdown("---")
 st.caption("Tip: Copy useful turns into your YAML deck or trigger the Vocabulary Builder for deeper dives.")
