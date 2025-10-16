@@ -55,14 +55,13 @@ def generate_new_question(question_mode: str, n_options: int):
 
     if QUESTION_MODES[question_mode]["type"] == "mc":
         options = [vocab_entry]
-        attempts = 0
-        while len(options) < min(len(pool), n_options):
-            candidate = random.choice(pool)
-            if candidate not in options:
-                options.append(candidate)
-            attempts += 1
-            if attempts > 50:
-                break
+        # Use random.sample to efficiently get unique incorrect options
+        incorrect_pool = [item for item in pool if item != vocab_entry]
+        num_options_to_get = min(len(incorrect_pool), n_options - 1)
+        
+        if num_options_to_get > 0:
+            options.extend(random.sample(incorrect_pool, num_options_to_get))
+
         random.shuffle(options)
         st.session_state.quiz_options = options
     else:

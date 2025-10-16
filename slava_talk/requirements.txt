@@ -5,3 +5,4 @@ requests
 beautifulsoup4
 PyYAML
 python-dotenv>=1.0.1
+spacy>=3.7.0

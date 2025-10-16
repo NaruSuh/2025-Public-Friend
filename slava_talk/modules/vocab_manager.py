@@ -1,9 +1,15 @@
 import json
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
 import yaml
+
+try:
+    import streamlit as st  # type: ignore
+except ImportError:  # pragma: no cover - CLI usage
+    st = None
 
 VOCAB_FILE = Path(__file__).resolve().parent.parent / "data" / "vocabulary.json"
 
@@ -53,13 +59,18 @@ def normalize_entry(entry: Dict) -> Dict:
     return normalized
 
 
-def load_vocab() -> List[Dict]:
-    """Load vocabulary from the JSON file, returning an empty list on failure."""
+def _read_vocab() -> List[Dict]:
+    """Read vocabulary entries from disk without caching."""
     if not VOCAB_FILE.exists():
         return []
 
     try:
-        data = json.loads(VOCAB_FILE.read_text(encoding="utf-8"))
+        raw_text = VOCAB_FILE.read_text(encoding="utf-8")
+    except OSError:
+        return []
+
+    try:
+        data = json.loads(raw_text)
     except json.JSONDecodeError:
         return []
 
@@ -69,10 +80,46 @@ def load_vocab() -> List[Dict]:
     return [normalize_entry(item) for item in data]
 
 
+def _clear_cached_vocab() -> None:
+    """Clear any cached vocabulary state."""
+    clear_fn = getattr(load_vocab, "clear", None)
+    if callable(clear_fn):
+        clear_fn()
+        return
+    cache_clear_fn = getattr(load_vocab, "cache_clear", None)
+    if callable(cache_clear_fn):
+        cache_clear_fn()
+        return
+    cached_fn = globals().get("_load_vocab_cached")
+    cache_clear_fn = getattr(cached_fn, "cache_clear", None)
+    if callable(cache_clear_fn):
+        cache_clear_fn()
+
+
+if st:
+
+    @st.cache_data(show_spinner=False)  # type: ignore[arg-type]
+    def load_vocab() -> List[Dict]:
+        """Load vocabulary, cached within a Streamlit session."""
+        return _read_vocab()
+
+else:
+
+    @lru_cache(maxsize=1)
+    def _load_vocab_cached() -> Tuple[Dict, ...]:
+        return tuple(_read_vocab())
+
+    def load_vocab() -> List[Dict]:
+        """Load vocabulary with simple process-wide caching."""
+        return list(_load_vocab_cached())
+
+
 def save_vocab(entries: Iterable[Dict]) -> None:
     """Persist vocabulary entries back to the JSON file."""
     normalized = [normalize_entry(item) for item in entries]
+    VOCAB_FILE.parent.mkdir(parents=True, exist_ok=True)
     VOCAB_FILE.write_text(json.dumps(normalized, ensure_ascii=False, indent=2), encoding="utf-8")
+    _clear_cached_vocab()
 
 
 def merge_vocab(
