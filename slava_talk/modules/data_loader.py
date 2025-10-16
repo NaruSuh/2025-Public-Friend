@@ -1,21 +1,24 @@
-import json
-import os
+"""
+Backwards compatible re-export of vocabulary helpers.
+Prefer importing directly from `modules.vocab_manager`.
+"""
 
-# Get the absolute path of the directory where this script is located
-_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-# Construct the absolute path to the vocabulary.json file
-VOCAB_FILE = os.path.join(_CURRENT_DIR, '..', 'data', 'vocabulary.json')
+from .vocab_manager import (
+    export_to_yaml,
+    filter_vocab,
+    load_vocab,
+    merge_vocab,
+    normalize_entry,
+    parse_yaml,
+    save_vocab,
+)
 
-def load_vocab():
-    """
-    Loads vocabulary from the JSON file.
-
-    Returns:
-        list: A list of vocabulary dictionaries.
-        Returns an empty list if the file is not found or is invalid.
-    """
-    try:
-        with open(VOCAB_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
+__all__ = [
+    "export_to_yaml",
+    "filter_vocab",
+    "load_vocab",
+    "merge_vocab",
+    "normalize_entry",
+    "parse_yaml",
+    "save_vocab",
+]
