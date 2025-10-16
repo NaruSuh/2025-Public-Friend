@@ -248,6 +248,97 @@ def generate_lesson_scaffolding(
         raise AIClientError("Lesson scaffold response was not valid JSON.") from exc
 
 
+def translate_vocab_entries(entries: List[Dict], *, model: str = DEFAULT_MODEL) -> List[Dict]:
+    """Translate Ukrainian terms and sample sentences into English and Korean."""
+    if not entries:
+        return []
+
+    client = _get_client()
+    schema = _create_json_schema(
+        "translation_batch",
+        properties={
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {"type": "integer"},
+                        "ukrainian": {"type": "string"},
+                        "english": {"type": "string"},
+                        "korean": {"type": "string"},
+                        "example_sentence_eng": {"type": "string"},
+                        "notes": {"type": "string"},
+                    },
+                    "required": ["index", "ukrainian"],
+                    "additionalProperties": True,
+                },
+            }
+        },
+        required=["items"],
+    )
+
+    instruction = (
+        "You are a bilingual translator specialising in Ukrainian operational vocabulary. "
+        "For each entry, supply concise English and Korean translations and translate the sample sentence into English. "
+        "Keep terminology precise for diplomacy/defense/trade contexts."
+    )
+
+    payload = {
+        "items": [
+            {
+                "index": idx,
+                "ukrainian": entry.get("ukrainian", ""),
+                "context_sentence": entry.get("example_sentence_ukr", ""),
+                "existing_english": entry.get("english", ""),
+                "existing_korean": entry.get("korean", ""),
+            }
+            for idx, entry in enumerate(entries)
+        ]
+    }
+
+    try:
+        response = client.responses.create(
+            model=model,
+            input=[
+                {"role": "system", "content": [_as_input_block(instruction)]},
+                {
+                    "role": "user",
+                    "content": [_as_input_block(json.dumps(payload, ensure_ascii=False))],
+                },
+            ],
+            response_format=schema,
+        )
+    except Exception as exc:  # pragma: no cover
+        raise AIClientError(f"Translation request failed: {exc}") from exc
+
+    try:
+        translation_payload = json.loads(response.output_text)
+    except (json.JSONDecodeError, AttributeError) as exc:
+        raise AIClientError("Translation response could not be parsed as JSON.") from exc
+
+    lookup = {
+        item.get("index"): item for item in translation_payload.get("items", []) if isinstance(item, dict)
+    }
+
+    enriched: List[Dict] = []
+    for idx, entry in enumerate(entries):
+        enriched_entry = dict(entry)
+        data = lookup.get(idx)
+        if data:
+            enriched_entry["english"] = data.get("english", enriched_entry.get("english", ""))
+            enriched_entry["korean"] = data.get("korean", enriched_entry.get("korean", ""))
+            enriched_entry["example_sentence_eng"] = data.get(
+                "example_sentence_eng", enriched_entry.get("example_sentence_eng", "")
+            )
+            notes = data.get("notes")
+            if notes:
+                existing = enriched_entry.get("notes", "")
+                enriched_entry["notes"] = f"{existing}\n{notes}".strip() if existing else notes
+        enriched.append(enriched_entry)
+
+    return enriched
+
+
 def request_tutor_reply(
     dialogue_history: List[Dict[str, str]],
     *,
