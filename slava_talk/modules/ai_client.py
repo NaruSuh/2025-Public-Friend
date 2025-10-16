@@ -24,7 +24,15 @@ def _resolve_api_key() -> str:
     key: Optional[str] = None
 
     if st and hasattr(st, "secrets"):
+        # Support both top-level and [openai] section in Streamlit secrets
         key = st.secrets.get("OPENAI_API_KEY")  # type: ignore[attr-defined]
+        if not key:
+            try:
+                section = st.secrets.get("openai")  # type: ignore[attr-defined]
+                if isinstance(section, dict):
+                    key = section.get("api_key")
+            except Exception:
+                pass
 
     if not key:
         key = os.getenv("OPENAI_API_KEY")
@@ -41,6 +49,30 @@ def _resolve_api_key() -> str:
 def _get_client() -> OpenAI:
     """Return a cached OpenAI client instance."""
     return OpenAI(api_key=_resolve_api_key())
+
+
+def _coerce_to_text(value: object) -> str:
+    """Best-effort conversion of mixed content payloads into plain text."""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        text_value = value.get("text") if isinstance(value.get("text"), str) else None  # type: ignore[arg-type]
+        if text_value:
+            return text_value
+        # Recursively flatten nested content blocks if present
+        return _coerce_to_text(list(value.values()))
+    if isinstance(value, (list, tuple, set)):
+        parts = [_coerce_to_text(item) for item in value]
+        return "\n\n".join(part for part in parts if part)
+    if value is None:
+        return ""
+    return str(value)
+
+
+def _as_input_block(content: object) -> Dict[str, str]:
+    """Create a compliant Responses API content block."""
+    text = _coerce_to_text(content).strip()
+    return {"type": "input_text", "text": text}
 
 
 def _create_json_schema(schema_name: str, properties: Dict, required: Optional[List[str]] = None) -> Dict:
@@ -132,11 +164,11 @@ def generate_vocab_from_context(
             input=[
                 {
                     "role": "system",
-                    "content": [{"type": "text", "text": instruction}],
+                    "content": [_as_input_block(instruction)],
                 },
                 {
                     "role": "user",
-                    "content": [{"type": "text", "text": user_prompt}],
+                    "content": [_as_input_block(user_prompt)],
                 },
             ],
             response_format=schema,
@@ -202,8 +234,8 @@ def generate_lesson_scaffolding(
         response = client.responses.create(
             model=model,
             input=[
-                {"role": "system", "content": [{"type": "text", "text": prompt}]},
-                {"role": "user", "content": [{"type": "text", "text": user_prompt}]},
+                {"role": "system", "content": [_as_input_block(prompt)]},
+                {"role": "user", "content": [_as_input_block(user_prompt)]},
             ],
             response_format=schema,
         )
@@ -242,20 +274,20 @@ def request_tutor_reply(
     )
 
     messages = [
-        {"role": "system", "content": [{"type": "text", "text": system_message}]},
-        {"role": "user", "content": [{"type": "text", "text": scenario_context}]},
+        {"role": "system", "content": [_as_input_block(system_message)]},
+        {"role": "user", "content": [_as_input_block(scenario_context)]},
     ]
 
     for turn in dialogue_history:
         messages.append(
             {
                 "role": turn.get("role", "user"),
-                "content": [{"type": "text", "text": turn.get("content", "")}],
+                "content": [_as_input_block(turn.get("content", ""))],
             }
         )
 
     try:
-            response = client.responses.create(model=model, input=messages)
+        response = client.responses.create(model=model, input=messages)
     except Exception as exc:  # pragma: no cover
         raise AIClientError(f"Chat tutor failed: {exc}") from exc
 
@@ -290,8 +322,8 @@ def generate_quiz_feedback(
         response = client.responses.create(
             model=model,
             input=[
-                {"role": "system", "content": [{"type": "text", "text": system_message}]},
-                {"role": "user", "content": [{"type": "text", "text": user_prompt}]},
+                {"role": "system", "content": [_as_input_block(system_message)]},
+                {"role": "user", "content": [_as_input_block(user_prompt)]},
             ],
         )
     except Exception as exc:  # pragma: no cover
