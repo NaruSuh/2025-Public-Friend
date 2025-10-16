@@ -1,0 +1,5 @@
+streamlit>=1.36
+markdown>=3.5
+beautifulsoup4>=4.12
+bleach>=6.1
+filelock>=3.13
