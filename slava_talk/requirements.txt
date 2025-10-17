@@ -1,4 +1,5 @@
 streamlit
+streamlit-shortcuts>=1.2.1
 PyMuPDF
 openai>=1.40.0
 requests
@@ -6,3 +7,4 @@ beautifulsoup4
 PyYAML
 python-dotenv>=1.0.1
 spacy>=3.7.0
+gtts>=2.3.0

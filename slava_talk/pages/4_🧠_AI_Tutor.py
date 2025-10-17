@@ -1,8 +1,10 @@
 import streamlit as st
 
 from modules.ai_client import AIClientError, request_tutor_reply
+from modules.ui_components import apply_custom_css, render_hero_section
 
 st.set_page_config(page_title="AI Tutor - SlavaTalk", page_icon="🧠", layout="centered")
+apply_custom_css()
 
 SCENARIOS = {
     "Diplomatic briefing": "Prepare for a bilateral meeting on reconstruction assistance and governance reforms.",
@@ -52,17 +54,20 @@ def flag_error(exc: AIClientError, *, context: str) -> None:
 
 ensure_state()
 
-st.title("🧠 AI Conversation Tutor")
-st.caption("Role-play high-stakes scenarios in Ukrainian. The tutor corrects, reinforces, and keeps you mission-ready.")
+render_hero_section(
+    "🧠 AI 대화 튜터",
+    "🇺🇦 실전 시나리오로 우크라이나어 회화 연습 | AI가 교정하고 피드백"
+)
 
 with st.sidebar:
-    st.header("Scenario Setup")
-    scenario = st.selectbox("Scenario", options=list(SCENARIOS.keys()))
-    proficiency = st.selectbox("Proficiency", options=["novice", "intermediate", "advanced"], index=1)
-    language_mix = st.slider("English assist (%)", min_value=0, max_value=60, value=25, step=5)
-    auto_reset = st.checkbox("Reset conversation on scenario change", value=True)
+    st.header("🎯 시나리오 설정")
+    scenario = st.selectbox("상황 선택", options=list(SCENARIOS.keys()))
+    proficiency = st.selectbox("실력 레벨", options=["novice", "intermediate", "advanced"], index=1)
+    language_mix = st.slider("영어 힌트 비율 (%)", min_value=0, max_value=60, value=25, step=5)
+    korean_hint = st.slider("한국어 힌트 비율 (%)", min_value=0, max_value=40, value=15, step=5)
+    auto_reset = st.checkbox("시나리오 변경시 대화 초기화", value=True)
 
-    if st.button("Start fresh", use_container_width=True):
+    if st.button("🔄 새로 시작", use_container_width=True):
         reset_dialogue(preserve_error=False)
         st.rerun()
 
@@ -78,7 +83,8 @@ if not st.session_state.tutor_history:
     seed = (
         f"Please open the dialogue for this scenario: {SCENARIOS[scenario]}.\n"
         f"Include a greeting, a probing question, and highlight 2 mission terms.\n"
-        f"Use roughly {language_mix}% English scaffolding for clarity."
+        f"Use roughly {language_mix}% English scaffolding for clarity.\n"
+        f"Additionally, provide {korean_hint}% Korean hints in parentheses for key terms to help Korean learners."
     )
     try:
         first_reply = request_tutor_reply(
@@ -105,7 +111,7 @@ if user_input:
     st.session_state.tutor_history.append({"role": "user", "content": user_input})
     try:
         reply = request_tutor_reply(
-            [{"role": "user", "content": f"Keep approximately {language_mix}% English support when needed."}]
+            [{"role": "user", "content": f"Keep approximately {language_mix}% English support and {korean_hint}% Korean hints in parentheses when needed."}]
             + st.session_state.tutor_history,
             scenario=scenario,
             target_language="ukrainian",
