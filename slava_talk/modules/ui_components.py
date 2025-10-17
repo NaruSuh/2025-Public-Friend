@@ -1,6 +1,7 @@
 import streamlit as st
 from typing import Dict
 import io
+import os
 
 try:
     from gtts import gTTS
@@ -10,10 +11,12 @@ except ImportError:
 def apply_custom_css():
     """Applies the custom CSS file to the Streamlit app."""
     try:
-        with open("assets/style.css") as f:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        css_file_path = os.path.join(script_dir, "..", "assets", "style.css")
+        with open(css_file_path) as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     except FileNotFoundError:
-        st.warning("assets/style.css not found. Using default styles.")
+        st.warning(f"assets/style.css not found at {css_file_path}. Using default styles.")
 
 def render_hero_section(title: str, subtitle: str):
     """Renders a prominent hero section with a title and subtitle."""
