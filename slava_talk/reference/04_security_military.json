@@ -1,0 +1,20 @@
+
+[
+    {"ukrainian": "безпека", "pronunciation": "bezpeka", "korean": "안보, 안전", "english": "security, safety", "topic": "Security"},
+    {"ukrainian": "військові", "pronunciation": "viyskovi", "korean": "군, 군인들", "english": "military, servicemen", "topic": "Military"},
+    {"ukrainian": "солдат", "pronunciation": "soldat", "korean": "병사", "english": "soldier", "topic": "Military"},
+    {"ukrainian": "офіцер", "pronunciation": "ofitser", "korean": "장교", "english": "officer", "topic": "Military"},
+    {"ukrainian": "блокпост", "pronunciation": "blokpost", "korean": "검문소", "english": "checkpoint", "topic": "Security"},
+    {"ukrainian": "розмінування", "pronunciation": "rozminuvannya", "korean": "지뢰 제거", "english": "demining", "topic": "Security"},
+    {"ukrainian": "зброя", "pronunciation": "zbroya", "korean": "무기", "english": "weapon, arms", "topic": "Military"},
+    {"ukrainian": "ситуація", "pronunciation": "sytuatsiya", "korean": "상황", "english": "situation", "topic": "General"},
+    {"ukrainian": "доповідь", "pronunciation": "dopovid", "korean": "보고", "english": "report", "topic": "General"},
+    {"ukrainian": "наказ", "pronunciation": "nakaz", "korean": "명령", "english": "order, command", "topic": "Military"},
+    {"ukrainian": "дозвіл", "pronunciation": "dozvil", "korean": "허가", "english": "permission, permit", "topic": "Security"},
+    {"ukrainian": "заборонено", "pronunciation": "zaboroneno", "korean": "금지된", "english": "forbidden, prohibited", "topic": "Security"},
+    {"ukrainian": "захищати", "pronunciation": "zakhyshchaty", "korean": "보호하다, 방어하다", "english": "to protect, to defend", "topic": "Verbs"},
+    {"ukrainian": "забезпечувати безпеку", "pronunciation": "zabezpechuvaty bezpeku", "korean": "안전을 확보하다", "english": "to ensure security", "topic": "Verbs"},
+    {"ukrainian": "доповідати", "pronunciation": "dopovidaty", "korean": "보고하다", "english": "to report", "topic": "Verbs"},
+    {"ukrainian": "координувати", "pronunciation": "koordynuvaty", "korean": "조정하다, 협력하다", "english": "to coordinate", "topic": "Verbs"},
+    {"ukrainian": "контролювати", "pronunciation": "kontrolyuvaty", "korean": "통제하다, 감시하다", "english": "to control, to monitor", "topic": "Verbs"}
+]

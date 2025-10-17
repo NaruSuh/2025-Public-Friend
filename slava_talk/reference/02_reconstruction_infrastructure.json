@@ -1,0 +1,23 @@
+
+[
+    {"ukrainian": "відбудова", "pronunciation": "vidbudova", "korean": "재건", "english": "reconstruction", "topic": "Reconstruction"},
+    {"ukrainian": "інфраструктура", "pronunciation": "infrastruktura", "korean": "인프라", "english": "infrastructure", "topic": "Reconstruction"},
+    {"ukrainian": "будівля", "pronunciation": "budivlya", "korean": "건물", "english": "building", "topic": "Reconstruction"},
+    {"ukrainian": "дорога", "pronunciation": "doroha", "korean": "도로", "english": "road", "topic": "Reconstruction"},
+    {"ukrainian": "міст", "pronunciation": "mist", "korean": "다리, 교량", "english": "bridge", "topic": "Reconstruction"},
+    {"ukrainian": "електрика", "pronunciation": "elektryka", "korean": "전기", "english": "electricity", "topic": "Infrastructure"},
+    {"ukrainian": "водопостачання", "pronunciation": "vodopostachannya", "korean": "수도 공급", "english": "water supply", "topic": "Infrastructure"},
+    {"ukrainian": "лікарня", "pronunciation": "likarnya", "korean": "병원", "english": "hospital", "topic": "Infrastructure"},
+    {"ukrainian": "школа", "pronunciation": "shkola", "korean": "학교", "english": "school", "topic": "Infrastructure"},
+    {"ukrainian": "проект", "pronunciation": "proekt", "korean": "프로젝트, 계획", "english": "project", "topic": "Management"},
+    {"ukrainian": "план", "pronunciation": "plan", "korean": "계획", "english": "plan", "topic": "Management"},
+    {"ukrainian": "бюджет", "pronunciation": "byudzhet", "korean": "예산", "english": "budget", "topic": "Management"},
+    {"ukrainian": "матеріали", "pronunciation": "materialy", "korean": "자재, 재료", "english": "materials", "topic": "Resources"},
+    {"ukrainian": "обладнання", "pronunciation": "obladnannya", "korean": "장비", "english": "equipment", "topic": "Resources"},
+    {"ukrainian": "будувати", "pronunciation": "buduvaty", "korean": "건설하다", "english": "to build", "topic": "Verbs"},
+    {"ukrainian": "відновлювати", "pronunciation": "vidnovlyuvaty", "korean": "복구하다, 재건하다", "english": "to restore, to rebuild", "topic": "Verbs"},
+    {"ukrainian": "ремонтувати", "pronunciation": "remontuvaty", "korean": "수리하다", "english": "to repair", "topic": "Verbs"},
+    {"ukrainian": "планувати", "pronunciation": "planuvaty", "korean": "계획하다", "english": "to plan", "topic": "Verbs"},
+    {"ukrainian": "фінансувати", "pronunciation": "finansuvaty", "korean": "자금을 대다", "english": "to finance", "topic": "Verbs"},
+    {"ukrainian": "допомагати", "pronunciation": "dopomahaty", "korean": "돕다", "english": "to help", "topic": "Verbs"}
+]

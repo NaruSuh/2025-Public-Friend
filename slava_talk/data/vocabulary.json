@@ -1,143 +1,726 @@
 [
-  {
-    "ukrainian": "відновлення",
-    "pronunciation": "vidnovlennya",
-    "korean": "복구, 재건",
-    "english": "recovery; reconstruction",
-    "source_doc": "Програма RBC Ukraine's Recovery Conference 16 October 2025 final.pdf",
-    "source": "RBC Ukraine Recovery Conference (2025)",
-    "topics": [
-      "diplomacy",
-      "reconstruction",
-      "investment"
-    ],
-    "example_sentence_ukr": "Відповідальне ведення бізнесу для відновлення України: шлях до сталих інвестицій та європейської інтеграції.",
-    "example_sentence_eng": "Responsible business conduct is the path to sustainable investment and Ukraine’s integration with Europe.",
-    "notes": "Anchor term for conversations about the national recovery plan and reconstruction tenders.",
-    "level": "B2",
-    "created_at": "2024-10-01T09:00:00Z"
-  },
-  {
-    "ukrainian": "принципи",
-    "pronunciation": "pryntsypy",
-    "korean": "원칙",
-    "english": "principles",
-    "source_doc": "Програма RBC Ukraine's Recovery Conference 16 October 2025 final.pdf",
-    "source": "RBC Ukraine Recovery Conference (2025)",
-    "topics": [
-      "diplomacy",
-      "governance"
-    ],
-    "example_sentence_ukr": "У цьому контексті принципи відповідального ведення бізнесу вже не є лише етичними прагненнями.",
-    "example_sentence_eng": "In this context the principles of responsible business conduct are no longer just ethical aspirations.",
-    "notes": "Useful when framing conditionality or compliance frameworks during briefings.",
-    "level": "B1",
-    "created_at": "2024-10-01T09:05:00Z"
-  },
-  {
-    "ukrainian": "інвестиції",
-    "pronunciation": "investytsiyi",
-    "korean": "투자",
-    "english": "investments",
-    "source_doc": "Програма RBC Ukraine's Recovery Conference 16 October 2025 final.pdf",
-    "source": "RBC Ukraine Recovery Conference (2025)",
-    "topics": [
-      "trade",
-      "finance",
-      "reconstruction"
-    ],
-    "example_sentence_ukr": "Сталий розвиток вимагає відповідальні інвестиції та співпрацю з міжнародними фінансовими інституціями.",
-    "example_sentence_eng": "Sustainable development requires responsible investments and cooperation with international financial institutions.",
-    "notes": "Pair with due diligence vocabulary when discussing capital inflows.",
-    "level": "B2",
-    "created_at": "2024-10-01T09:10:00Z"
-  },
-  {
-    "ukrainian": "уряд",
-    "pronunciation": "uryad",
-    "korean": "정부",
-    "english": "government",
-    "source_doc": "Програма RBC Ukraine's Recovery Conference 16 October 2025 final.pdf",
-    "source": "RBC Ukraine Recovery Conference (2025)",
-    "topics": [
-      "diplomacy",
-      "governance"
-    ],
-    "example_sentence_ukr": "Конференція орієнтована на ключових учасників процесу відновлення: представників уряду, бізнесу та громадянського суспільства.",
-    "example_sentence_eng": "The conference is aimed at key actors in the recovery process: representatives of government, business, and civil society.",
-    "notes": "Core noun for referencing Ukrainian counterparts in bilateral meetings.",
-    "level": "A2",
-    "created_at": "2024-10-01T09:15:00Z"
-  },
-  {
-    "ukrainian": "інфраструктура",
-    "pronunciation": "infrastruktura",
-    "korean": "인프라",
-    "english": "infrastructure",
-    "source_doc": "Програма RBC Ukraine's Recovery Conference 16 October 2025 final.pdf",
-    "source": "RBC Ukraine Recovery Conference (2025)",
-    "topics": [
-      "defense",
-      "reconstruction",
-      "supply chain"
-    ],
-    "example_sentence_ukr": "Інфраструктура відповідального ведення бізнесу включає дорожню карту ESG та належну обачність у сфері прав людини.",
-    "example_sentence_eng": "Responsible business infrastructure includes an ESG roadmap and human-rights due diligence.",
-    "notes": "Deploy when discussing dual-use logistics or transportation nodes.",
-    "level": "B2",
-    "created_at": "2024-10-01T09:20:00Z"
-  },
-  {
-    "ukrainian": "права людини",
-    "pronunciation": "prava lyudyny",
-    "korean": "인권",
-    "english": "human rights",
-    "source_doc": "Програма RBC Ukraine's Recovery Conference 16 October 2025 final.pdf",
-    "source": "RBC Ukraine Recovery Conference (2025)",
-    "topics": [
-      "due diligence",
-      "esg",
-      "diplomacy"
-    ],
-    "example_sentence_ukr": "Робоча група наголошує на правах людини як на ключовій умові відповідального інвестування.",
-    "example_sentence_eng": "The working group emphasizes human rights as a key condition for responsible investment.",
-    "notes": "Essential when aligning modernization projects with OECD and EU standards.",
-    "level": "B2",
-    "created_at": "2024-10-01T09:25:00Z"
-  },
-  {
-    "ukrainian": "декларація",
-    "pronunciation": "deklaratsiya",
-    "korean": "선언",
-    "english": "declaration",
-    "source_doc": "Declaration ukr and eng.pdf",
-    "source": "Declaration on Responsible Investment",
-    "topics": [
-      "diplomacy",
-      "trade",
-      "compliance"
-    ],
-    "example_sentence_ukr": "Ми визнаємо обов’язковість для себе слідування основним принципам цієї декларації.",
-    "example_sentence_eng": "We recognize our obligation to follow the core principles laid down in this declaration.",
-    "notes": "Appears in signatures, communiqués, and formal statements.",
-    "level": "B1",
-    "created_at": "2024-10-01T09:30:00Z"
-  },
-  {
-    "ukrainian": "суспільство",
-    "pronunciation": "suspilstvo",
-    "korean": "사회",
-    "english": "society",
-    "source_doc": "Declaration ukr and eng.pdf",
-    "source": "Declaration on Responsible Investment",
-    "topics": [
-      "civil society",
-      "diplomacy"
-    ],
-    "example_sentence_ukr": "Співпраця між урядом, бізнесом та громадянським суспільством є ключовою для відповідального інвестування.",
-    "example_sentence_eng": "Cooperation between government, business, and civil society is crucial for responsible investment.",
-    "notes": "Use when referencing stakeholder engagement and public accountability.",
-    "level": "B1",
-    "created_at": "2024-10-01T09:35:00Z"
-  }
+    {
+        "ukrainian": "Доброго ранку",
+        "pronunciation": "Dobroho ranku",
+        "korean": "좋은 아침입니다",
+        "english": "Good morning",
+        "topic": "Greetings",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Доброго дня",
+        "pronunciation": "Dobroho dnya",
+        "korean": "좋은 오후입니다",
+        "english": "Good afternoon",
+        "topic": "Greetings",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Доброго вечора",
+        "pronunciation": "Dobroho vechora",
+        "korean": "좋은 저녁입니다",
+        "english": "Good evening",
+        "topic": "Greetings",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Привіт",
+        "pronunciation": "Pryvit",
+        "korean": "안녕 (비공식)",
+        "english": "Hello (informal)",
+        "topic": "Greetings",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Як вас звати?",
+        "pronunciation": "Yak vas zvaty?",
+        "korean": "이름이 무엇입니까?",
+        "english": "What is your name?",
+        "topic": "Introduction",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Мене звати...",
+        "pronunciation": "Mene zvaty...",
+        "korean": "제 이름은 ...입니다",
+        "english": "My name is...",
+        "topic": "Introduction",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Я з Південної Кореї",
+        "pronunciation": "Ya z Pivdennoyi Koreyi",
+        "korean": "저는 대한민국에서 왔습니다",
+        "english": "I am from South Korea",
+        "topic": "Introduction",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Дуже приємно",
+        "pronunciation": "Duzhe pryyemno",
+        "korean": "만나서 반갑습니다",
+        "english": "Nice to meet you",
+        "topic": "Introduction",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Як справи?",
+        "pronunciation": "Yak spravy?",
+        "korean": "어떻게 지내세요?",
+        "english": "How are you?",
+        "topic": "Basic Questions",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Добре, дякую",
+        "pronunciation": "Dobre, dyakuyu",
+        "korean": "좋습니다, 감사합니다",
+        "english": "Fine, thank you",
+        "topic": "Basic Questions",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Будь ласка",
+        "pronunciation": "Bud laska",
+        "korean": "부디, 제발 / 천만에요",
+        "english": "Please / You're welcome",
+        "topic": "Politeness",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Дякую",
+        "pronunciation": "Dyakuyu",
+        "korean": "감사합니다",
+        "english": "Thank you",
+        "topic": "Politeness",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Вибачте",
+        "pronunciation": "Vybachte",
+        "korean": "실례합니다, 죄송합니다",
+        "english": "Excuse me, I'm sorry",
+        "topic": "Politeness",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Так",
+        "pronunciation": "Tak",
+        "korean": "예",
+        "english": "Yes",
+        "topic": "Simple Answers",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Ні",
+        "pronunciation": "Ni",
+        "korean": "아니요",
+        "english": "No",
+        "topic": "Simple Answers",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Я розумію",
+        "pronunciation": "Ya rozumiyu",
+        "korean": "이해합니다",
+        "english": "I understand",
+        "topic": "Simple Answers",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "Я не розумію",
+        "pronunciation": "Ya ne rozumiyu",
+        "korean": "이해하지 못합니다",
+        "english": "I don't understand",
+        "topic": "Simple Answers",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "До побачення",
+        "pronunciation": "Do pobachennya",
+        "korean": "안녕히 계세요/가세요",
+        "english": "Goodbye",
+        "topic": "Greetings",
+        "source_doc": "01_basic_conversation.json"
+    },
+    {
+        "ukrainian": "відбудова",
+        "pronunciation": "vidbudova",
+        "korean": "재건",
+        "english": "reconstruction",
+        "topic": "Reconstruction",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "інфраструктура",
+        "pronunciation": "infrastruktura",
+        "korean": "인프라",
+        "english": "infrastructure",
+        "topic": "Reconstruction",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "будівля",
+        "pronunciation": "budivlya",
+        "korean": "건물",
+        "english": "building",
+        "topic": "Reconstruction",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "дорога",
+        "pronunciation": "doroha",
+        "korean": "도로",
+        "english": "road",
+        "topic": "Reconstruction",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "міст",
+        "pronunciation": "mist",
+        "korean": "다리, 교량",
+        "english": "bridge",
+        "topic": "Reconstruction",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "електрика",
+        "pronunciation": "elektryka",
+        "korean": "전기",
+        "english": "electricity",
+        "topic": "Infrastructure",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "водопостачання",
+        "pronunciation": "vodopostachannya",
+        "korean": "수도 공급",
+        "english": "water supply",
+        "topic": "Infrastructure",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "лікарня",
+        "pronunciation": "likarnya",
+        "korean": "병원",
+        "english": "hospital",
+        "topic": "Infrastructure",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "школа",
+        "pronunciation": "shkola",
+        "korean": "학교",
+        "english": "school",
+        "topic": "Infrastructure",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "проект",
+        "pronunciation": "proekt",
+        "korean": "프로젝트, 계획",
+        "english": "project",
+        "topic": "Management",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "план",
+        "pronunciation": "plan",
+        "korean": "계획",
+        "english": "plan",
+        "topic": "Management",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "бюджет",
+        "pronunciation": "byudzhet",
+        "korean": "예산",
+        "english": "budget",
+        "topic": "Management",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "матеріали",
+        "pronunciation": "materialy",
+        "korean": "자재, 재료",
+        "english": "materials",
+        "topic": "Resources",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "обладнання",
+        "pronunciation": "obladnannya",
+        "korean": "장비",
+        "english": "equipment",
+        "topic": "Resources",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "будувати",
+        "pronunciation": "buduvaty",
+        "korean": "건설하다",
+        "english": "to build",
+        "topic": "Verbs",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "відновлювати",
+        "pronunciation": "vidnovlyuvaty",
+        "korean": "복구하다, 재건하다",
+        "english": "to restore, to rebuild",
+        "topic": "Verbs",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "ремонтувати",
+        "pronunciation": "remontuvaty",
+        "korean": "수리하다",
+        "english": "to repair",
+        "topic": "Verbs",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "планувати",
+        "pronunciation": "planuvaty",
+        "korean": "계획하다",
+        "english": "to plan",
+        "topic": "Verbs",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "фінансувати",
+        "pronunciation": "finansuvaty",
+        "korean": "자금을 대다",
+        "english": "to finance",
+        "topic": "Verbs",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "допомагати",
+        "pronunciation": "dopomahaty",
+        "korean": "돕다",
+        "english": "to help",
+        "topic": "Verbs",
+        "source_doc": "02_reconstruction_infrastructure.json"
+    },
+    {
+        "ukrainian": "уряд",
+        "pronunciation": "uryad",
+        "korean": "정부",
+        "english": "government",
+        "topic": "Government",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "міністерство",
+        "pronunciation": "ministerstvo",
+        "korean": "부처 (Ministry)",
+        "english": "ministry",
+        "topic": "Government",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "посол",
+        "pronunciation": "posol",
+        "korean": "대사",
+        "english": "ambassador",
+        "topic": "Diplomacy",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "посольство",
+        "pronunciation": "posolstvo",
+        "korean": "대사관",
+        "english": "embassy",
+        "topic": "Diplomacy",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "зустріч",
+        "pronunciation": "zustrich",
+        "korean": "회의, 만남",
+        "english": "meeting",
+        "topic": "Diplomacy",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "переговори",
+        "pronunciation": "perehovory",
+        "korean": "협상",
+        "english": "negotiations",
+        "topic": "Diplomacy",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "угода",
+        "pronunciation": "uhoda",
+        "korean": "협정, 합의",
+        "english": "agreement",
+        "topic": "Diplomacy",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "контракт",
+        "pronunciation": "kontrakt",
+        "korean": "계약",
+        "english": "contract",
+        "topic": "Legal",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "закон",
+        "pronunciation": "zakon",
+        "korean": "법률",
+        "english": "law",
+        "topic": "Legal",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "співробітництво",
+        "pronunciation": "spivrobitnytstvo",
+        "korean": "협력",
+        "english": "cooperation",
+        "topic": "Diplomacy",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "допомога",
+        "pronunciation": "dopomoha",
+        "korean": "원조, 도움",
+        "english": "aid, assistance",
+        "topic": "Diplomacy",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "делегація",
+        "pronunciation": "delehatsiya",
+        "korean": "대표단",
+        "english": "delegation",
+        "topic": "Diplomacy",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "обговорювати",
+        "pronunciation": "obhovoryuvaty",
+        "korean": "논의하다",
+        "english": "to discuss",
+        "topic": "Verbs",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "погоджуватися",
+        "pronunciation": "pohodzhuvatysya",
+        "korean": "동의하다",
+        "english": "to agree",
+        "topic": "Verbs",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "підписувати",
+        "pronunciation": "pidpysuvaty",
+        "korean": "서명하다",
+        "english": "to sign",
+        "topic": "Verbs",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "підтримувати",
+        "pronunciation": "pidtrymuvaty",
+        "korean": "지원하다, 지지하다",
+        "english": "to support",
+        "topic": "Verbs",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "представляти",
+        "pronunciation": "predstavlyaty",
+        "korean": "대표하다",
+        "english": "to represent",
+        "topic": "Verbs",
+        "source_doc": "03_government_diplomacy.json"
+    },
+    {
+        "ukrainian": "безпека",
+        "pronunciation": "bezpeka",
+        "korean": "안보, 안전",
+        "english": "security, safety",
+        "topic": "Security",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "військові",
+        "pronunciation": "viyskovi",
+        "korean": "군, 군인들",
+        "english": "military, servicemen",
+        "topic": "Military",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "солдат",
+        "pronunciation": "soldat",
+        "korean": "병사",
+        "english": "soldier",
+        "topic": "Military",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "офіцер",
+        "pronunciation": "ofitser",
+        "korean": "장교",
+        "english": "officer",
+        "topic": "Military",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "блокпост",
+        "pronunciation": "blokpost",
+        "korean": "검문소",
+        "english": "checkpoint",
+        "topic": "Security",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "розмінування",
+        "pronunciation": "rozminuvannya",
+        "korean": "지뢰 제거",
+        "english": "demining",
+        "topic": "Security",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "зброя",
+        "pronunciation": "zbroya",
+        "korean": "무기",
+        "english": "weapon, arms",
+        "topic": "Military",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "ситуація",
+        "pronunciation": "sytuatsiya",
+        "korean": "상황",
+        "english": "situation",
+        "topic": "General",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "доповідь",
+        "pronunciation": "dopovid",
+        "korean": "보고",
+        "english": "report",
+        "topic": "General",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "наказ",
+        "pronunciation": "nakaz",
+        "korean": "명령",
+        "english": "order, command",
+        "topic": "Military",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "дозвіл",
+        "pronunciation": "dozvil",
+        "korean": "허가",
+        "english": "permission, permit",
+        "topic": "Security",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "заборонено",
+        "pronunciation": "zaboroneno",
+        "korean": "금지된",
+        "english": "forbidden, prohibited",
+        "topic": "Security",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "захищати",
+        "pronunciation": "zakhyshchaty",
+        "korean": "보호하다, 방어하다",
+        "english": "to protect, to defend",
+        "topic": "Verbs",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "забезпечувати безпеку",
+        "pronunciation": "zabezpechuvaty bezpeku",
+        "korean": "안전을 확보하다",
+        "english": "to ensure security",
+        "topic": "Verbs",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "доповідати",
+        "pronunciation": "dopovidaty",
+        "korean": "보고하다",
+        "english": "to report",
+        "topic": "Verbs",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "координувати",
+        "pronunciation": "koordynuvaty",
+        "korean": "조정하다, 협력하다",
+        "english": "to coordinate",
+        "topic": "Verbs",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "контролювати",
+        "pronunciation": "kontrolyuvaty",
+        "korean": "통제하다, 감시하다",
+        "english": "to control, to monitor",
+        "topic": "Verbs",
+        "source_doc": "04_security_military.json"
+    },
+    {
+        "ukrainian": "Слава Україні!",
+        "pronunciation": "Slava Ukrayini!",
+        "korean": "우크라이나에 영광을!",
+        "english": "Glory to Ukraine!",
+        "topic": "Patriotic Slogans",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "Героям слава!",
+        "pronunciation": "Heroyam slava!",
+        "korean": "영웅들에게 영광을! (답변)",
+        "english": "Glory to the heroes! (Response)",
+        "topic": "Patriotic Slogans",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "Все буде добре",
+        "pronunciation": "Vse bude dobre",
+        "korean": "모든 것이 잘 될 겁니다",
+        "english": "Everything will be alright",
+        "topic": "Encouragement",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "Дякую за допомогу",
+        "pronunciation": "Dyakuyu za dopomohu",
+        "korean": "도와주셔서 감사합니다",
+        "english": "Thank you for your help",
+        "topic": "Gratitude",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "Бережіть себе",
+        "pronunciation": "Berehit sebe",
+        "korean": "몸조심하세요",
+        "english": "Take care of yourself",
+        "topic": "Farewell",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "До зустрічі",
+        "pronunciation": "Do zustrichi",
+        "korean": "다음에 뵙겠습니다",
+        "english": "See you later",
+        "topic": "Farewell",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "Ми разом",
+        "pronunciation": "My razom",
+        "korean": "우리는 함께입니다",
+        "english": "We are together",
+        "topic": "Solidarity",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "Тримайтеся",
+        "pronunciation": "Trymaytesya",
+        "korean": "힘내세요, 버티세요",
+        "english": "Hang in there, hold on",
+        "topic": "Encouragement",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "Перемога за нами",
+        "pronunciation": "Peremoha za namy",
+        "korean": "승리는 우리의 것입니다",
+        "english": "Victory is ours",
+        "topic": "Encouragement",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "Що нового?",
+        "pronunciation": "Shcho novoho?",
+        "korean": "새로운 소식 있나요?",
+        "english": "What's new?",
+        "topic": "Common Questions",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "Нема за що",
+        "pronunciation": "Nema za shcho",
+        "korean": "천만에요",
+        "english": "You are welcome / It's nothing",
+        "topic": "Gratitude",
+        "source_doc": "05_common_phrases_idioms.json"
+    },
+    {
+        "ukrainian": "відновлення",
+        "pronunciation": "vidnovlennya",
+        "korean": "복구, 재건",
+        "english": "recovery, reconstruction",
+        "source_doc": "Declaration ukr and eng.pdf",
+        "topic": "Official Document",
+        "example_sentence_ukr": "Декларація про відповідальне \nінвестування для стійкої \nвідбудови України \nThe Declaration on Responsible \nInvestment for Ukraine’s Sustainable \nRecovery \nПреамбула: \nВизнаючи безпрецедентні виклики, що \nстоять перед Україною у зв'язку з \nросійською агресією та необхідністю \nмасштабної відбудови, \nНаголошуючи на критичній ролі \nінвестицій (як міжнародних, так і \nвнутрішніх) для економічного \nвідновлення, модернізації та сталого \nрозвитку, \nПідкреслюючи, що відбудова має \nвідбуватися на принципах прозорості, \nпідзвітності, верховенства права, поваги \nдо прав людини та захисту довкілля, \nВизнаючи, що відповідальне ведення \nбізнесу (ВВБ) є ключовим для \nпіслявоєнного відновлення, \nБеручи за основу міжнародні стандарти \n(Керівні принципи ООН з питань бізнесу \nта прав людини, Настанови ОЕСР щодо \nвідповідального ведення бізнесу, Цілі \nсталого розвитку ООН), \nВраховуючи розвиток права ЄС у \nнапрямку забезпечення корпоративної \nсталості, \nPreamble: \nRecognizing the unprecedented challenges \nfaced by Ukraine due to Russia’s aggression \nand the urgent need for large-scale \nreconstruction, \nEmphasising the critical role of investments \n(both international and domestic) for \neconomic recovery, modernisation, and \nsustainable development, \nUnderscoring that recovery must be based \non the principles of transparency, \naccountability, rule of law, respect for \nhuman rights, and environmental \nprotection, \nAcknowledging that responsible business \nconduct (RBC) is an essential element of \npost-war recovery, \nReferring to international standards (the UN \nGuiding Principles on Business and Human \nRights, the OECD Guidelines for Responsible \nBusiness Conduct, the UN Sustainable \nDevelopment Goals), \nGiven the ongoing development of EU law \naimed at strengthening corporate \nsustainability,  \n \nМи визнаємо обов’язковість для себе \nслідування основним принципам \nвідповідального інвестування у відбудову \nУкраїни: \nWe recognise our commitment to adhere to \nthe core principles of responsible investment in \nUkraine’s recovery: \n1.",
+        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
+    },
+    {
+        "ukrainian": "принципи",
+        "pronunciation": "pryntsypy",
+        "korean": "원칙",
+        "english": "principles",
+        "source_doc": "Declaration ukr and eng.pdf",
+        "topic": "Official Document",
+        "example_sentence_ukr": "Декларація про відповідальне \nінвестування для стійкої \nвідбудови України \nThe Declaration on Responsible \nInvestment for Ukraine’s Sustainable \nRecovery \nПреамбула: \nВизнаючи безпрецедентні виклики, що \nстоять перед Україною у зв'язку з \nросійською агресією та необхідністю \nмасштабної відбудови, \nНаголошуючи на критичній ролі \nінвестицій (як міжнародних, так і \nвнутрішніх) для економічного \nвідновлення, модернізації та сталого \nрозвитку, \nПідкреслюючи, що відбудова має \nвідбуватися на принципах прозорості, \nпідзвітності, верховенства права, поваги \nдо прав людини та захисту довкілля, \nВизнаючи, що відповідальне ведення \nбізнесу (ВВБ) є ключовим для \nпіслявоєнного відновлення, \nБеручи за основу міжнародні стандарти \n(Керівні принципи ООН з питань бізнесу \nта прав людини, Настанови ОЕСР щодо \nвідповідального ведення бізнесу, Цілі \nсталого розвитку ООН), \nВраховуючи розвиток права ЄС у \nнапрямку забезпечення корпоративної \nсталості, \nPreamble: \nRecognizing the unprecedented challenges \nfaced by Ukraine due to Russia’s aggression \nand the urgent need for large-scale \nreconstruction, \nEmphasising the critical role of investments \n(both international and domestic) for \neconomic recovery, modernisation, and \nsustainable development, \nUnderscoring that recovery must be based \non the principles of transparency, \naccountability, rule of law, respect for \nhuman rights, and environmental \nprotection, \nAcknowledging that responsible business \nconduct (RBC) is an essential element of \npost-war recovery, \nReferring to international standards (the UN \nGuiding Principles on Business and Human \nRights, the OECD Guidelines for Responsible \nBusiness Conduct, the UN Sustainable \nDevelopment Goals), \nGiven the ongoing development of EU law \naimed at strengthening corporate \nsustainability,  \n \nМи визнаємо обов’язковість для себе \nслідування основним принципам \nвідповідального інвестування у відбудову \nУкраїни: \nWe recognise our commitment to adhere to \nthe core principles of responsible investment in \nUkraine’s recovery: \n1.",
+        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
+    },
+    {
+        "ukrainian": "декларація",
+        "pronunciation": "deklaratsiya",
+        "korean": "선언",
+        "english": "declaration",
+        "source_doc": "Declaration ukr and eng.pdf",
+        "topic": "Official Document",
+        "example_sentence_ukr": "Декларація про відповідальне \nінвестування для стійкої \nвідбудови України \nThe Declaration on Responsible \nInvestment for Ukraine’s Sustainable \nRecovery \nПреамбула: \nВизнаючи безпрецедентні виклики, що \nстоять перед Україною у зв'язку з \nросійською агресією та необхідністю \nмасштабної відбудови, \nНаголошуючи на критичній ролі \nінвестицій (як міжнародних, так і \nвнутрішніх) для економічного \nвідновлення, модернізації та сталого \nрозвитку, \nПідкреслюючи, що відбудова має \nвідбуватися на принципах прозорості, \nпідзвітності, верховенства права, поваги \nдо прав людини та захисту довкілля, \nВизнаючи, що відповідальне ведення \nбізнесу (ВВБ) є ключовим для \nпіслявоєнного відновлення, \nБеручи за основу міжнародні стандарти \n(Керівні принципи ООН з питань бізнесу \nта прав людини, Настанови ОЕСР щодо \nвідповідального ведення бізнесу, Цілі \nсталого розвитку ООН), \nВраховуючи розвиток права ЄС у \nнапрямку забезпечення корпоративної \nсталості, \nPreamble: \nRecognizing the unprecedented challenges \nfaced by Ukraine due to Russia’s aggression \nand the urgent need for large-scale \nreconstruction, \nEmphasising the critical role of investments \n(both international and domestic) for \neconomic recovery, modernisation, and \nsustainable development, \nUnderscoring that recovery must be based \non the principles of transparency, \naccountability, rule of law, respect for \nhuman rights, and environmental \nprotection, \nAcknowledging that responsible business \nconduct (RBC) is an essential element of \npost-war recovery, \nReferring to international standards (the UN \nGuiding Principles on Business and Human \nRights, the OECD Guidelines for Responsible \nBusiness Conduct, the UN Sustainable \nDevelopment Goals), \nGiven the ongoing development of EU law \naimed at strengthening corporate \nsustainability,  \n \nМи визнаємо обов’язковість для себе \nслідування основним принципам \nвідповідального інвестування у відбудову \nУкраїни: \nWe recognise our commitment to adhere to \nthe core principles of responsible investment in \nUkraine’s recovery: \n1.",
+        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
+    },
+    {
+        "ukrainian": "суспільство",
+        "pronunciation": "suspilstvo",
+        "korean": "사회",
+        "english": "society",
+        "source_doc": "Declaration ukr and eng.pdf",
+        "topic": "Official Document",
+        "example_sentence_ukr": "Співпраця та партнерство: \nГотовність до співпраці між урядом, \nбізнесом, громадянським суспільством \nта міжнародними партнерами для \nзабезпечення ефективного та \nвідповідального інвестування.",
+        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
+    },
+    {
+        "ukrainian": "права людини",
+        "pronunciation": "prava lyudyny",
+        "korean": "인권",
+        "english": "human rights",
+        "source_doc": "Declaration ukr and eng.pdf",
+        "topic": "Official Document",
+        "example_sentence_ukr": "Зобов’язання зобов’язання поважати \nправа людини та інтегрувати \nбезперервний процес чутливої до \nконфлікту належної обачності у сфері \nправ людини на всіх етапах \nінвестиційного циклу \nКонсультації з місцевими громадами \nта іншими зацікавленими сторонами \nпри плануванні та реалізації \nінвестиційних проектів.",
+        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
+    },
+    {
+        "ukrainian": "інвестиції",
+        "pronunciation": "investytsiyi",
+        "korean": "투자",
+        "english": "investments",
+        "source_doc": "Програма RBC Ukraine's Recovery Conference 16 October 2025 final.pdf",
+        "topic": "Official Document",
+        "example_sentence_ukr": "Програма \n09:00 – 09:30 | Реєстрація та вітальна кава \n09:30 – 10:00 | Відкриття \nОлексій Соболєв, Міністр економіки, довкілля та сільського господарства України \n(відео) \nШоко Нода, помічниця Генерального Секретаря ООН і Директорка кризового \nбюро Програми Розвитку ООН (відео) \nКлер Ові, Директорка Директорату з прав людини, Рада Європи \n \n10:00 – 11:00 | Сесія 1: Відновлення, орієнтоване на людей, відповідальні інвестиції та \nвступ до ЄС \nОлександра Куксова, керівниця групи Корпоративної соціальної відповідальності \nта сталості бізнесу, Європейська Комісія-DG GROW (онлайн) \nКрістін Кауфманн, голова Робочої групи ОЕСР з питань відповідального ведення \nбізнесу (онлайн) \nТетяна Сахарук, Виконавча директорка Глобального договору ООН в Україні, \nГолова Ради Регіональної мережі для Східної Європи та Центральної Азії при \nГлобальному договорі ООН (онлайн) \nСтаніслав Супруненко, Європейський банк реконструкції і розвитку (онлайн) \nМета: Задати стратегічний тон дня, підкреслюючи роль відповідального ведення бізнесу та \nналежної обачності у сфері прав людини як основи для сталого відновлення, залучення \nінвестицій, інтеграції в ЄС та отримання повноцінного членства в ОЕСР.",
+        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
+    }
 ]

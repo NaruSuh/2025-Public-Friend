@@ -33,6 +33,12 @@ def ensure_state():
         st.session_state.quiz_pool = []
     if "quiz_filters_signature" not in st.session_state:
         st.session_state.quiz_filters_signature = None
+    if "quiz_mode" not in st.session_state:
+        st.session_state.quiz_mode = list(QUESTION_MODES.keys())[0]
+    if "quiz_proficiency" not in st.session_state:
+        st.session_state.quiz_proficiency = "intermediate"
+    if "quiz_option_count" not in st.session_state:
+        st.session_state.quiz_option_count = 4
 
 
 def build_question_pool(
@@ -95,6 +101,20 @@ def record_result(is_correct: bool):
     )
 
 
+def handle_next_question():
+    generate_new_question(st.session_state.quiz_mode, st.session_state.quiz_option_count)
+
+
+def handle_skip_question():
+    st.session_state.quiz_feedback = ""
+    generate_new_question(st.session_state.quiz_mode, st.session_state.quiz_option_count)
+
+
+def handle_reset_progress():
+    reset_quiz_state()
+    st.session_state.quiz_word = None
+
+
 ensure_state()
 
 vocabulary = load_vocab()
@@ -116,20 +136,19 @@ with st.sidebar:
         proficiency = st.selectbox("AI feedback level", options=["novice", "intermediate", "advanced"], index=1)
         apply_filters = st.form_submit_button("Apply")
 
-    if st.button("Reset progress"):
-        reset_quiz_state()
-        st.rerun()
+    st.button("Reset progress", on_click=handle_reset_progress, use_container_width=True)
 
-if QUESTION_MODES[question_mode]["type"] == "text":
-    n_options = 0
+mode_config = QUESTION_MODES[question_mode]
+option_count = n_options if mode_config["type"] == "mc" else 0
 
-signature = (tuple(sorted(selected_topics)), question_mode, n_options)
+signature = (tuple(sorted(selected_topics)), question_mode, option_count)
 if apply_filters or signature != st.session_state.quiz_filters_signature:
     st.session_state.quiz_pool = build_question_pool(vocabulary, topics=selected_topics)
     st.session_state.quiz_filters_signature = signature
     st.session_state.quiz_mode = question_mode
     st.session_state.quiz_proficiency = proficiency
-    generate_new_question(question_mode, max(n_options, 3) if n_options else 0)
+    st.session_state.quiz_option_count = option_count
+    generate_new_question(question_mode, option_count)
 
 if not st.session_state.quiz_pool:
     st.error("No vocabulary available for the selected topics.")
@@ -138,7 +157,8 @@ if not st.session_state.quiz_pool:
 if st.session_state.quiz_word is None:
     st.session_state.quiz_mode = question_mode
     st.session_state.quiz_proficiency = proficiency
-    generate_new_question(question_mode, max(n_options, 3) if n_options else 0)
+    st.session_state.quiz_option_count = option_count
+    generate_new_question(st.session_state.quiz_mode, st.session_state.quiz_option_count)
 
 st.metric("Score", f"{st.session_state.quiz_score} / {st.session_state.quiz_questions}")
 st.metric("Current Streak", st.session_state.quiz_streak)
@@ -208,14 +228,10 @@ if st.session_state.quiz_feedback:
 
 col_next, col_skip = st.columns([1, 1])
 with col_next:
-    if st.button("Next ▶️"):
-        generate_new_question(st.session_state.quiz_mode, max(n_options, 3) if n_options else 0)
-        st.rerun()
+    st.button("Next ▶️", on_click=handle_next_question, use_container_width=True)
 
 with col_skip:
-    if st.button("Skip ❌"):
-        generate_new_question(st.session_state.quiz_mode, max(n_options, 3) if n_options else 0)
-        st.rerun()
+    st.button("Skip ❌", on_click=handle_skip_question, use_container_width=True)
 
 st.markdown("---")
 
