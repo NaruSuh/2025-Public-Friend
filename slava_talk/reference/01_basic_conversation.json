@@ -1,0 +1,21 @@
+
+[
+    {"ukrainian": "Доброго ранку", "pronunciation": "Dobroho ranku", "korean": "좋은 아침입니다", "english": "Good morning", "topic": "Greetings"},
+    {"ukrainian": "Доброго дня", "pronunciation": "Dobroho dnya", "korean": "좋은 오후입니다", "english": "Good afternoon", "topic": "Greetings"},
+    {"ukrainian": "Доброго вечора", "pronunciation": "Dobroho vechora", "korean": "좋은 저녁입니다", "english": "Good evening", "topic": "Greetings"},
+    {"ukrainian": "Привіт", "pronunciation": "Pryvit", "korean": "안녕 (비공식)", "english": "Hello (informal)", "topic": "Greetings"},
+    {"ukrainian": "Як вас звати?", "pronunciation": "Yak vas zvaty?", "korean": "이름이 무엇입니까?", "english": "What is your name?", "topic": "Introduction"},
+    {"ukrainian": "Мене звати...", "pronunciation": "Mene zvaty...", "korean": "제 이름은 ...입니다", "english": "My name is...", "topic": "Introduction"},
+    {"ukrainian": "Я з Південної Кореї", "pronunciation": "Ya z Pivdennoyi Koreyi", "korean": "저는 대한민국에서 왔습니다", "english": "I am from South Korea", "topic": "Introduction"},
+    {"ukrainian": "Дуже приємно", "pronunciation": "Duzhe pryyemno", "korean": "만나서 반갑습니다", "english": "Nice to meet you", "topic": "Introduction"},
+    {"ukrainian": "Як справи?", "pronunciation": "Yak spravy?", "korean": "어떻게 지내세요?", "english": "How are you?", "topic": "Basic Questions"},
+    {"ukrainian": "Добре, дякую", "pronunciation": "Dobre, dyakuyu", "korean": "좋습니다, 감사합니다", "english": "Fine, thank you", "topic": "Basic Questions"},
+    {"ukrainian": "Будь ласка", "pronunciation": "Bud laska", "korean": "부디, 제발 / 천만에요", "english": "Please / You're welcome", "topic": "Politeness"},
+    {"ukrainian": "Дякую", "pronunciation": "Dyakuyu", "korean": "감사합니다", "english": "Thank you", "topic": "Politeness"},
+    {"ukrainian": "Вибачте", "pronunciation": "Vybachte", "korean": "실례합니다, 죄송합니다", "english": "Excuse me, I'm sorry", "topic": "Politeness"},
+    {"ukrainian": "Так", "pronunciation": "Tak", "korean": "예", "english": "Yes", "topic": "Simple Answers"},
+    {"ukrainian": "Ні", "pronunciation": "Ni", "korean": "아니요", "english": "No", "topic": "Simple Answers"},
+    {"ukrainian": "Я розумію", "pronunciation": "Ya rozumiyu", "korean": "이해합니다", "english": "I understand", "topic": "Simple Answers"},
+    {"ukrainian": "Я не розумію", "pronunciation": "Ya ne rozumiyu", "korean": "이해하지 못합니다", "english": "I don't understand", "topic": "Simple Answers"},
+    {"ukrainian": "До побачення", "pronunciation": "Do pobachennya", "korean": "안녕히 계세요/가세요", "english": "Goodbye", "topic": "Greetings"}
+]

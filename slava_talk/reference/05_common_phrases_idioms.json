@@ -1,0 +1,15 @@
+
+[
+    {"ukrainian": "Слава Україні!", "pronunciation": "Slava Ukrayini!", "korean": "우크라이나에 영광을!", "english": "Glory to Ukraine!", "topic": "Patriotic Slogans"},
+    {"ukrainian": "Героям слава!", "pronunciation": "Heroyam slava!", "korean": "영웅들에게 영광을! (답변)", "english": "Glory to the heroes! (Response)", "topic": "Patriotic Slogans"},
+    {"ukrainian": "Все буде добре", "pronunciation": "Vse bude dobre", "korean": "모든 것이 잘 될 겁니다", "english": "Everything will be alright", "topic": "Encouragement"},
+    {"ukrainian": "Як справи?", "pronunciation": "Yak spravy?", "korean": "어떻게 지내세요? (상황이 어때요?)", "english": "How are things?", "topic": "Common Questions"},
+    {"ukrainian": "Дякую за допомогу", "pronunciation": "Dyakuyu za dopomohu", "korean": "도와주셔서 감사합니다", "english": "Thank you for your help", "topic": "Gratitude"},
+    {"ukrainian": "Бережіть себе", "pronunciation": "Berehit sebe", "korean": "몸조심하세요", "english": "Take care of yourself", "topic": "Farewell"},
+    {"ukrainian": "До зустрічі", "pronunciation": "Do zustrichi", "korean": "다음에 뵙겠습니다", "english": "See you later", "topic": "Farewell"},
+    {"ukrainian": "Ми разом", "pronunciation": "My razom", "korean": "우리는 함께입니다", "english": "We are together", "topic": "Solidarity"},
+    {"ukrainian": "Тримайтеся", "pronunciation": "Trymaytesya", "korean": "힘내세요, 버티세요", "english": "Hang in there, hold on", "topic": "Encouragement"},
+    {"ukrainian": "Перемога за нами", "pronunciation": "Peremoha za namy", "korean": "승리는 우리의 것입니다", "english": "Victory is ours", "topic": "Encouragement"},
+    {"ukrainian": "Що нового?", "pronunciation": "Shcho novoho?", "korean": "새로운 소식 있나요?", "english": "What's new?", "topic": "Common Questions"},
+    {"ukrainian": "Нема за що", "pronunciation": "Nema za shcho", "korean": "천만에요", "english": "You are welcome / It's nothing", "topic": "Gratitude"}
+]

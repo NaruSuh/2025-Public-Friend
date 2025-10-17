@@ -8,6 +8,12 @@ from modules.vocab_manager import get_topics
 
 st.set_page_config(page_title="Document Study - SlavaTalk", page_icon="📚", layout="wide")
 
+
+def set_topic_filter(*, topics: List[str]) -> None:
+    """Update the global topic filter selection."""
+    st.session_state.doc_selected_topics = list(topics)
+
+
 st.title("📚 Document Study Hub")
 st.caption("Filter curated documents, extract the terms you need, and spin up micro-lessons on demand.")
 
@@ -20,7 +26,25 @@ if not vocabulary:
 st.sidebar.header("Filter")
 search_query = st.sidebar.text_input("Search any field")
 available_topics = get_topics(vocabulary)
-selected_topics: List[str] = st.sidebar.multiselect("Topics", options=available_topics)
+
+if "doc_selected_topics" not in st.session_state:
+    st.session_state.doc_selected_topics = available_topics
+else:
+    st.session_state.doc_selected_topics = [
+        topic for topic in st.session_state.doc_selected_topics if topic in available_topics
+    ] or available_topics
+
+selected_topics: List[str] = st.sidebar.multiselect(
+    "Topics",
+    options=available_topics,
+    key="doc_selected_topics",
+)
+st.sidebar.button(
+    "Show all topics",
+    on_click=set_topic_filter,
+    kwargs={"topics": list(available_topics)},
+    use_container_width=True,
+)
 
 sources = sorted({item.get("source") or item.get("source_doc", "") for item in vocabulary if item.get("source") or item.get("source_doc")})
 source_options = ["All sources"] + sources
@@ -87,11 +111,24 @@ st.markdown("---")
 for item in filtered_vocab:
     doc_source = item.get("source") or item.get("source_doc", "—")
     header = f"{item.get('ukrainian', '—')}  ({item.get('pronunciation', '—')})"
-    topics_display = ", ".join(item.get("topics", [])) or "—"
     with st.expander(header):
         st.markdown(f"**English:** {item.get('english', '—')}")
         st.markdown(f"**Korean:** {item.get('korean', '—')}")
-        st.markdown(f"**Topics:** {topics_display}")
+        if item.get("topics"):
+            st.markdown("**Topics:**")
+            topic_cols = st.columns(len(item["topics"]))
+            for idx, topic in enumerate(item["topics"]):
+                topic_key = f"topic-btn-{item.get('ukrainian', idx)}-{topic}"
+                if topic_cols[idx].button(
+                    topic,
+                    key=topic_key,
+                    use_container_width=True,
+                    on_click=set_topic_filter,
+                    kwargs={"topics": [topic]},
+                ):
+                    pass
+        else:
+            st.markdown("**Topics:** —")
         st.markdown(f"**Level:** {item.get('level', '—')}")
         st.markdown("---")
         st.markdown("**Example (UA):**")

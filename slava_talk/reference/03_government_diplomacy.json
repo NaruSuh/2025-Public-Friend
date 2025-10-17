@@ -1,0 +1,20 @@
+
+[
+    {"ukrainian": "уряд", "pronunciation": "uryad", "korean": "정부", "english": "government", "topic": "Government"},
+    {"ukrainian": "міністерство", "pronunciation": "ministerstvo", "korean": "부처 (Ministry)", "english": "ministry", "topic": "Government"},
+    {"ukrainian": "посол", "pronunciation": "posol", "korean": "대사", "english": "ambassador", "topic": "Diplomacy"},
+    {"ukrainian": "посольство", "pronunciation": "posolstvo", "korean": "대사관", "english": "embassy", "topic": "Diplomacy"},
+    {"ukrainian": "зустріч", "pronunciation": "zustrich", "korean": "회의, 만남", "english": "meeting", "topic": "Diplomacy"},
+    {"ukrainian": "переговори", "pronunciation": "perehovory", "korean": "협상", "english": "negotiations", "topic": "Diplomacy"},
+    {"ukrainian": "угода", "pronunciation": "uhoda", "korean": "협정, 합의", "english": "agreement", "topic": "Diplomacy"},
+    {"ukrainian": "контракт", "pronunciation": "kontrakt", "korean": "계약", "english": "contract", "topic": "Legal"},
+    {"ukrainian": "закон", "pronunciation": "zakon", "korean": "법률", "english": "law", "topic": "Legal"},
+    {"ukrainian": "співробітництво", "pronunciation": "spivrobitnytstvo", "korean": "협력", "english": "cooperation", "topic": "Diplomacy"},
+    {"ukrainian": "допомога", "pronunciation": "dopomoha", "korean": "원조, 도움", "english": "aid, assistance", "topic": "Diplomacy"},
+    {"ukrainian": "делегація", "pronunciation": "delehatsiya", "korean": "대표단", "english": "delegation", "topic": "Diplomacy"},
+    {"ukrainian": "обговорювати", "pronunciation": "obhovoryuvaty", "korean": "논의하다", "english": "to discuss", "topic": "Verbs"},
+    {"ukrainian": "погоджуватися", "pronunciation": "pohodzhuvatysya", "korean": "동의하다", "english": "to agree", "topic": "Verbs"},
+    {"ukrainian": "підписувати", "pronunciation": "pidpysuvaty", "korean": "서명하다", "english": "to sign", "topic": "Verbs"},
+    {"ukrainian": "підтримувати", "pronunciation": "pidtrymuvaty", "korean": "지원하다, 지지하다", "english": "to support", "topic": "Verbs"},
+    {"ukrainian": "представляти", "pronunciation": "predstavlyaty", "korean": "대표하다", "english": "to represent", "topic": "Verbs"}
+]

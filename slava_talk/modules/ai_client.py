@@ -51,30 +51,6 @@ def _get_client() -> OpenAI:
     return OpenAI(api_key=_resolve_api_key())
 
 
-def _coerce_to_text(value: object) -> str:
-    """Best-effort conversion of mixed content payloads into plain text."""
-    if isinstance(value, str):
-        return value
-    if isinstance(value, dict):
-        text_value = value.get("text") if isinstance(value.get("text"), str) else None  # type: ignore[arg-type]
-        if text_value:
-            return text_value
-        # Recursively flatten nested content blocks if present
-        return _coerce_to_text(list(value.values()))
-    if isinstance(value, (list, tuple, set)):
-        parts = [_coerce_to_text(item) for item in value]
-        return "\n\n".join(part for part in parts if part)
-    if value is None:
-        return ""
-    return str(value)
-
-
-def _as_input_block(content: object) -> Dict[str, str]:
-    """Create a compliant Responses API content block."""
-    text = _coerce_to_text(content).strip()
-    return {"type": "input_text", "text": text}
-
-
 def _create_json_schema(schema_name: str, properties: Dict, required: Optional[List[str]] = None) -> Dict:
     """Utility helper to construct a JSON schema payload."""
     return {
@@ -159,17 +135,11 @@ def generate_vocab_from_context(
     )
 
     try:
-        response = client.responses.create(
+        response = client.chat.completions.create(
             model=model,
-            input=[
-                {
-                    "role": "system",
-                    "content": [_as_input_block(instruction)],
-                },
-                {
-                    "role": "user",
-                    "content": [_as_input_block(user_prompt)],
-                },
+            messages=[
+                {"role": "system", "content": instruction},
+                {"role": "user", "content": user_prompt},
             ],
             response_format=schema,
         )
@@ -177,7 +147,10 @@ def generate_vocab_from_context(
         raise AIClientError(f"Failed to call OpenAI API: {exc}") from exc
 
     try:
-        payload = json.loads(response.output_text)
+        content = response.choices[0].message.content
+        if content is None:
+            raise AIClientError("OpenAI response content is empty.")
+        payload = json.loads(content)
     except (json.JSONDecodeError, AttributeError) as exc:
         raise AIClientError("OpenAI response could not be decoded as JSON.") from exc
 
@@ -231,11 +204,11 @@ def generate_lesson_scaffolding(
     )
 
     try:
-        response = client.responses.create(
+        response = client.chat.completions.create(
             model=model,
-            input=[
-                {"role": "system", "content": [_as_input_block(prompt)]},
-                {"role": "user", "content": [_as_input_block(user_prompt)]},
+            messages=[
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": user_prompt},
             ],
             response_format=schema,
         )
@@ -243,7 +216,10 @@ def generate_lesson_scaffolding(
         raise AIClientError(f"Lesson generation failed: {exc}") from exc
 
     try:
-        return json.loads(response.output_text)
+        content = response.choices[0].message.content
+        if content is None:
+            raise AIClientError("Lesson scaffold response is empty.")
+        return json.loads(content)
     except (json.JSONDecodeError, AttributeError) as exc:
         raise AIClientError("Lesson scaffold response was not valid JSON.") from exc
 
@@ -297,14 +273,11 @@ def translate_vocab_entries(entries: List[Dict], *, model: str = DEFAULT_MODEL) 
     }
 
     try:
-        response = client.responses.create(
+        response = client.chat.completions.create(
             model=model,
-            input=[
-                {"role": "system", "content": [_as_input_block(instruction)]},
-                {
-                    "role": "user",
-                    "content": [_as_input_block(json.dumps(payload, ensure_ascii=False))],
-                },
+            messages=[
+                {"role": "system", "content": instruction},
+                {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
             ],
             response_format=schema,
         )
@@ -312,7 +285,10 @@ def translate_vocab_entries(entries: List[Dict], *, model: str = DEFAULT_MODEL) 
         raise AIClientError(f"Translation request failed: {exc}") from exc
 
     try:
-        translation_payload = json.loads(response.output_text)
+        content = response.choices[0].message.content
+        if content is None:
+            raise AIClientError("Translation response is empty.")
+        translation_payload = json.loads(content)
     except (json.JSONDecodeError, AttributeError) as exc:
         raise AIClientError("Translation response could not be parsed as JSON.") from exc
 
@@ -365,24 +341,27 @@ def request_tutor_reply(
     )
 
     messages = [
-        {"role": "system", "content": [_as_input_block(system_message)]},
-        {"role": "user", "content": [_as_input_block(scenario_context)]},
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": scenario_context},
     ]
 
     for turn in dialogue_history:
         messages.append(
             {
                 "role": turn.get("role", "user"),
-                "content": [_as_input_block(turn.get("content", ""))],
+                "content": turn.get("content", ""),
             }
         )
 
     try:
-        response = client.responses.create(model=model, input=messages)
+        response = client.chat.completions.create(model=model, messages=messages)
     except Exception as exc:  # pragma: no cover
         raise AIClientError(f"Chat tutor failed: {exc}") from exc
 
-    return response.output_text.strip()
+    content = response.choices[0].message.content
+    if content is None:
+        raise AIClientError("Tutor response is empty.")
+    return content.strip()
 
 
 def generate_quiz_feedback(
@@ -410,14 +389,17 @@ def generate_quiz_feedback(
     )
 
     try:
-        response = client.responses.create(
+        response = client.chat.completions.create(
             model=model,
-            input=[
-                {"role": "system", "content": [_as_input_block(system_message)]},
-                {"role": "user", "content": [_as_input_block(user_prompt)]},
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_prompt},
             ],
         )
     except Exception as exc:  # pragma: no cover
         raise AIClientError(f"Quiz feedback generation failed: {exc}") from exc
 
-    return response.output_text.strip()
+    content = response.choices[0].message.content
+    if content is None:
+        raise AIClientError("Quiz feedback response is empty.")
+    return content.strip()

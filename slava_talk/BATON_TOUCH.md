@@ -1,60 +1,91 @@
-# SlavaTalk 앱 코드 감사 및 바톤터치 문서
+# SlavaTalk 앱 코드 감사 및 고도화 계획 (BATON_TOUCH v2)
 
 **작성일:** 2025년 10월 17일
-**작성자:** Gemini
+**작성자:** Gemini (Code Auditor)
 
 ## 1. 개요
 
-`slava_talk` 애플리케이션에 대한 코드 감사를 수행한 결과, 몇 가지 개선점과 함께 앱의 구동을 불가능하게 하는 치명적인 문제를 발견했습니다. 본 문서는 해당 문제들의 상세 내용과 후속 개발자가 작업을 이어받아 프로젝트를 정상화하고 발전시키기 위한 권장 사항을 기술합니다.
+이전 감사(`BATON_TOUCH v1`)에서 지적된 치명적 오류(핵심 모듈 부재)는 해결되었으며, 현재 애플리케이션은 정상적으로 작동 가능한 상태입니다. 본 문서는 현재 코드를 기반으로, 앱의 **성능, 지능, 사용자 경험**을 최고 수준으로 끌어올리기 위한 구체적인 고도화 지침을 'Vibe Coding' 명령 형식으로 기술합니다.
 
 ---
 
-## 2. 치명적 오류 (CRITICAL ISSUE)
+## 2. 고도화 지침 (Actionable Directives)
 
-### 문제: 핵심 모듈 `modules/vocab_manager.py` 부재
+### **Directive 1: 데이터 로딩 성능 최적화**
 
-- **현상:** 앱의 모든 페이지(`Document_Study`, `Quiz`, `AI_Tutor` 등)는 `modules/data_loader.py`를 통해 데이터를 불러옵니다. 그러나 현재 `data_loader.py`는 실제 로직 없이 `modules/vocab_manager.py`라는 다른 파일의 함수들을 재호출(re-export)하는 역할만 하고 있습니다. 문제는, 이 핵심적인 `vocab_manager.py` 파일이 프로젝트 내에 존재하지 않는다는 것입니다.
-- **영향:** 이 파일의 부재로 인해 `load_vocab`, `filter_vocab`, `get_topics` 등 데이터 처리에 필수적인 모든 함수 호출이 실패합니다. **결론적으로 현재 앱은 어떠한 기능도 정상적으로 작동하지 않는 상태입니다.**
+- **대상 파일:** `modules/data_loader.py`
+- **명령:**
+```vibe
+REFECTOR `modules/data_loader.py`.
+APPLY Streamlit's `@st.cache_data` decorator to the `load_vocab` function.
+REASON: This will cache the vocabulary data in memory, drastically improving performance by eliminating redundant file I/O on every user interaction.
+```
 
-### 권장 해결책
+### **Directive 2: PDF 처리기 지능 강화 (NLP 도입)**
 
-1.  **`vocab_manager.py` 파일 복원 또는 재작성:**
-    - 백업이나 이전 버전 관리 시스템에서 해당 파일을 찾아 복원하는 것이 최선입니다.
-    - 복원이 불가능할 경우, 다른 페이지들의 코드를 역추적하여 `vocab_manager.py`가 수행해야 할 기능들을 재작성해야 합니다. 필요한 함수는 최소한 다음과 같습니다.
-        - `load_vocab()`: `data/vocabulary.json` 파일을 읽고 캐싱(@st.cache_data)하여 반환하는 함수.
-        - `save_vocab()`: 단어장 데이터를 `data/vocabulary.json`에 저장하는 함수.
-        - `get_topics()`: 전체 단어장에서 고유한 토픽 목록을 추출하는 함수.
-        - `filter_vocab()`: 검색어, 토픽, 소스 등을 기준으로 단어장을 필터링하는 함수.
+- **대상 파일:** `modules/pdf_processor.py`
+- **명령:**
+```vibe
+OVERHAUL `modules/pdf_processor.py`.
+REMOVE the hardcoded `KEYWORDS` list.
+INTEGRATE the `spaCy` library (add to requirements.txt).
+IMPLEMENT a new keyword extraction mechanism that performs Part-of-Speech (POS) tagging on the PDF text and automatically identifies key nouns (NOUN), proper nouns (PROPN), and verbs (VERB) as vocabulary candidates.
+REASON: This transitions the processor from a static, manual system to a dynamic, intelligent one that can learn from any document.
+```
+
+### **Directive 3: 예문 번역 자동화 (AI 연동)**
+
+- **대상 파일:** `modules/pdf_processor.py`
+- **명령:**
+```vibe
+ENHANCE the overhauled `pdf_processor.py`.
+INTEGRATE the `openai` library.
+FOR each extracted example sentence (`example_sentence_ukr`):
+  CALL the GPT-4 API with a prompt to translate the Ukrainian sentence to high-quality English.
+  UPDATE the `example_sentence_eng` field, replacing the `(Translation not available...)` placeholder with the AI-generated translation.
+ENSURE API key is accessed securely via `st.secrets`.
+REASON: This provides immediate contextual understanding for users and fulfills the app's promise of AI enrichment.
+```
+
+### **Directive 4: 학습 페이지 UI/UX 개선**
+
+- **대상 파일:** `pages/1_📚_Document_Study.py`
+- **명령:**
+```vibe
+REFECTOR `pages/1_📚_Document_Study.py`.
+INSIDE the `st.expander` for each vocabulary item:
+  REPLACE the `st.markdown` for 'Topics' with interactive `st.button` elements for each topic tag, using `use_container_width=True`.
+  WHEN a topic button is clicked, it should trigger a callback function that updates the `st.session_state` for the sidebar's multiselect filter, effectively filtering the entire view for that topic.
+REASON: This creates a more dynamic and intuitive user experience, allowing seamless exploration of related terms.
+```
+
+### **Directive 5: 퀴즈 페이지 상태 관리 리팩토링**
+
+- **대상 파일:** `pages/2_❓_Quiz.py`
+- **명령:**
+```vibe
+REFECTOR the state management in `pages/2_❓_Quiz.py`.
+REMOVE all `st.rerun()` calls.
+ATTACH the `generate_new_question` function as an `on_click` callback directly to the 'Next ▶️' and 'Skip ❌' buttons.
+PASS necessary arguments (question_mode, n_options) to the callback using `args` or `kwargs`.
+REASON: This aligns with modern Streamlit best practices, making state transitions more predictable and eliminating potential side-effects of forced reruns.
+```
+
+### **Directive 6: 사용자 대시보드 기능 신설**
+
+- **대상 파일:** (신규) `pages/3_📊_Progress_Dashboard.py`
+- **명령:**
+```vibe
+CREATE a new page `pages/3_📊_Progress_Dashboard.py`.
+ON this page, ACCESS the `st.session_state.quiz_history` list.
+CALCULATE and DISPLAY key performance metrics using `st.metric`: 'Overall Accuracy (%)', 'Total Quizzed Words', and 'Current Streak'.
+ANALYZE the history to identify the user's most frequently missed words.
+DISPLAY a list or table of these 'Words to Revisit' to guide future study.
+REASON: This provides users with valuable feedback on their learning progress and helps them focus on areas of weakness, increasing learning efficiency.
+```
 
 ---
 
-## 3. 기능 개선 및 확장 제안 (ENHANCEMENT)
+## 3. 결론
 
-### 문제: 원시적인 PDF 처리 로직 (`pdf_processor.py`)
-
-- **현상:** 현재의 PDF 처리기는 사전에 하드코딩된 15개의 키워드 목록에만 의존하여 문서를 검색합니다. 이는 앱의 UI에서 광고하는 "AI 기반 농축(Enrich)", "라이브 크롤링" 등의 지능적인 기능과는 큰 격차가 있습니다.
-- **한계:**
-    1.  **확장성 부재:** 새로운 문서나 토픽이 추가될 때마다 개발자가 직접 코드를 수정하여 키워드를 추가해야 합니다.
-    2.  **번역 부재:** 예문 번역이 `(Translation not available...)`로 하드코딩되어 있어 실제 학습 가치가 떨어집니다.
-    3.  **단순한 문장 분리:** 정규식을 이용한 문장 분리는 복잡한 문장 구조에서 오류를 일으킬 가능성이 높습니다.
-
-### 권장 해결책
-
-`pdf_processor.py`를 다음과 같이 전면적으로 재설계할 것을 제안합니다.
-
-1.  **자연어 처리(NLP) 라이브러리 도입:**
-    - `spaCy` 또는 `NLTK`와 같은 라이브러리를 도입하여, 단순 키워드 매칭이 아닌 **품사 태깅(POS-tagging), 명사구 추출, 개체명 인식(NER)** 등 고도화된 방식으로 문서의 핵심 어휘를 자동으로 식별하도록 개선해야 합니다.
-
-2.  **번역 API 연동:**
-    - `st.secrets`에 저장된 API 키를 활용하여, Google Translate, DeepL, 또는 OpenAI GPT-4의 번역 기능을 `pdf_processor.py`에 통합해야 합니다. 이를 통해 추출된 예문에 대한 정확한 영어/한국어 번역을 자동으로 생성할 수 있습니다.
-
-3.  **웹 크롤링 기능 추가:**
-    - `BeautifulSoup`, `requests` 라이브러리를 사용하여, `Vocabulary_Builder.py` 페이지에서 사용자가 입력한 URL(예: 우크라이나 정부 공식 브리핑)의 텍스트를 직접 크롤링하고, 위 1, 2번 과정을 거쳐 단어장을 실시간으로 보강하는 기능을 구현해야 합니다.
-
----
-
-## 4. 기타 개선 사항
-
-- **퀴즈 페이지 상태 관리:** `pages/2_❓_Quiz.py`의 상태 관리 로직(질문 제출, 다음 문제 전환 등)이 다소 복잡합니다. 현재는 정상 작동하지만, 기능이 더 추가될 경우를 대비하여 `st.form`의 콜백(callback) 함수를 사용하는 등 더 간결한 형태로 리팩토링하는 것을 고려할 수 있습니다.
-
-본 문서를 통해 후속 개발자가 프로젝트의 현 상태를 명확히 파악하고, 우선순위에 따라 작업을 진행하여 `SlavaTalk` 앱을 성공적으로 완성시키기를 기대합니다.
+상기 지침들은 `SlavaTalk` 앱을 단순한 '작동하는' 프로토타입에서, 사용자가 실질적인 가치를 느끼는 '효과적인' 학습 도구로 전환시키는 핵심적인 다음 단계입니다. 후속 개발자는 이 지침에 따라 각 모듈을 체계적으로 고도화할 수 있습니다.
