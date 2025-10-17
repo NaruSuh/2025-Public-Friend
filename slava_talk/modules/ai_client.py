@@ -372,12 +372,13 @@ def generate_quiz_feedback(
     proficiency: str = "intermediate",
     model: str = DEFAULT_MODEL,
 ) -> str:
-    """Produce short formative feedback for quiz responses."""
+    """Produce short formative feedback for quiz responses in both English and Korean."""
     client = _get_client()
 
     system_message = (
         "You coach learners studying Ukrainian for professional operations. "
-        "Give concise feedback (<80 words) in English with Ukrainian reinforcement."
+        "Give concise feedback (<80 words) first in English, then provide a Korean translation. "
+        "Format: [English feedback]\n\n🇰🇷 [Korean translation]"
     )
 
     status = "correct" if is_correct else "incorrect"
@@ -385,7 +386,8 @@ def generate_quiz_feedback(
         f"Outcome: {status}\n"
         f"Learner level: {proficiency}\n"
         f"User answer: {user_answer}\n"
-        f"Vocabulary item:\n{json.dumps(vocab_entry, ensure_ascii=False)}"
+        f"Vocabulary item:\n{json.dumps(vocab_entry, ensure_ascii=False)}\n\n"
+        f"Please provide feedback in English first, then add a Korean translation starting with 🇰🇷"
     )
 
     try:

@@ -1,726 +1,948 @@
+
 [
     {
         "ukrainian": "Доброго ранку",
         "pronunciation": "Dobroho ranku",
         "korean": "좋은 아침입니다",
         "english": "Good morning",
-        "topic": "Greetings",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Greetings"
     },
     {
         "ukrainian": "Доброго дня",
         "pronunciation": "Dobroho dnya",
         "korean": "좋은 오후입니다",
         "english": "Good afternoon",
-        "topic": "Greetings",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Greetings"
     },
     {
         "ukrainian": "Доброго вечора",
         "pronunciation": "Dobroho vechora",
         "korean": "좋은 저녁입니다",
         "english": "Good evening",
-        "topic": "Greetings",
-        "source_doc": "01_basic_conversation.json"
-    },
-    {
-        "ukrainian": "Привіт",
-        "pronunciation": "Pryvit",
-        "korean": "안녕 (비공식)",
-        "english": "Hello (informal)",
-        "topic": "Greetings",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Greetings"
     },
     {
         "ukrainian": "Як вас звати?",
         "pronunciation": "Yak vas zvaty?",
         "korean": "이름이 무엇입니까?",
         "english": "What is your name?",
-        "topic": "Introduction",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Introduction"
     },
     {
         "ukrainian": "Мене звати...",
         "pronunciation": "Mene zvaty...",
         "korean": "제 이름은 ...입니다",
         "english": "My name is...",
-        "topic": "Introduction",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Introduction"
     },
     {
         "ukrainian": "Я з Південної Кореї",
         "pronunciation": "Ya z Pivdennoyi Koreyi",
         "korean": "저는 대한민국에서 왔습니다",
         "english": "I am from South Korea",
-        "topic": "Introduction",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Introduction"
     },
     {
         "ukrainian": "Дуже приємно",
         "pronunciation": "Duzhe pryyemno",
         "korean": "만나서 반갑습니다",
         "english": "Nice to meet you",
-        "topic": "Introduction",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Introduction"
     },
     {
         "ukrainian": "Як справи?",
         "pronunciation": "Yak spravy?",
         "korean": "어떻게 지내세요?",
         "english": "How are you?",
-        "topic": "Basic Questions",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Basic Questions"
     },
     {
         "ukrainian": "Добре, дякую",
         "pronunciation": "Dobre, dyakuyu",
         "korean": "좋습니다, 감사합니다",
         "english": "Fine, thank you",
-        "topic": "Basic Questions",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Basic Questions"
     },
     {
         "ukrainian": "Будь ласка",
         "pronunciation": "Bud laska",
         "korean": "부디, 제발 / 천만에요",
         "english": "Please / You're welcome",
-        "topic": "Politeness",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Politeness"
     },
     {
         "ukrainian": "Дякую",
         "pronunciation": "Dyakuyu",
         "korean": "감사합니다",
         "english": "Thank you",
-        "topic": "Politeness",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Politeness"
     },
     {
         "ukrainian": "Вибачте",
         "pronunciation": "Vybachte",
         "korean": "실례합니다, 죄송합니다",
         "english": "Excuse me, I'm sorry",
-        "topic": "Politeness",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Politeness"
     },
     {
         "ukrainian": "Так",
         "pronunciation": "Tak",
         "korean": "예",
         "english": "Yes",
-        "topic": "Simple Answers",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Simple Answers"
     },
     {
         "ukrainian": "Ні",
         "pronunciation": "Ni",
         "korean": "아니요",
         "english": "No",
-        "topic": "Simple Answers",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Simple Answers"
     },
     {
         "ukrainian": "Я розумію",
         "pronunciation": "Ya rozumiyu",
         "korean": "이해합니다",
         "english": "I understand",
-        "topic": "Simple Answers",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Simple Answers"
     },
     {
         "ukrainian": "Я не розумію",
         "pronunciation": "Ya ne rozumiyu",
         "korean": "이해하지 못합니다",
         "english": "I don't understand",
-        "topic": "Simple Answers",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Simple Answers"
     },
     {
         "ukrainian": "До побачення",
         "pronunciation": "Do pobachennya",
         "korean": "안녕히 계세요/가세요",
         "english": "Goodbye",
-        "topic": "Greetings",
-        "source_doc": "01_basic_conversation.json"
+        "topic": "Greetings"
     },
     {
         "ukrainian": "відбудова",
         "pronunciation": "vidbudova",
         "korean": "재건",
         "english": "reconstruction",
-        "topic": "Reconstruction",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "topic": "Reconstruction"
     },
     {
         "ukrainian": "інфраструктура",
         "pronunciation": "infrastruktura",
         "korean": "인프라",
         "english": "infrastructure",
-        "topic": "Reconstruction",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "topic": "Reconstruction"
     },
     {
-        "ukrainian": "будівля",
-        "pronunciation": "budivlya",
-        "korean": "건물",
-        "english": "building",
-        "topic": "Reconstruction",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "ukrainian": "енергосистема",
+        "pronunciation": "enerhosystema",
+        "korean": "에너지 시스템",
+        "english": "energy system",
+        "topic": "Reconstruction"
     },
     {
-        "ukrainian": "дорога",
-        "pronunciation": "doroha",
-        "korean": "도로",
-        "english": "road",
-        "topic": "Reconstruction",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "ukrainian": "електростанція",
+        "pronunciation": "elektrostantsiya",
+        "korean": "발전소",
+        "english": "power plant",
+        "topic": "Reconstruction"
     },
     {
-        "ukrainian": "міст",
-        "pronunciation": "mist",
-        "korean": "다리, 교량",
-        "english": "bridge",
-        "topic": "Reconstruction",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "ukrainian": "трансформатор",
+        "pronunciation": "transformator",
+        "korean": "변압기",
+        "english": "transformer",
+        "topic": "Reconstruction"
     },
     {
-        "ukrainian": "електрика",
-        "pronunciation": "elektryka",
-        "korean": "전기",
-        "english": "electricity",
-        "topic": "Infrastructure",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "ukrainian": "відключення",
+        "pronunciation": "vidklyuchennya",
+        "korean": "정전, 단전",
+        "english": "blackout, outage",
+        "topic": "Reconstruction"
     },
     {
-        "ukrainian": "водопостачання",
-        "pronunciation": "vodopostachannya",
-        "korean": "수도 공급",
-        "english": "water supply",
-        "topic": "Infrastructure",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "ukrainian": "ланцюг постачання",
+        "pronunciation": "lantsyuh postachannya",
+        "korean": "공급망",
+        "english": "supply chain",
+        "topic": "Supply Chain"
     },
     {
-        "ukrainian": "лікарня",
-        "pronunciation": "likarnya",
-        "korean": "병원",
-        "english": "hospital",
-        "topic": "Infrastructure",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "ukrainian": "митниця",
+        "pronunciation": "mytnytsya",
+        "korean": "세관",
+        "english": "customs",
+        "topic": "Reconstruction"
     },
     {
-        "ukrainian": "школа",
-        "pronunciation": "shkola",
-        "korean": "학교",
-        "english": "school",
-        "topic": "Infrastructure",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "ukrainian": "тендер",
+        "pronunciation": "tender",
+        "korean": "입찰",
+        "english": "tender",
+        "topic": "Reconstruction"
     },
     {
-        "ukrainian": "проект",
-        "pronunciation": "proekt",
-        "korean": "프로젝트, 계획",
-        "english": "project",
-        "topic": "Management",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "план",
-        "pronunciation": "plan",
-        "korean": "계획",
-        "english": "plan",
-        "topic": "Management",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "бюджет",
-        "pronunciation": "byudzhet",
-        "korean": "예산",
-        "english": "budget",
-        "topic": "Management",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "матеріали",
-        "pronunciation": "materialy",
-        "korean": "자재, 재료",
-        "english": "materials",
-        "topic": "Resources",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "обладнання",
-        "pronunciation": "obladnannya",
-        "korean": "장비",
-        "english": "equipment",
-        "topic": "Resources",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "будувати",
-        "pronunciation": "buduvaty",
-        "korean": "건설하다",
-        "english": "to build",
-        "topic": "Verbs",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "відновлювати",
-        "pronunciation": "vidnovlyuvaty",
-        "korean": "복구하다, 재건하다",
-        "english": "to restore, to rebuild",
-        "topic": "Verbs",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "ремонтувати",
-        "pronunciation": "remontuvaty",
-        "korean": "수리하다",
-        "english": "to repair",
-        "topic": "Verbs",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "планувати",
-        "pronunciation": "planuvaty",
-        "korean": "계획하다",
-        "english": "to plan",
-        "topic": "Verbs",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "фінансувати",
-        "pronunciation": "finansuvaty",
-        "korean": "자금을 대다",
-        "english": "to finance",
-        "topic": "Verbs",
-        "source_doc": "02_reconstruction_infrastructure.json"
-    },
-    {
-        "ukrainian": "допомагати",
-        "pronunciation": "dopomahaty",
-        "korean": "돕다",
-        "english": "to help",
-        "topic": "Verbs",
-        "source_doc": "02_reconstruction_infrastructure.json"
+        "ukrainian": "корупція",
+        "pronunciation": "koruptsiya",
+        "korean": "부패",
+        "english": "corruption",
+        "topic": "Reconstruction"
     },
     {
         "ukrainian": "уряд",
         "pronunciation": "uryad",
         "korean": "정부",
         "english": "government",
-        "topic": "Government",
-        "source_doc": "03_government_diplomacy.json"
+        "topic": "Government"
     },
     {
         "ukrainian": "міністерство",
         "pronunciation": "ministerstvo",
         "korean": "부처 (Ministry)",
         "english": "ministry",
-        "topic": "Government",
-        "source_doc": "03_government_diplomacy.json"
+        "topic": "Government"
     },
     {
-        "ukrainian": "посол",
-        "pronunciation": "posol",
-        "korean": "대사",
-        "english": "ambassador",
-        "topic": "Diplomacy",
-        "source_doc": "03_government_diplomacy.json"
+        "ukrainian": "двосторонні відносини",
+        "pronunciation": "dvostoronni vidnosyny",
+        "korean": "양자 관계",
+        "english": "bilateral relations",
+        "topic": "Diplomacy"
     },
     {
-        "ukrainian": "посольство",
-        "pronunciation": "posolstvo",
-        "korean": "대사관",
-        "english": "embassy",
-        "topic": "Diplomacy",
-        "source_doc": "03_government_diplomacy.json"
+        "ukrainian": "меморандум про взаєморозуміння",
+        "pronunciation": "memorandum pro vzayemorozuminnya",
+        "korean": "양해각서 (MOU)",
+        "english": "Memorandum of Understanding (MOU)",
+        "topic": "Diplomacy"
     },
     {
-        "ukrainian": "зустріч",
-        "pronunciation": "zustrich",
-        "korean": "회의, 만남",
-        "english": "meeting",
-        "topic": "Diplomacy",
-        "source_doc": "03_government_diplomacy.json"
+        "ukrainian": "санкції",
+        "pronunciation": "sanktsiyi",
+        "korean": "제재",
+        "english": "sanctions",
+        "topic": "Diplomacy"
     },
     {
-        "ukrainian": "переговори",
-        "pronunciation": "perehovory",
-        "korean": "협상",
-        "english": "negotiations",
-        "topic": "Diplomacy",
-        "source_doc": "03_government_diplomacy.json"
+        "ukrainian": "суверенітет",
+        "pronunciation": "suverenitet",
+        "korean": "주권",
+        "english": "sovereignty",
+        "topic": "Diplomacy"
     },
     {
-        "ukrainian": "угода",
-        "pronunciation": "uhoda",
-        "korean": "협정, 합의",
-        "english": "agreement",
-        "topic": "Diplomacy",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "контракт",
-        "pronunciation": "kontrakt",
-        "korean": "계약",
-        "english": "contract",
-        "topic": "Legal",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "закон",
-        "pronunciation": "zakon",
-        "korean": "법률",
-        "english": "law",
-        "topic": "Legal",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "співробітництво",
-        "pronunciation": "spivrobitnytstvo",
-        "korean": "협력",
-        "english": "cooperation",
-        "topic": "Diplomacy",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "допомога",
-        "pronunciation": "dopomoha",
-        "korean": "원조, 도움",
-        "english": "aid, assistance",
-        "topic": "Diplomacy",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "делегація",
-        "pronunciation": "delehatsiya",
-        "korean": "대표단",
-        "english": "delegation",
-        "topic": "Diplomacy",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "обговорювати",
-        "pronunciation": "obhovoryuvaty",
-        "korean": "논의하다",
-        "english": "to discuss",
-        "topic": "Verbs",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "погоджуватися",
-        "pronunciation": "pohodzhuvatysya",
-        "korean": "동의하다",
-        "english": "to agree",
-        "topic": "Verbs",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "підписувати",
-        "pronunciation": "pidpysuvaty",
-        "korean": "서명하다",
-        "english": "to sign",
-        "topic": "Verbs",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "підтримувати",
-        "pronunciation": "pidtrymuvaty",
-        "korean": "지원하다, 지지하다",
-        "english": "to support",
-        "topic": "Verbs",
-        "source_doc": "03_government_diplomacy.json"
-    },
-    {
-        "ukrainian": "представляти",
-        "pronunciation": "predstavlyaty",
-        "korean": "대표하다",
-        "english": "to represent",
-        "topic": "Verbs",
-        "source_doc": "03_government_diplomacy.json"
+        "ukrainian": "територіальна цілісність",
+        "pronunciation": "terytorialna tsilisnist",
+        "korean": "영토 보전",
+        "english": "territorial integrity",
+        "topic": "Diplomacy"
     },
     {
         "ukrainian": "безпека",
         "pronunciation": "bezpeka",
         "korean": "안보, 안전",
         "english": "security, safety",
-        "topic": "Security",
-        "source_doc": "04_security_military.json"
+        "topic": "Security"
     },
     {
-        "ukrainian": "військові",
-        "pronunciation": "viyskovi",
-        "korean": "군, 군인들",
-        "english": "military, servicemen",
-        "topic": "Military",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "розвідка",
+        "pronunciation": "rozvidka",
+        "korean": "정보, 첩보 (Intelligence)",
+        "english": "intelligence",
+        "topic": "Intelligence & Negotiation"
     },
     {
-        "ukrainian": "солдат",
-        "pronunciation": "soldat",
-        "korean": "병사",
-        "english": "soldier",
-        "topic": "Military",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "контррозвідка",
+        "pronunciation": "kontrrozvidka",
+        "korean": "방첩",
+        "english": "counter-intelligence",
+        "topic": "Security"
     },
     {
-        "ukrainian": "офіцер",
-        "pronunciation": "ofitser",
-        "korean": "장교",
-        "english": "officer",
-        "topic": "Military",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "джерело",
+        "pronunciation": "dzherelo",
+        "korean": "정보원, 소스",
+        "english": "source",
+        "topic": "Intelligence & Negotiation"
     },
     {
-        "ukrainian": "блокпост",
-        "pronunciation": "blokpost",
-        "korean": "검문소",
-        "english": "checkpoint",
-        "topic": "Security",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "дезінформація",
+        "pronunciation": "dezinformatsiya",
+        "korean": "허위 정보, 역정보",
+        "english": "disinformation",
+        "topic": "Security"
     },
     {
-        "ukrainian": "розмінування",
-        "pronunciation": "rozminuvannya",
-        "korean": "지뢰 제거",
-        "english": "demining",
-        "topic": "Security",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "оперативна обстановка",
+        "pronunciation": "operatyvna obstanovka",
+        "korean": "작전 상황",
+        "english": "operational situation",
+        "topic": "Military"
     },
     {
-        "ukrainian": "зброя",
-        "pronunciation": "zbroya",
-        "korean": "무기",
-        "english": "weapon, arms",
-        "topic": "Military",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "комендантська година",
+        "pronunciation": "komendantska hodyna",
+        "korean": "통행금지",
+        "english": "curfew",
+        "topic": "Security"
     },
     {
-        "ukrainian": "ситуація",
-        "pronunciation": "sytuatsiya",
-        "korean": "상황",
-        "english": "situation",
-        "topic": "General",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "евакуація",
+        "pronunciation": "evakuatsiya",
+        "korean": "대피, 철수",
+        "english": "evacuation",
+        "topic": "Security"
     },
     {
-        "ukrainian": "доповідь",
-        "pronunciation": "dopovid",
-        "korean": "보고",
-        "english": "report",
-        "topic": "General",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "диверсійна група",
+        "pronunciation": "dyversiyna hrupa",
+        "korean": "파괴 공작 그룹",
+        "english": "sabotage group",
+        "topic": "Security"
     },
     {
-        "ukrainian": "наказ",
-        "pronunciation": "nakaz",
-        "korean": "명령",
-        "english": "order, command",
-        "topic": "Military",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "загроза",
+        "pronunciation": "zahroza",
+        "korean": "위협",
+        "english": "threat",
+        "topic": "Security"
     },
     {
-        "ukrainian": "дозвіл",
-        "pronunciation": "dozvil",
-        "korean": "허가",
-        "english": "permission, permit",
-        "topic": "Security",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "гуманітарна допомога",
+        "pronunciation": "humanitarna dopomoha",
+        "korean": "인도주의적 지원",
+        "english": "humanitarian aid",
+        "topic": "Humanitarian"
     },
     {
-        "ukrainian": "заборонено",
-        "pronunciation": "zaboroneno",
-        "korean": "금지된",
-        "english": "forbidden, prohibited",
-        "topic": "Security",
-        "source_doc": "04_security_military.json"
+        "ukrainian": "біженці",
+        "pronunciation": "bizhentsi",
+        "korean": "난민",
+        "english": "refugees",
+        "topic": "Humanitarian"
     },
     {
-        "ukrainian": "захищати",
-        "pronunciation": "zakhyshchaty",
-        "korean": "보호하다, 방어하다",
-        "english": "to protect, to defend",
-        "topic": "Verbs",
-        "source_doc": "04_security_military.json"
-    },
-    {
-        "ukrainian": "забезпечувати безпеку",
-        "pronunciation": "zabezpechuvaty bezpeku",
-        "korean": "안전을 확보하다",
-        "english": "to ensure security",
-        "topic": "Verbs",
-        "source_doc": "04_security_military.json"
-    },
-    {
-        "ukrainian": "доповідати",
-        "pronunciation": "dopovidaty",
-        "korean": "보고하다",
-        "english": "to report",
-        "topic": "Verbs",
-        "source_doc": "04_security_military.json"
-    },
-    {
-        "ukrainian": "координувати",
-        "pronunciation": "koordynuvaty",
-        "korean": "조정하다, 협력하다",
-        "english": "to coordinate",
-        "topic": "Verbs",
-        "source_doc": "04_security_military.json"
-    },
-    {
-        "ukrainian": "контролювати",
-        "pronunciation": "kontrolyuvaty",
-        "korean": "통제하다, 감시하다",
-        "english": "to control, to monitor",
-        "topic": "Verbs",
-        "source_doc": "04_security_military.json"
-    },
-    {
-        "ukrainian": "Слава Україні!",
-        "pronunciation": "Slava Ukrayini!",
-        "korean": "우크라이나에 영광을!",
-        "english": "Glory to Ukraine!",
-        "topic": "Patriotic Slogans",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "Героям слава!",
-        "pronunciation": "Heroyam slava!",
-        "korean": "영웅들에게 영광을! (답변)",
-        "english": "Glory to the heroes! (Response)",
-        "topic": "Patriotic Slogans",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "Все буде добре",
-        "pronunciation": "Vse bude dobre",
-        "korean": "모든 것이 잘 될 겁니다",
-        "english": "Everything will be alright",
-        "topic": "Encouragement",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "Дякую за допомогу",
-        "pronunciation": "Dyakuyu za dopomohu",
-        "korean": "도와주셔서 감사합니다",
-        "english": "Thank you for your help",
-        "topic": "Gratitude",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "Бережіть себе",
-        "pronunciation": "Berehit sebe",
-        "korean": "몸조심하세요",
-        "english": "Take care of yourself",
-        "topic": "Farewell",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "До зустрічі",
-        "pronunciation": "Do zustrichi",
-        "korean": "다음에 뵙겠습니다",
-        "english": "See you later",
-        "topic": "Farewell",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "Ми разом",
-        "pronunciation": "My razom",
-        "korean": "우리는 함께입니다",
-        "english": "We are together",
-        "topic": "Solidarity",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "Тримайтеся",
-        "pronunciation": "Trymaytesya",
-        "korean": "힘내세요, 버티세요",
-        "english": "Hang in there, hold on",
-        "topic": "Encouragement",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "Перемога за нами",
-        "pronunciation": "Peremoha za namy",
-        "korean": "승리는 우리의 것입니다",
-        "english": "Victory is ours",
-        "topic": "Encouragement",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "Що нового?",
-        "pronunciation": "Shcho novoho?",
-        "korean": "새로운 소식 있나요?",
-        "english": "What's new?",
-        "topic": "Common Questions",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "Нема за що",
-        "pronunciation": "Nema za shcho",
-        "korean": "천만에요",
-        "english": "You are welcome / It's nothing",
-        "topic": "Gratitude",
-        "source_doc": "05_common_phrases_idioms.json"
-    },
-    {
-        "ukrainian": "відновлення",
-        "pronunciation": "vidnovlennya",
-        "korean": "복구, 재건",
-        "english": "recovery, reconstruction",
-        "source_doc": "Declaration ukr and eng.pdf",
-        "topic": "Official Document",
-        "example_sentence_ukr": "Декларація про відповідальне \nінвестування для стійкої \nвідбудови України \nThe Declaration on Responsible \nInvestment for Ukraine’s Sustainable \nRecovery \nПреамбула: \nВизнаючи безпрецедентні виклики, що \nстоять перед Україною у зв'язку з \nросійською агресією та необхідністю \nмасштабної відбудови, \nНаголошуючи на критичній ролі \nінвестицій (як міжнародних, так і \nвнутрішніх) для економічного \nвідновлення, модернізації та сталого \nрозвитку, \nПідкреслюючи, що відбудова має \nвідбуватися на принципах прозорості, \nпідзвітності, верховенства права, поваги \nдо прав людини та захисту довкілля, \nВизнаючи, що відповідальне ведення \nбізнесу (ВВБ) є ключовим для \nпіслявоєнного відновлення, \nБеручи за основу міжнародні стандарти \n(Керівні принципи ООН з питань бізнесу \nта прав людини, Настанови ОЕСР щодо \nвідповідального ведення бізнесу, Цілі \nсталого розвитку ООН), \nВраховуючи розвиток права ЄС у \nнапрямку забезпечення корпоративної \nсталості, \nPreamble: \nRecognizing the unprecedented challenges \nfaced by Ukraine due to Russia’s aggression \nand the urgent need for large-scale \nreconstruction, \nEmphasising the critical role of investments \n(both international and domestic) for \neconomic recovery, modernisation, and \nsustainable development, \nUnderscoring that recovery must be based \non the principles of transparency, \naccountability, rule of law, respect for \nhuman rights, and environmental \nprotection, \nAcknowledging that responsible business \nconduct (RBC) is an essential element of \npost-war recovery, \nReferring to international standards (the UN \nGuiding Principles on Business and Human \nRights, the OECD Guidelines for Responsible \nBusiness Conduct, the UN Sustainable \nDevelopment Goals), \nGiven the ongoing development of EU law \naimed at strengthening corporate \nsustainability,  \n \nМи визнаємо обов’язковість для себе \nслідування основним принципам \nвідповідального інвестування у відбудову \nУкраїни: \nWe recognise our commitment to adhere to \nthe core principles of responsible investment in \nUkraine’s recovery: \n1.",
-        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
-    },
-    {
-        "ukrainian": "принципи",
-        "pronunciation": "pryntsypy",
-        "korean": "원칙",
-        "english": "principles",
-        "source_doc": "Declaration ukr and eng.pdf",
-        "topic": "Official Document",
-        "example_sentence_ukr": "Декларація про відповідальне \nінвестування для стійкої \nвідбудови України \nThe Declaration on Responsible \nInvestment for Ukraine’s Sustainable \nRecovery \nПреамбула: \nВизнаючи безпрецедентні виклики, що \nстоять перед Україною у зв'язку з \nросійською агресією та необхідністю \nмасштабної відбудови, \nНаголошуючи на критичній ролі \nінвестицій (як міжнародних, так і \nвнутрішніх) для економічного \nвідновлення, модернізації та сталого \nрозвитку, \nПідкреслюючи, що відбудова має \nвідбуватися на принципах прозорості, \nпідзвітності, верховенства права, поваги \nдо прав людини та захисту довкілля, \nВизнаючи, що відповідальне ведення \nбізнесу (ВВБ) є ключовим для \nпіслявоєнного відновлення, \nБеручи за основу міжнародні стандарти \n(Керівні принципи ООН з питань бізнесу \nта прав людини, Настанови ОЕСР щодо \nвідповідального ведення бізнесу, Цілі \nсталого розвитку ООН), \nВраховуючи розвиток права ЄС у \nнапрямку забезпечення корпоративної \nсталості, \nPreamble: \nRecognizing the unprecedented challenges \nfaced by Ukraine due to Russia’s aggression \nand the urgent need for large-scale \nreconstruction, \nEmphasising the critical role of investments \n(both international and domestic) for \neconomic recovery, modernisation, and \nsustainable development, \nUnderscoring that recovery must be based \non the principles of transparency, \naccountability, rule of law, respect for \nhuman rights, and environmental \nprotection, \nAcknowledging that responsible business \nconduct (RBC) is an essential element of \npost-war recovery, \nReferring to international standards (the UN \nGuiding Principles on Business and Human \nRights, the OECD Guidelines for Responsible \nBusiness Conduct, the UN Sustainable \nDevelopment Goals), \nGiven the ongoing development of EU law \naimed at strengthening corporate \nsustainability,  \n \nМи визнаємо обов’язковість для себе \nслідування основним принципам \nвідповідального інвестування у відбудову \nУкраїни: \nWe recognise our commitment to adhere to \nthe core principles of responsible investment in \nUkraine’s recovery: \n1.",
-        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
-    },
-    {
-        "ukrainian": "декларація",
-        "pronunciation": "deklaratsiya",
-        "korean": "선언",
-        "english": "declaration",
-        "source_doc": "Declaration ukr and eng.pdf",
-        "topic": "Official Document",
-        "example_sentence_ukr": "Декларація про відповідальне \nінвестування для стійкої \nвідбудови України \nThe Declaration on Responsible \nInvestment for Ukraine’s Sustainable \nRecovery \nПреамбула: \nВизнаючи безпрецедентні виклики, що \nстоять перед Україною у зв'язку з \nросійською агресією та необхідністю \nмасштабної відбудови, \nНаголошуючи на критичній ролі \nінвестицій (як міжнародних, так і \nвнутрішніх) для економічного \nвідновлення, модернізації та сталого \nрозвитку, \nПідкреслюючи, що відбудова має \nвідбуватися на принципах прозорості, \nпідзвітності, верховенства права, поваги \nдо прав людини та захисту довкілля, \nВизнаючи, що відповідальне ведення \nбізнесу (ВВБ) є ключовим для \nпіслявоєнного відновлення, \nБеручи за основу міжнародні стандарти \n(Керівні принципи ООН з питань бізнесу \nта прав людини, Настанови ОЕСР щодо \nвідповідального ведення бізнесу, Цілі \nсталого розвитку ООН), \nВраховуючи розвиток права ЄС у \nнапрямку забезпечення корпоративної \nсталості, \nPreamble: \nRecognizing the unprecedented challenges \nfaced by Ukraine due to Russia’s aggression \nand the urgent need for large-scale \nreconstruction, \nEmphasising the critical role of investments \n(both international and domestic) for \neconomic recovery, modernisation, and \nsustainable development, \nUnderscoring that recovery must be based \non the principles of transparency, \naccountability, rule of law, respect for \nhuman rights, and environmental \nprotection, \nAcknowledging that responsible business \nconduct (RBC) is an essential element of \npost-war recovery, \nReferring to international standards (the UN \nGuiding Principles on Business and Human \nRights, the OECD Guidelines for Responsible \nBusiness Conduct, the UN Sustainable \nDevelopment Goals), \nGiven the ongoing development of EU law \naimed at strengthening corporate \nsustainability,  \n \nМи визнаємо обов’язковість для себе \nслідування основним принципам \nвідповідального інвестування у відбудову \nУкраїни: \nWe recognise our commitment to adhere to \nthe core principles of responsible investment in \nUkraine’s recovery: \n1.",
-        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
-    },
-    {
-        "ukrainian": "суспільство",
-        "pronunciation": "suspilstvo",
-        "korean": "사회",
-        "english": "society",
-        "source_doc": "Declaration ukr and eng.pdf",
-        "topic": "Official Document",
-        "example_sentence_ukr": "Співпраця та партнерство: \nГотовність до співпраці між урядом, \nбізнесом, громадянським суспільством \nта міжнародними партнерами для \nзабезпечення ефективного та \nвідповідального інвестування.",
-        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
+        "ukrainian": "внутрішньо переміщені особи (ВПО)",
+        "pronunciation": "vnutrishno peremishcheni osoby (VPO)",
+        "korean": "국내 실향민 (IDP)",
+        "english": "Internally Displaced Persons (IDP)",
+        "topic": "Humanitarian"
     },
     {
         "ukrainian": "права людини",
         "pronunciation": "prava lyudyny",
         "korean": "인권",
         "english": "human rights",
-        "source_doc": "Declaration ukr and eng.pdf",
-        "topic": "Official Document",
-        "example_sentence_ukr": "Зобов’язання зобов’язання поважати \nправа людини та інтегрувати \nбезперервний процес чутливої до \nконфлікту належної обачності у сфері \nправ людини на всіх етапах \nінвестиційного циклу \nКонсультації з місцевими громадами \nта іншими зацікавленими сторонами \nпри плануванні та реалізації \nінвестиційних проектів.",
-        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
+        "topic": "Human Rights & Labor"
     },
     {
-        "ukrainian": "інвестиції",
-        "pronunciation": "investytsiyi",
-        "korean": "투자",
-        "english": "investments",
-        "source_doc": "Програма RBC Ukraine's Recovery Conference 16 October 2025 final.pdf",
-        "topic": "Official Document",
-        "example_sentence_ukr": "Програма \n09:00 – 09:30 | Реєстрація та вітальна кава \n09:30 – 10:00 | Відкриття \nОлексій Соболєв, Міністр економіки, довкілля та сільського господарства України \n(відео) \nШоко Нода, помічниця Генерального Секретаря ООН і Директорка кризового \nбюро Програми Розвитку ООН (відео) \nКлер Ові, Директорка Директорату з прав людини, Рада Європи \n \n10:00 – 11:00 | Сесія 1: Відновлення, орієнтоване на людей, відповідальні інвестиції та \nвступ до ЄС \nОлександра Куксова, керівниця групи Корпоративної соціальної відповідальності \nта сталості бізнесу, Європейська Комісія-DG GROW (онлайн) \nКрістін Кауфманн, голова Робочої групи ОЕСР з питань відповідального ведення \nбізнесу (онлайн) \nТетяна Сахарук, Виконавча директорка Глобального договору ООН в Україні, \nГолова Ради Регіональної мережі для Східної Європи та Центральної Азії при \nГлобальному договорі ООН (онлайн) \nСтаніслав Супруненко, Європейський банк реконструкції і розвитку (онлайн) \nМета: Задати стратегічний тон дня, підкреслюючи роль відповідального ведення бізнесу та \nналежної обачності у сфері прав людини як основи для сталого відновлення, залучення \nінвестицій, інтеграції в ЄС та отримання повноцінного членства в ОЕСР.",
-        "example_sentence_eng": "(Translation not available for auto-extracted sentence)"
+        "ukrainian": "психологічна підтримка",
+        "pronunciation": "psykholohichna pidtrymka",
+        "korean": "심리 지원",
+        "english": "psychological support",
+        "topic": "Humanitarian"
+    },
+    {
+        "ukrainian": "кібербезпека",
+        "pronunciation": "kiberbezpeka",
+        "korean": "사이버 안보",
+        "english": "cybersecurity",
+        "topic": "Cyber"
+    },
+    {
+        "ukrainian": "кібератака",
+        "pronunciation": "kiberataka",
+        "korean": "사이버 공격",
+        "english": "cyberattack",
+        "topic": "Cyber"
+    },
+    {
+        "ukrainian": "шифрування",
+        "pronunciation": "shyfruvannya",
+        "korean": "암호화",
+        "english": "encryption",
+        "topic": "Cyber"
+    },
+    {
+        "ukrainian": "захищений канал зв'язку",
+        "pronunciation": "zakhyshchenyy kanal zvyazku",
+        "korean": "보안 통신 채널",
+        "english": "secure communication channel",
+        "topic": "Cyber"
+    },
+    {
+        "ukrainian": "дрон",
+        "pronunciation": "dron",
+        "korean": "드론",
+        "english": "drone",
+        "topic": "Cyber"
+    },
+    {
+        "ukrainian": "радіоелектронна боротьба (РЕБ)",
+        "pronunciation": "radioelektronna borotba (REB)",
+        "korean": "전자전",
+        "english": "Electronic Warfare (EW)",
+        "topic": "Cyber"
+    },
+    {
+        "ukrainian": "належна обачність",
+        "pronunciation": "nalezhna obachnist'",
+        "korean": "실사 (Due Diligence)",
+        "english": "Due Diligence",
+        "topic": "Supply Chain Due Diligence"
+    },
+    {
+        "ukrainian": "простежуваність",
+        "pronunciation": "prostezhuvanist'",
+        "korean": "추적성",
+        "english": "Traceability",
+        "topic": "Supply Chain Due Diligence"
+    },
+    {
+        "ukrainian": "оцінка ризиків",
+        "pronunciation": "otsinka ryzykiv",
+        "korean": "위험 평가",
+        "english": "Risk Assessment",
+        "topic": "Supply Chain Due Diligence"
+    },
+    {
+        "ukrainian": "пом'якшення ризиків",
+        "pronunciation": "pom'yakshennya ryzykiv",
+        "korean": "위험 완화",
+        "english": "Risk Mitigation",
+        "topic": "Supply Chain Due Diligence"
+    },
+    {
+        "ukrainian": "постачальник",
+        "pronunciation": "postachal'nyk",
+        "korean": "공급업체",
+        "english": "Supplier / Vendor",
+        "topic": "Supply Chain Due Diligence"
+    },
+    {
+        "ukrainian": "аудит",
+        "pronunciation": "audyt",
+        "korean": "감사",
+        "english": "Audit",
+        "topic": "Supply Chain Due Diligence"
+    },
+    {
+        "ukrainian": "коригувальні дії",
+        "pronunciation": "koryhuval'ni diyi",
+        "korean": "시정 조치",
+        "english": "Corrective Actions",
+        "topic": "Supply Chain Due Diligence"
+    },
+    {
+        "ukrainian": "механізм подання скарг",
+        "pronunciation": "mekhanizm podannya skarh",
+        "korean": "고충 처리 메커니즘",
+        "english": "Grievance Mechanism",
+        "topic": "Supply Chain Due Diligence"
+    },
+    {
+        "ukrainian": "примусова праця",
+        "pronunciation": "prymusova pratsya",
+        "korean": "강제 노동",
+        "english": "Forced Labor",
+        "topic": "Human Rights & Labor"
+    },
+    {
+        "ukrainian": "дитяча праця",
+        "pronunciation": "dytyacha pratsya",
+        "korean": "아동 노동",
+        "english": "Child Labor",
+        "topic": "Human Rights & Labor"
+    },
+    {
+        "ukrainian": "свобода асоціацій",
+        "pronunciation": "svoboda asotsiatsiy",
+        "korean": "결사의 자유",
+        "english": "Freedom of Association",
+        "topic": "Human Rights & Labor"
+    },
+    {
+        "ukrainian": "охорона праці та техніка безпеки (ОПТБ)",
+        "pronunciation": "okhorona pratsi ta tekhnika bezpeky (OPTB)",
+        "korean": "산업 안전 보건 (OHS)",
+        "english": "Occupational Health and Safety (OHS)",
+        "topic": "Human Rights & Labor"
+    },
+    {
+        "ukrainian": "вразливі групи",
+        "pronunciation": "vrazlyvi hrupy",
+        "korean": "취약 계층",
+        "english": "Vulnerable Groups",
+        "topic": "Human Rights & Labor"
+    },
+    {
+        "ukrainian": "оцінка впливу на довкілля (ОВД)",
+        "pronunciation": "otsinka vplyvu na dovkillya (OVD)",
+        "korean": "환경 영향 평가 (EIA)",
+        "english": "Environmental Impact Assessment (EIA)",
+        "topic": "Environment"
+    },
+    {
+        "ukrainian": "викиди",
+        "pronunciation": "vydyky",
+        "korean": "배출물",
+        "english": "Emissions",
+        "topic": "Environment"
+    },
+    {
+        "ukrainian": "стічні води",
+        "pronunciation": "stichni vody",
+        "korean": "폐수",
+        "english": "Wastewater",
+        "topic": "Environment"
+    },
+    {
+        "ukrainian": "небезпечні відходи",
+        "pronunciation": "nebezpechni vidkhody",
+        "korean": "유해 폐기물",
+        "english": "Hazardous Waste",
+        "topic": "Environment"
+    },
+    {
+        "ukrainian": "декарбонізація",
+        "pronunciation": "dekarbonizatsiya",
+        "korean": "탈탄소화",
+        "english": "Decarbonization",
+        "topic": "Environment"
+    },
+    {
+        "ukrainian": "конфліктні мінерали",
+        "pronunciation": "konfliktni mineraly",
+        "korean": "분쟁 광물",
+        "english": "Conflict Minerals",
+        "topic": "Conflict Minerals"
+    },
+    {
+        "ukrainian": "олово",
+        "pronunciation": "olovo",
+        "korean": "주석",
+        "english": "Tin",
+        "topic": "Conflict Minerals"
+    },
+    {
+        "ukrainian": "тантал",
+        "pronunciation": "tantal",
+        "korean": "탄탈럼",
+        "english": "Tantalum",
+        "topic": "Conflict Minerals"
+    },
+    {
+        "ukrainian": "вольфрам",
+        "pronunciation": "vol'fram",
+        "korean": "텅스텐",
+        "english": "Tungsten",
+        "topic": "Conflict Minerals"
+    },
+    {
+        "ukrainian": "золото",
+        "pronunciation": "zoloto",
+        "korean": "금",
+        "english": "Gold",
+        "topic": "Conflict Minerals"
+    },
+    {
+        "ukrainian": "кобальт",
+        "pronunciation": "kobal't",
+        "korean": "코발트",
+        "english": "Cobalt",
+        "topic": "Conflict Minerals"
+    },
+    {
+        "ukrainian": "рідкісноземельні елементи (РЗE)",
+        "pronunciation": "ridkisnozemel'ni elementy (RZE)",
+        "korean": "희토류 원소 (REE)",
+        "english": "Rare Earth Elements (REE)",
+        "topic": "Conflict Minerals"
+    },
+    {
+        "ukrainian": "країна походження",
+        "pronunciation": "krayina pokhodzhennya",
+        "korean": "원산지 국가",
+        "english": "Country of Origin",
+        "topic": "Supply Chain Due Diligence"
+    },
+    {
+        "ukrainian": "кінцевий споживач",
+        "pronunciation": "kintsevyy spozhyvach",
+        "korean": "최종 사용자",
+        "english": "End-User",
+        "topic": "Export Control"
+    },
+    {
+        "ukrainian": "сертифікат кінцевого споживача",
+        "pronunciation": "sertyfikat kintsevoho spozhyvacha",
+        "korean": "최종 사용자 증명서",
+        "english": "End-User Certificate",
+        "topic": "Export Control"
+    },
+    {
+        "ukrainian": "моніторинг кінцевого використання (EUM)",
+        "pronunciation": "monitorynh kintsevoho vykorystannya",
+        "korean": "최종 사용 모니터링 (EUM)",
+        "english": "End-Use Monitoring (EUM)",
+        "topic": "Export Control"
+    },
+    {
+        "ukrainian": "перенаправлення",
+        "pronunciation": "perenapravlennya",
+        "korean": "전용, 용도 변경",
+        "english": "Diversion",
+        "topic": "Export Control"
+    },
+    {
+        "ukrainian": "товари подвійного використання",
+        "pronunciation": "tovary podviynoho vykorystannya",
+        "korean": "이중용도 품목",
+        "english": "Dual-Use Goods",
+        "topic": "Export Control"
+    },
+    {
+        "ukrainian": "експортний контроль",
+        "pronunciation": "eksportnyy kontrol'",
+        "korean": "수출 통제",
+        "english": "Export Control",
+        "topic": "Export Control"
+    },
+    {
+        "ukrainian": "міжнародне гуманітарне право (МГП)",
+        "pronunciation": "mizhnarodne humanitarne pravo (MHP)",
+        "korean": "국제인도법 (IHL)",
+        "english": "International Humanitarian Law (IHL)",
+        "topic": "Export Control"
+    },
+    {
+        "ukrainian": "маршрут",
+        "pronunciation": "marshrut",
+        "korean": "경로",
+        "english": "route",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "водій",
+        "pronunciation": "vodiy",
+        "korean": "운전사",
+        "english": "driver",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "транспортний засіб",
+        "pronunciation": "transportnyy zasib",
+        "korean": "차량, 운송 수단",
+        "english": "vehicle",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "небезпечна зона",
+        "pronunciation": "nebezpechna zona",
+        "korean": "위험 구역",
+        "english": "danger zone",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "об'їзд",
+        "pronunciation": "ob'yizd",
+        "korean": "우회로",
+        "english": "detour",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "аптечка",
+        "pronunciation": "aptechka",
+        "korean": "구급상자",
+        "english": "first aid kit",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "лікар",
+        "pronunciation": "likar",
+        "korean": "의사",
+        "english": "doctor",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "поранення",
+        "pronunciation": "poranennya",
+        "korean": "부상",
+        "english": "injury, wound",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "потрібна допомога",
+        "pronunciation": "potribna dopomoha",
+        "korean": "도움이 필요합니다",
+        "english": "help is needed",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "зв'язок",
+        "pronunciation": "zvyazok",
+        "korean": "통신, 연락",
+        "english": "communications, signal",
+        "topic": "Field & Emergency"
+    },
+    {
+        "ukrainian": "оцінка",
+        "pronunciation": "otsinka",
+        "korean": "평가",
+        "english": "assessment, evaluation",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "аналіз",
+        "pronunciation": "analiz",
+        "korean": "분석",
+        "english": "analysis",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "висновок",
+        "pronunciation": "vysnovok",
+        "korean": "결론",
+        "english": "conclusion",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "ймовірність",
+        "pronunciation": "ymovirnist'",
+        "korean": "가능성, 확률",
+        "english": "probability",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "достовірність",
+        "pronunciation": "dostovirnist'",
+        "korean": "신뢰성, 신빙성",
+        "english": "credibility, reliability",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "конфіденційно",
+        "pronunciation": "konfidensiyno",
+        "korean": "기밀의, 비밀의",
+        "english": "confidential",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "намір",
+        "pronunciation": "namir",
+        "korean": "의도",
+        "english": "intention",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "мотив",
+        "pronunciation": "motyv",
+        "korean": "동기",
+        "english": "motive",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "вплив",
+        "pronunciation": "vplyv",
+        "korean": "영향력",
+        "english": "influence",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "тиск",
+        "pronunciation": "tysk",
+        "korean": "압박",
+        "english": "pressure",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "компроміс",
+        "pronunciation": "kompromis",
+        "korean": "타협",
+        "english": "compromise",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "Російська Федерація (РФ)",
+        "pronunciation": "Rosiys'ka Federatsiya (RF)",
+        "korean": "러시아 연방",
+        "english": "Russian Federation (RF)",
+        "topic": "Aggressor & Occupation"
+    },
+    {
+        "ukrainian": "агресор",
+        "pronunciation": "ahresor",
+        "korean": "침략자",
+        "english": "aggressor",
+        "topic": "Aggressor & Occupation"
+    },
+    {
+        "ukrainian": "окупант",
+        "pronunciation": "okupant",
+        "korean": "점령군",
+        "english": "occupier",
+        "topic": "Aggressor & Occupation"
+    },
+    {
+        "ukrainian": "вторгнення",
+        "pronunciation": "vtorhnennya",
+        "korean": "침공",
+        "english": "invasion",
+        "topic": "Aggressor & Occupation"
+    },
+    {
+        "ukrainian": "анексія",
+        "pronunciation": "aneksiya",
+        "korean": "병합",
+        "english": "annexation",
+        "topic": "Aggressor & Occupation"
+    },
+    {
+        "ukrainian": "тимчасово окуповані території",
+        "pronunciation": "tymchasovo okupovani terytoriyi",
+        "korean": "임시 점령지",
+        "english": "temporarily occupied territories",
+        "topic": "Aggressor & Occupation"
+    },
+    {
+        "ukrainian": "збройні сили РФ",
+        "pronunciation": "zbroyni syly RF",
+        "korean": "러시아 연방군",
+        "english": "Armed Forces of the RF",
+        "topic": "Aggressor & Occupation"
+    },
+    {
+        "ukrainian": "обстріл",
+        "pronunciation": "obstril",
+        "korean": "포격",
+        "english": "shelling, bombardment",
+        "topic": "Military Actions & Tactics"
+    },
+    {
+        "ukrainian": "ракетний удар",
+        "pronunciation": "raketnyy udar",
+        "korean": "미사일 공격",
+        "english": "missile strike",
+        "topic": "Military Actions & Tactics"
+    },
+    {
+        "ukrainian": "повітряна тривога",
+        "pronunciation": "povitryana tryvoha",
+        "korean": "공습 경보",
+        "english": "air raid alert",
+        "topic": "Military Actions & Tactics"
+    },
+    {
+        "ukrainian": "протиповітряна оборона (ППО)",
+        "pronunciation": "protypovitryana oborona (PPO)",
+        "korean": "방공",
+        "english": "air defense",
+        "topic": "Military Actions & Tactics"
+    },
+    {
+        "ukrainian": "наступ",
+        "pronunciation": "nastup",
+        "korean": "공세, 공격",
+        "english": "offensive",
+        "topic": "Military Actions & Tactics"
+    },
+    {
+        "ukrainian": "контрнаступ",
+        "pronunciation": "kontrnastup",
+        "korean": "반격",
+        "english": "counter-offensive",
+        "topic": "Military Actions & Tactics"
+    },
+    {
+        "ukrainian": "позиційна війна",
+        "pronunciation": "pozytsiyna viyna",
+        "korean": "진지전",
+        "english": "positional warfare",
+        "topic": "Military Actions & Tactics"
+    },
+    {
+        "ukrainian": "виснаження",
+        "pronunciation": "vysnazhennya",
+        "korean": "소모, 고갈",
+        "english": "attrition",
+        "topic": "Military Actions & Tactics"
+    },
+    {
+        "ukrainian": "руйнування",
+        "pronunciation": "ruynuvannya",
+        "korean": "파괴",
+        "english": "destruction",
+        "topic": "War & Accountability"
+    },
+    {
+        "ukrainian": "збитки",
+        "pronunciation": "zbytky",
+        "korean": "피해, 손실",
+        "english": "damages, losses",
+        "topic": "War & Accountability"
+    },
+    {
+        "ukrainian": "репарації",
+        "pronunciation": "reparatsiyi",
+        "korean": "전쟁 배상금",
+        "english": "reparations",
+        "topic": "War & Accountability"
+    },
+    {
+        "ukrainian": "Міжнародний кримінальний суд (МКС)",
+        "pronunciation": "Mizhnarodnyy kryminal'nyy sud (MKS)",
+        "korean": "국제형사재판소 (ICC)",
+        "english": "International Criminal Court (ICC)",
+        "topic": "War & Accountability"
+    },
+    {
+        "ukrainian": "спеціальний трибунал",
+        "pronunciation": "spetsial'nyy trybunal",
+        "korean": "특별 재판소",
+        "english": "special tribunal",
+        "topic": "War & Accountability"
+    },
+    {
+        "ukrainian": "притягнення до відповідальності",
+        "pronunciation": "prytyahnennya do vidpovidal'nosti",
+        "korean": "책임을 묻다, 처벌",
+        "english": "accountability, bringing to justice",
+        "topic": "War & Accountability"
+    },
+    {
+        "ukrainian": "лінія зіткнення",
+        "pronunciation": "liniya zitknennya",
+        "korean": "접촉선, 대치선",
+        "english": "line of contact",
+        "topic": "Military"
+    },
+    {
+        "ukrainian": "зелений коридор",
+        "pronunciation": "zelenyy korydor",
+        "korean": "녹색 통로 (인도주의 통로)",
+        "english": "green corridor (humanitarian corridor)",
+        "topic": "Humanitarian"
+    },
+    {
+        "ukrainian": "справжні наміри",
+        "pronunciation": "spravzhni namiry",
+        "korean": "진정한 의도",
+        "english": "true intentions",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "важелі впливу",
+        "pronunciation": "vazheli vplyvu",
+        "korean": "영향력의 수단",
+        "english": "levers of influence",
+        "topic": "Intelligence & Negotiation"
+    },
+    {
+        "ukrainian": "де-окупація",
+        "pronunciation": "de-okupatsiya",
+        "korean": "탈점령",
+        "english": "de-occupation",
+        "topic": "Military"
     }
 ]

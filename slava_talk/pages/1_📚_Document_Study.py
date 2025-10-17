@@ -5,8 +5,31 @@ import streamlit as st
 from modules.ai_client import AIClientError, generate_lesson_scaffolding
 from modules.data_loader import export_to_yaml, filter_vocab, load_vocab
 from modules.vocab_manager import get_topics
+from modules.ui_components import apply_custom_css, render_vocab_card, render_hero_section, render_ai_lesson
 
 st.set_page_config(page_title="Document Study - SlavaTalk", page_icon="📚", layout="wide")
+apply_custom_css()
+
+# Remove empty boxes
+st.markdown("""
+<style>
+/* Hide all empty containers and blank boxes */
+.stMarkdown:empty,
+div[data-testid="stVerticalBlock"] > div:empty,
+.stTextInput:empty,
+div[data-testid="column"]:empty {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Remove excessive padding around cards */
+section.main .block-container {
+    padding-top: 2rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 
 def set_topic_filter(*, topics: List[str]) -> None:
@@ -14,16 +37,28 @@ def set_topic_filter(*, topics: List[str]) -> None:
     st.session_state.doc_selected_topics = list(topics)
 
 
-st.title("📚 Document Study Hub")
-st.caption("Filter curated documents, extract the terms you need, and spin up micro-lessons on demand.")
-
 vocabulary = load_vocab()
 
 if not vocabulary:
     st.error("Vocabulary data could not be loaded. Please verify `data/vocabulary.json`.")
     st.stop()
 
-st.sidebar.header("Filter")
+st.sidebar.header("🔧 설정")
+
+# TTS Settings
+st.sidebar.subheader("🔊 음성 재생 옵션")
+tts_method = st.sidebar.radio(
+    "TTS 방식",
+    ["브라우저 내장 TTS", "Google TTS (st.audio)"],
+    help="브라우저 TTS는 빠르지만 음질이 낮고, Google TTS는 느리지만 자연스럽습니다"
+)
+st.sidebar.caption("💡 단어 카드에서는 '발음 듣기' 버튼을 클릭하여 재생하세요")
+
+# Store in session state
+st.session_state.tts_method = tts_method
+
+st.sidebar.markdown("---")
+st.sidebar.header("🔍 Filter")
 search_query = st.sidebar.text_input("Search any field")
 available_topics = get_topics(vocabulary)
 
@@ -70,72 +105,40 @@ if not filtered_vocab:
     st.warning("No vocabulary matched your filters. Adjust search terms or topics.")
     st.stop()
 
-st.success(f"{len(filtered_vocab)} terms loaded.")
+st.success(f"✅ {len(filtered_vocab)}개 단어 로드 완료!")
 
-selection_ids = st.multiselect(
-    "Select terms for AI-assisted micro-lesson (optional)",
-    options=[f"{item['ukrainian']} :: {item.get('english', '')}" for item in filtered_vocab],
-    max_selections=12,
-)
+# AI Lesson generation at the top (collapsible)
+with st.expander("🤖 AI로 맞춤 레슨 생성 (선택사항)", expanded=False):
+    st.caption("단어를 선택하고 AI가 플래시카드, 드릴, 미션 브리핑을 생성합니다.")
 
-if st.button("Generate micro-lesson with ChatGPT", disabled=not selection_ids):
-    subset = [
-        item
-        for item in filtered_vocab
-        if f"{item['ukrainian']} :: {item.get('english', '')}" in selection_ids
-    ]
-    with st.spinner("Building lesson scaffolding..."):
-        try:
-            lesson = generate_lesson_scaffolding(subset, proficiency="intermediate")
-        except AIClientError as exc:
-            st.error(f"OpenAI request failed: {exc}")
-        else:
-            st.markdown("### Lesson Assets")
-            if lesson.get("flashcards"):
-                st.markdown("#### Flashcards")
-                for card in lesson["flashcards"]:
-                    st.markdown(f"- **{card.get('prompt', '')}** → {card.get('answer', '')}")
-            if lesson.get("drills"):
-                st.markdown("#### Drills")
-                for idx, drill in enumerate(lesson["drills"], start=1):
-                    st.markdown(f"{idx}. {drill.get('description', '')}")
-            if lesson.get("mission_briefs"):
-                st.markdown("#### Mission Briefs")
-                for brief in lesson["mission_briefs"]:
-                    st.markdown(f"- {brief.get('summary', '')}")
-            if lesson.get("recommendations"):
-                st.info(lesson["recommendations"])
+    selection_ids = st.multiselect(
+        "레슨에 포함할 단어 선택 (최대 12개)",
+        options=[f"{item['ukrainian']} :: {item.get('english', '')}" for item in filtered_vocab],
+        max_selections=12,
+    )
+
+    if st.button("🚀 AI 레슨 생성", disabled=not selection_ids):
+        subset = [
+            item
+            for item in filtered_vocab
+            if f"{item['ukrainian']} :: {item.get('english', '')}" in selection_ids
+        ]
+        with st.spinner("AI가 레슨을 만드는 중..."):
+            try:
+                lesson = generate_lesson_scaffolding(subset, proficiency="intermediate")
+            except AIClientError as exc:
+                st.error(f"❌ OpenAI API 오류: {exc}")
+            else:
+                st.markdown("### 📖 생성된 레슨")
+                render_ai_lesson(lesson)
 
 st.markdown("---")
+st.markdown("### 📚 단어 카드")
 
-for item in filtered_vocab:
-    doc_source = item.get("source") or item.get("source_doc", "—")
-    header = f"{item.get('ukrainian', '—')}  ({item.get('pronunciation', '—')})"
-    with st.expander(header):
-        st.markdown(f"**English:** {item.get('english', '—')}")
-        st.markdown(f"**Korean:** {item.get('korean', '—')}")
-        if item.get("topics"):
-            st.markdown("**Topics:**")
-            topic_cols = st.columns(len(item["topics"]))
-            for idx, topic in enumerate(item["topics"]):
-                topic_key = f"topic-btn-{item.get('ukrainian', idx)}-{topic}"
-                if topic_cols[idx].button(
-                    topic,
-                    key=topic_key,
-                    use_container_width=True,
-                    on_click=set_topic_filter,
-                    kwargs={"topics": [topic]},
-                ):
-                    pass
-        else:
-            st.markdown("**Topics:** —")
-        st.markdown(f"**Level:** {item.get('level', '—')}")
-        st.markdown("---")
-        st.markdown("**Example (UA):**")
-        st.markdown(f"> {item.get('example_sentence_ukr', '—')}")
-        st.markdown("**Example (EN):**")
-        st.markdown(f"> {item.get('example_sentence_eng', '—')}")
-        if item.get("notes"):
-            st.markdown("---")
-            st.markdown(f"**Notes:** {item['notes']}")
-        st.caption(f"Source: {doc_source}")
+for idx, item in enumerate(filtered_vocab):
+    render_vocab_card(
+        item,
+        index=idx,
+        tts_method=st.session_state.tts_method,
+        auto_play=False
+    )

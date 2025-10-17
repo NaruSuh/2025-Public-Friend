@@ -1,0 +1,152 @@
+/* SlavaTalk Comfortable Dark Mode Styles */
+
+.stApp {
+    /* The base background is controlled by config.toml */
+}
+
+/* Remove the bright blue hero section */
+.hero-section {
+    padding: 2rem 1rem;
+    background-color: #1a1c21; /* A slightly lighter shade of the secondary background */
+    border: 1px solid #444;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+.hero-title {
+    font-size: 42px;
+    font-weight: 800;
+    color: #FAFAFA; /* Bright but not pure white */
+}
+.hero-subtitle {
+    font-size: 20px;
+    color: #D4AF37; /* Use the softer gold from the theme */
+    margin-top: 10px;
+}
+
+/* Vocabulary Card Styling */
+.vocab-card {
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background-color: #1E2125; /* A slightly lighter card background */
+    box-shadow: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.vocab-card:hover {
+    transform: translateY(-2px);
+    border-color: #D4AF37;
+}
+
+/* Hide empty containers that create blank boxes */
+.stMarkdown:empty,
+div[data-testid="stVerticalBlock"] > div:empty {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+}
+
+.ukrainian-text {
+    font-size: 26px;
+    font-weight: 700;
+    color: #EAEAEA;
+    margin-bottom: 4px;
+}
+
+.pronunciation {
+    font-style: italic;
+    color: #999;
+    margin-bottom: 12px;
+}
+
+.translation-text {
+    font-size: 16px;
+    color: #EAEAEA;
+    margin-bottom: 5px;
+}
+
+.topic-tag-container {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.topic-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: rgba(212, 175, 55, 0.15); /* Softer gold with transparency */
+    color: #D4AF37;
+    border: 1px solid #D4AF37;
+    border-radius: 15px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-right: 6px;
+    margin-bottom: 6px;
+}
+
+.example-box {
+    background-color: #111317; /* Darker than card for contrast */
+    border-left: 4px solid #D4AF37;
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 0 8px 8px 0;
+}
+
+.example-box div {
+    font-size: 15px;
+}
+
+/* Quiz Card Styling */
+.quiz-card {
+    background-color: #1E2125;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    border: 1px solid #333;
+}
+
+/* General Button Styling */
+.stButton>button {
+    border-radius: 8px;
+    border: 1px solid #D4AF37;
+    background-color: transparent;
+    color: #D4AF37;
+    transition: all 0.2s ease-in-out;
+}
+
+.stButton>button:hover {
+    background-color: #D4AF37;
+    color: #0E1117;
+    border: 1px solid #D4AF37;
+}
+
+/* Primary Button */
+.stButton>button[kind="primary"] {
+    background-color: #D4AF37;
+    color: #0E1117;
+    border: 1px solid #D4AF37;
+}
+
+.stButton>button[kind="primary"]:hover {
+    background-color: #b38f29;
+    border: 1px solid #b38f29;
+}
+
+/* Streak Display */
+.streak-display {
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: rgba(212, 175, 55, 0.1);
+    border: 1px solid #444;
+}
+.streak-text {
+    font-size: 24px;
+    font-weight: 700;
+    color: #EAEAEA;
+}
+.streak-emoji {
+    font-size: 32px;
+}
