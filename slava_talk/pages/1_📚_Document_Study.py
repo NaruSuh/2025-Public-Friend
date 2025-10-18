@@ -10,27 +10,6 @@ from modules.ui_components import apply_custom_css, render_vocab_card, render_he
 st.set_page_config(page_title="Document Study - SlavaTalk", page_icon="📚", layout="wide")
 apply_custom_css()
 
-# Remove empty boxes
-st.markdown("""
-<style>
-/* Hide all empty containers and blank boxes */
-.stMarkdown:empty,
-div[data-testid="stVerticalBlock"] > div:empty,
-.stTextInput:empty,
-div[data-testid="column"]:empty {
-    display: none !important;
-    height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Remove excessive padding around cards */
-section.main .block-container {
-    padding-top: 2rem !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
 
 def set_topic_filter(*, topics: List[str]) -> None:
     """Update the global topic filter selection."""
