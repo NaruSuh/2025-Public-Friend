@@ -24,5 +24,20 @@ Source Brief: `slava_talk/BATON_TOUCH.md` (Gemini, 2025-10-17)
 - `modules/pdf_processor.py` → Added spaCy pipeline bootstrap, topic-aware scoring helpers, translation integration, and a CLI entry point.
 - `pages/3_📊_Progress_Dashboard.py` → New page surfacing quiz telemetry with Counter-based analytics.
 - Documentation → This `Codex.md` ledger plus Gemini’s baton document committed for future auditors.
+- `tools/openai_responses_diagnose.py` → Standalone CLI to ping the Responses API and surface quota/키 오류를 즉시 진단.
+
+## Diagnostics Cheat Sheet
+
+```bash
+# API 키 환경변수 사용
+export OPENAI_API_KEY=sk-...
+python3 tools/openai_responses_diagnose.py
+
+# 또는 CLI 옵션으로 직접 키/모델/프롬프트 지정
+python3 tools/openai_responses_diagnose.py \
+  --api-key sk-... \
+  --model gpt-4o-mini \
+  --prompt "ping"
+```
 
 All Gemini directives were adopted; no guidance was deferred. Any future extensions should build atop the new cached loaders, NLP ingest pipeline, and dashboard telemetry outlined here.
