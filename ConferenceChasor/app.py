@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import io
 import logging
+import os
 import tempfile
 import zipfile
 from pathlib import Path
 
 from flask import Flask, render_template, request, send_file
+from werkzeug.utils import secure_filename
 
 from certgen.config_loader import load_config
 from certgen.data_loader import SheetLoader
@@ -15,6 +17,13 @@ from certgen.generator import CertificateGenerator
 LOGGER = logging.getLogger("certgen.web")
 
 app = Flask(__name__)
+
+# SEC-001: File upload security - size limit (16MB)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+# SEC-001: Allowed file extensions
+ALLOWED_SHEET_EXTENSIONS = {'.xlsx', '.xls', '.xlsm', '.csv'}
+ALLOWED_CONFIG_EXTENSIONS = {'.yaml', '.yml'}
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -32,10 +41,23 @@ def index():
     return render_template("index.html")
 
 
+def _validate_file_extension(filename: str, allowed_extensions: set) -> str:
+    """Validate file extension and return sanitized filename."""
+    if not filename:
+        raise ValueError("파일명이 비어있습니다.")
+    ext = Path(filename).suffix.lower()
+    if ext not in allowed_extensions:
+        raise ValueError(f"허용되지 않는 파일 형식입니다: {ext}")
+    return secure_filename(filename)
+
+
 def _handle_submission():
     sheet_file = request.files.get("sheet")
     if not sheet_file or not sheet_file.filename:
         raise ValueError("Google Form 응답 파일을 업로드하세요.")
+
+    # SEC-001: Validate and sanitize sheet file
+    safe_sheet_name = _validate_file_extension(sheet_file.filename, ALLOWED_SHEET_EXTENSIONS)
 
     config_file = request.files.get("config")
     sheet_name = request.form.get("sheet_name") or None
@@ -48,12 +70,15 @@ def _handle_submission():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)
-        sheet_path = tmpdir_path / sheet_file.filename
+        # SEC-001: Use sanitized filename
+        sheet_path = tmpdir_path / safe_sheet_name
         sheet_file.save(sheet_path)
 
         config_path = None
         if config_file and config_file.filename:
-            config_path = tmpdir_path / config_file.filename
+            # SEC-001: Validate and sanitize config file
+            safe_config_name = _validate_file_extension(config_file.filename, ALLOWED_CONFIG_EXTENSIONS)
+            config_path = tmpdir_path / safe_config_name
             config_file.save(config_path)
 
         config = load_config(str(config_path) if config_path else None)

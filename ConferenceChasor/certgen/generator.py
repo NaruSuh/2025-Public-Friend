@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Iterable
@@ -11,6 +12,16 @@ from reportlab.pdfgen import canvas
 
 from .config_loader import AppConfig
 from .data_loader import Participant
+
+
+def _sanitize_filename_component(text: str, max_length: int = 100) -> str:
+    """SEC-003: Remove/replace invalid filename characters to prevent path traversal."""
+    # Remove path separators and invalid chars
+    text = re.sub(r'[<>:"/\\|?*\x00-\x1f]', '_', text)
+    # Collapse multiple underscores/spaces
+    text = re.sub(r'[_\s]+', '_', text)
+    # Trim and limit length
+    return text.strip('_. ')[:max_length]
 
 
 class CertificateGenerator:
@@ -116,13 +127,16 @@ class CertificateGenerator:
                     c.drawCentredString(x, y_base - 5, block["name"])
 
     def _build_filename(self, participant: Participant) -> str:
+        """SEC-003: Build filename with proper sanitization to prevent path traversal."""
         pattern = self.config.output.filename_pattern
-        safe_name = participant.name.replace(" ", "_")
-        event_name = self.config.event.title.replace(" ", "_")
+        # Sanitize user-controlled data
+        safe_name = _sanitize_filename_component(participant.name)
+        event_name = _sanitize_filename_component(self.config.event.title)
         filename = pattern.format(name=safe_name, event=event_name)
         if not filename.lower().endswith(".pdf"):
             filename += ".pdf"
-        return filename
+        # Ensure it's just a filename, not a path
+        return Path(filename).name
 
     def _format_date(self, value: str | None) -> str:
         fmt = self.config.input.date_format or "%Y-%m-%d"

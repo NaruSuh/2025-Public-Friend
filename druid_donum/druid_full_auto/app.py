@@ -12,63 +12,58 @@ import os
 from io import BytesIO
 import logging
 import traceback
-import threading
 from pathlib import Path
 
-# main.py 강제 reload (코드 변경 반영)
-import sys
-import importlib
-if 'main' in sys.modules:
-    importlib.reload(sys.modules['main'])
+# CRIT-003 FIX: Removed forced module reload anti-pattern
+# Streamlit's built-in hot-reload handles code changes automatically
 from main import ForestBidCrawler
 
-APP_VERSION = "Ver 1.1.02"
+APP_VERSION = "Ver 1.1.03"
 
-
-_session_lock = threading.RLock()
-_history_file_lock = threading.Lock()
+# CRIT-002 FIX: Removed threading locks - Streamlit is single-threaded per session
+# threading.RLock() provides false security and can cause issues
 LOG_DIR = Path("logs")
 HISTORY_LOG_PATH = LOG_DIR / "crawl_history.md"
 
 
 def _init_session_state() -> None:
     """Ensure required session keys exist."""
-    with _session_lock:
-        st.session_state.setdefault("crawl_logs", [])
-        st.session_state.setdefault("crawl_data", None)
-        st.session_state.setdefault("crawl_completed", False)
-        st.session_state.setdefault("crawl_history", [])
+    # CRIT-002 FIX: Direct session state access (Streamlit handles thread safety)
+    st.session_state.setdefault("crawl_logs", [])
+    st.session_state.setdefault("crawl_data", None)
+    st.session_state.setdefault("crawl_completed", False)
+    st.session_state.setdefault("crawl_history", [])
 
 
 def _read_session_state(key: str, default_factory):
-    """Thread-safe getter that returns a copy for mutable types."""
-    with _session_lock:
-        if key not in st.session_state:
-            st.session_state[key] = default_factory() if callable(default_factory) else default_factory
-        value = st.session_state[key]
-        if isinstance(value, list):
-            return list(value)
-        if isinstance(value, dict):
-            return dict(value)
-        return value
+    """Get session state value, returning a copy for mutable types."""
+    # CRIT-002 FIX: Removed threading lock - Streamlit is single-threaded per session
+    if key not in st.session_state:
+        st.session_state[key] = default_factory() if callable(default_factory) else default_factory
+    value = st.session_state[key]
+    if isinstance(value, list):
+        return list(value)
+    if isinstance(value, dict):
+        return dict(value)
+    return value
 
 
 def _update_session_state(key: str, updater, default_factory):
-    """Apply an updater function atomically to a session key."""
-    with _session_lock:
-        current = st.session_state.get(key)
-        if current is None:
-            current = default_factory() if callable(default_factory) else default_factory
-        new_value = updater(current)
-        st.session_state[key] = new_value
-        return new_value
+    """Apply an updater function to a session key."""
+    # CRIT-002 FIX: Removed threading lock
+    current = st.session_state.get(key)
+    if current is None:
+        current = default_factory() if callable(default_factory) else default_factory
+    new_value = updater(current)
+    st.session_state[key] = new_value
+    return new_value
 
 
 def _set_session_values(**kwargs) -> None:
-    """Atomically set multiple session values."""
-    with _session_lock:
-        for key, value in kwargs.items():
-            st.session_state[key] = value
+    """Set multiple session values."""
+    # CRIT-002 FIX: Removed threading lock
+    for key, value in kwargs.items():
+        st.session_state[key] = value
 
 
 def _append_history(entry: dict, max_entries: int = 5) -> None:
@@ -631,9 +626,11 @@ def run_crawling(start_date, end_date, days, delay, page_delay):
                 avg_views = 0
                 if '조회수' in df.columns and len(df) > 0:
                     try:
-                        views_numbers = df['조회수'].astype(str).str.extract('(\d+)')[0].astype(float)
+                        views_numbers = df['조회수'].astype(str).str.extract(r'(\d+)')[0].astype(float)
                         avg_views = int(views_numbers.mean()) if not views_numbers.isna().all() else 0
-                    except:
+                    except (ValueError, TypeError, KeyError) as e:
+                        # MAJ-001 FIX: Specific exception handling instead of bare except
+                        logging.warning(f"평균 조회수 계산 실패: {e}")
                         avg_views = 0
                 st.metric("평균 조회수", avg_views)
 
