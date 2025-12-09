@@ -6,6 +6,8 @@
   <section class="panel">
     <h2>수료증 ZIP 생성하기</h2>
     <form action="/" method="post" enctype="multipart/form-data" class="form-grid">
+      <!-- SEC-002: CSRF protection token -->
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <label>
         응답 시트 (Excel/CSV)
         <input type="file" name="sheet" accept=".xlsx,.xls,.xlsm,.csv" required />
