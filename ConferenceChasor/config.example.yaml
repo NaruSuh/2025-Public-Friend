@@ -1,0 +1,36 @@
+# 기본 설정 파일: 실제 운용 시 값을 수정해 사용하세요.
+event:
+  title: "2025 SkyImpact Seminar"
+  subtitle: "Emerging Research Showcase"
+  description: "본 참가증은 아래 참여자가 세미나 프로그램을 수료했음을 확인합니다."
+  footer_note: "SkyImpact Research Center"
+  signature_block:
+    - label: "Seminar Director"
+      name: "Dr. Minseo Park"
+    - label: "Program Coordinator"
+      name: "J. Lee"
+  date_label: "발급일"
+layout:
+  page_orientation: "landscape"  # landscape | portrait
+  border_color: "#1f4b99"
+  accent_color: "#004b7c"
+  background_color: "#f7f9fc"
+  font:
+    heading: "Helvetica-Bold"
+    body: "Helvetica"
+columns:
+  name: "Full Name"
+  affiliation: "Affiliation"
+  email: "Email"
+  completion_date: "Completion Date"
+  status: "Status"
+filters:
+  column: "Status"
+  equals: "Attended"
+output:
+  dirname: "output"
+  filename_pattern: "{name}_{event}.pdf"
+input:
+  sheet_name: null  # null이면 첫 시트 사용
+  date_format: "%Y-%m-%d"
+  locale: "ko_KR"
