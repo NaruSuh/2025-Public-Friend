@@ -1,0 +1,186 @@
+import OpenAI from 'openai';
+import { env } from '@/config/env';
+import { ParsedQuery, NLQueryResponse, QueryIntent, QueryFilters, OutputConfig } from '@/types/nlp.types';
+import { ApiRegistry } from '@/config/apis';
+import { CrawlerFactory } from '@/services/crawler/crawlerFactory';
+
+export class NLQueryEngine {
+  private openai: OpenAI | null;
+
+  constructor() {
+    if (!env.OPENAI_API_KEY || env.OPENAI_API_KEY === 'sk-...') {
+      this.openai = null;
+    } else {
+      this.openai = new OpenAI({
+        apiKey: env.OPENAI_API_KEY,
+      });
+    }
+  }
+
+  async isAvailable(): Promise<boolean> {
+    return this.openai !== null;
+  }
+
+  async parseQuery(naturalLanguageQuery: string): Promise<NLQueryResponse> {
+    if (!this.openai) {
+      throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
+    }
+
+    const systemPrompt = this.buildSystemPrompt();
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: naturalLanguageQuery },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.3,
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error('Empty response from OpenAI');
+    }
+
+    const parsed = JSON.parse(content) as ParsedQuery;
+    parsed.rawQuery = naturalLanguageQuery;
+
+    return {
+      parsedQuery: parsed,
+      explanation: this.generateExplanation(parsed),
+      suggestedActions: this.generateSuggestedActions(parsed),
+    };
+  }
+
+  private buildSystemPrompt(): string {
+    const availableApis = ApiRegistry.getInstance().getAll().map(a => a.id);
+    const availableCrawlers = CrawlerFactory.getAvailableTypes();
+
+    return `You are a data query parser for a Korean policy data collection system.
+Convert natural language queries into structured commands.
+
+Available APIs: ${availableApis.join(', ')}
+Available Crawlers: ${availableCrawlers.join(', ')}
+
+Output JSON format:
+{
+  "intent": "fetch_api" | "crawl_site" | "parse_pdf" | "analyze_data" | "export_data",
+  "confidence": 0.0-1.0,
+  "source": {
+    "type": "api" | "crawler" | "local" | "unknown",
+    "id": "source_id or null",
+    "url": "for custom crawling"
+  },
+  "filters": {
+    "dateRange": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" },
+    "region": "지역명",
+    "category": "카테고리",
+    "keywords": ["키워드1", "키워드2"],
+    "election": {
+      "year": 2022,
+      "type": "지방선거" | "대통령선거" | "총선",
+      "position": "시장" | "도지사" | "구청장"
+    }
+  },
+  "output": {
+    "format": "csv" | "json" | "table" | "chart" | "excel",
+    "columns": ["컬럼1", "컬럼2"],
+    "sorting": { "field": "필드명", "order": "asc" | "desc" },
+    "limit": 100
+  }
+}
+
+Examples:
+- "2022년 서울시장 당선인 공약 CSV로 뽑아줘"
+  → intent: fetch_api, source.type: api, source.id: public_data_election, filters.election.year: 2022, filters.region: 서울, filters.election.position: 시장, output.format: csv
+
+- "선거정보도서관에서 2018년 지방선거 공보 다운로드"
+  → intent: crawl_site, source.type: crawler, source.id: nec_library, filters.election.year: 2018
+
+- "1986년부터 강남구 아파트 가격 월별로"
+  → intent: fetch_api, source.type: api, source.id: rone_apt_price, filters.dateRange.start: 1986-01-01, filters.region: 강남구
+
+Respond in Korean for explanation fields. Always include confidence score.`;
+  }
+
+  private generateExplanation(parsed: ParsedQuery): string {
+    const parts: string[] = [];
+
+    switch (parsed.intent) {
+      case 'fetch_api':
+        parts.push(`API에서 데이터를 가져옵니다 (소스: ${parsed.source.id || '자동 선택'})`);
+        break;
+      case 'crawl_site':
+        parts.push(`웹사이트를 크롤링합니다 (${parsed.source.id || parsed.source.url})`);
+        break;
+      case 'parse_pdf':
+        parts.push('PDF 문서를 파싱합니다');
+        break;
+      case 'analyze_data':
+        parts.push('데이터를 분석합니다');
+        break;
+      case 'export_data':
+        parts.push('데이터를 내보냅니다');
+        break;
+    }
+
+    if (parsed.filters.dateRange) {
+      parts.push(`기간: ${parsed.filters.dateRange.start} ~ ${parsed.filters.dateRange.end}`);
+    }
+    if (parsed.filters.region) {
+      parts.push(`지역: ${parsed.filters.region}`);
+    }
+    if (parsed.output.format) {
+      parts.push(`출력 형식: ${parsed.output.format.toUpperCase()}`);
+    }
+
+    return parts.join(' | ');
+  }
+
+  private generateSuggestedActions(parsed: ParsedQuery): string[] {
+    const actions: string[] = [];
+
+    if (parsed.confidence < 0.7) {
+      actions.push('쿼리가 모호합니다. 더 구체적인 조건을 추가해주세요.');
+    }
+
+    if (parsed.source.type === 'unknown') {
+      actions.push('데이터 소스를 명시해주세요 (예: 공공데이터포털, 선거정보도서관)');
+    }
+
+    if (!parsed.output.format) {
+      actions.push('출력 형식을 선택하세요 (CSV, JSON, 표, 차트)');
+    }
+
+    return actions;
+  }
+
+  async analyzeData(data: any[], query: string): Promise<string> {
+    if (!this.openai) {
+      throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
+    }
+
+    const prompt = `다음 데이터를 분석해주세요:
+
+데이터 (처음 5개 행):
+${JSON.stringify(data.slice(0, 5), null, 2)}
+
+총 ${data.length}개 행
+
+분석 요청: ${query}
+
+JSON 형식으로 분석 결과를 반환해주세요.`;
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: '데이터 분석 전문가입니다. 한국어로 응답합니다.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.5,
+    });
+
+    return response.choices[0].message.content || '';
+  }
+}

@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test coverage
+coverage/
+
+# Auto debug collector output
+test_temp/
+markdownDocu/
+
+# Collected data (may contain sensitive info)
+data/pledges/
+data/crawled/
+
+# Turbo cache
+.turbo/
+
+# Local scripts output
+*.local.ts
+*.local.js

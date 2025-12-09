@@ -1,0 +1,41 @@
+{
+  "name": "@napo/root",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@8.15.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "lint:fix": "pnpm -r lint --fix",
+    "db:generate": "pnpm --filter @napo/backend prisma generate",
+    "db:migrate": "pnpm --filter @napo/backend prisma migrate dev",
+    "db:push": "pnpm --filter @napo/backend prisma db push",
+    "db:studio": "pnpm --filter @napo/backend prisma studio",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "apps/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "apps/**/*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.3",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.7.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.3.0"
+  }
+}

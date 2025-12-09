@@ -1,0 +1,234 @@
+// Prisma Schema for naPO (naru Public Observer)
+// Supports both Supabase and Local PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// API Sources (확장 가능한 API 엔드포인트 관리)
+// ============================================
+model ApiSource {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  displayName String
+  baseUrl     String
+  authType    AuthType @default(API_KEY)
+  authConfig  Json     // { keyParamName, keyLocation, headerName, etc. }
+  defaultParams Json?
+  responseFormat ResponseFormat @default(JSON)
+  rateLimit   Json?    // { requestsPerMinute, requestsPerDay }
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  apiKeys     ApiKey[]
+  dataJobs    DataJob[]
+
+  @@map("api_sources")
+}
+
+enum AuthType {
+  API_KEY
+  OAUTH
+  BEARER
+  NONE
+}
+
+enum ResponseFormat {
+  JSON
+  XML
+}
+
+// ============================================
+// API Keys (사용자별 API 키 관리)
+// ============================================
+model ApiKey {
+  id          String   @id @default(cuid())
+  sourceId    String
+  source      ApiSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  keyValue    String   // 암호화 저장 필요
+  label       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+
+  @@map("api_keys")
+}
+
+// ============================================
+// Crawler Sites (크롤링 대상 사이트)
+// ============================================
+model CrawlerSite {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  displayName String
+  baseUrl     String
+  crawlerType CrawlerType
+  config      Json     // 사이트별 크롤링 설정
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  dataJobs    DataJob[]
+
+  @@map("crawler_sites")
+}
+
+enum CrawlerType {
+  NEC_LIBRARY      // 선거정보도서관 (구현됨)
+  CUSTOM           // 사용자 정의 (구현됨)
+  BIGKINDS         // 빅카인즈 (미구현 - 향후 개발 예정)
+  MANIFESTO        // 한국매니페스토실천본부 (미구현 - 향후 개발 예정)
+}
+
+// ============================================
+// Data Jobs (데이터 수집 작업)
+// ============================================
+model DataJob {
+  id          String    @id @default(cuid())
+  jobType     JobType
+  status      JobStatus @default(PENDING)
+
+  // Source reference (하나만 사용)
+  apiSourceId    String?
+  apiSource      ApiSource?   @relation(fields: [apiSourceId], references: [id])
+  crawlerSiteId  String?
+  crawlerSite    CrawlerSite? @relation(fields: [crawlerSiteId], references: [id])
+
+  // Job configuration
+  inputParams    Json      // 입력 파라미터
+  naturalQuery   String?   // 원본 자연어 쿼리 (있는 경우)
+  parsedQuery    Json?     // 파싱된 쿼리 구조
+
+  // Results
+  resultCount    Int?
+  resultPath     String?   // 저장된 파일 경로
+  errorMessage   String?
+
+  // Timestamps
+  createdAt      DateTime  @default(now())
+  startedAt      DateTime?
+  completedAt    DateTime?
+
+  // Relations
+  dataRecords    DataRecord[]
+
+  @@map("data_jobs")
+}
+
+enum JobType {
+  API_FETCH
+  CRAWL
+  PDF_PARSE
+  ANALYSIS
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// ============================================
+// Data Records (수집된 데이터 레코드)
+// ============================================
+model DataRecord {
+  id          String   @id @default(cuid())
+  jobId       String
+  job         DataJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Data content
+  rawData     Json     // 원본 데이터
+  normalizedData Json? // 정규화된 데이터
+
+  // Metadata
+  sourceUrl   String?
+  sourceType  String   // api, crawler, pdf
+  category    String?  // 데이터 분류
+  tags        String[] // 태그
+
+  createdAt   DateTime @default(now())
+
+  @@index([jobId])
+  @@index([category])
+  @@map("data_records")
+}
+
+// ============================================
+// Parsed Documents (PDF 파싱 결과)
+// ============================================
+model ParsedDocument {
+  id           String   @id @default(cuid())
+  fileName     String
+  fileSize     Int
+  mimeType     String
+
+  // Parsing info
+  parserUsed   ParserType
+  pageCount    Int?
+
+  // Content
+  extractedText String?
+  structuredData Json?
+
+  // Metadata
+  metadata     Json?
+
+  createdAt    DateTime @default(now())
+
+  @@map("parsed_documents")
+}
+
+enum ParserType {
+  CLOVA_OCR
+  GOOGLE_VISION
+  PYMUPDF
+  DOLPHIN
+}
+
+// ============================================
+// Query History (쿼리 히스토리)
+// ============================================
+model QueryHistory {
+  id              String   @id @default(cuid())
+  naturalQuery    String   // 원본 자연어 쿼리
+  parsedIntent    String   // 파싱된 의도
+  parsedParams    Json     // 파싱된 파라미터
+  executionTimeMs Int?
+  resultCount     Int?
+  createdAt       DateTime @default(now())
+
+  @@map("query_history")
+}
+
+// ============================================
+// Export History (내보내기 히스토리)
+// ============================================
+model ExportHistory {
+  id          String       @id @default(cuid())
+  format      ExportFormat
+  fileName    String
+  filePath    String
+  recordCount Int
+  fileSize    Int
+  createdAt   DateTime     @default(now())
+
+  @@map("export_history")
+}
+
+enum ExportFormat {
+  CSV
+  XLSX
+  JSON
+  PDF
+}
