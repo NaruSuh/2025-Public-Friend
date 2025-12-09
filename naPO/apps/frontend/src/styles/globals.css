@@ -1,0 +1,244 @@
+/* ============================================
+   naPO (naru Public Observer) - Global Styles
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap');
+@import './theme.css';
+
+/* ========== Reset ========== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+/* ========== Typography ========== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: var(--font-size-4xl); }
+h2 { font-size: var(--font-size-3xl); }
+h3 { font-size: var(--font-size-2xl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-base); }
+
+p {
+  margin-bottom: var(--spacing-4);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: var(--border-width-base) solid currentColor;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+code, pre {
+  font-family: var(--font-family-code);
+  font-size: var(--font-size-sm);
+}
+
+/* ========== Buttons (Brutalist Style) ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-6);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: var(--border-width-thick) solid var(--border-color);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-base);
+}
+
+.btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-none);
+}
+
+.btn--primary {
+  background-color: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.btn--accent {
+  background-color: var(--color-accent);
+  color: var(--text-inverse);
+  border-color: var(--color-accent);
+}
+
+/* ========== Inputs (Brutalist Style) ========== */
+.input {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  border: var(--border-width-thick) solid var(--border-color);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+  transition: box-shadow var(--transition-fast);
+}
+
+.input:focus {
+  box-shadow: var(--shadow-sm);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ========== Cards (Brutalist Style) ========== */
+.card {
+  padding: var(--spacing-6);
+  border: var(--border-width-thick) solid var(--border-color);
+  background-color: var(--bg-primary);
+  box-shadow: var(--shadow-base);
+}
+
+.card__header {
+  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-4);
+  border-bottom: var(--border-width-base) solid var(--border-color);
+}
+
+.card__title {
+  font-size: var(--font-size-lg);
+  margin-bottom: 0;
+}
+
+/* ========== Tables (Brutalist Style) ========== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--spacing-3) var(--spacing-4);
+  text-align: left;
+  border: var(--border-width-base) solid var(--border-color);
+}
+
+.table th {
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  background-color: var(--bg-secondary);
+}
+
+.table tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* ========== Layout ========== */
+.app-layout {
+  display: grid;
+  grid-template-columns: var(--nav-left-width) 1fr var(--nav-right-width);
+  grid-template-rows: var(--query-bar-height) 1fr var(--footer-height);
+  min-height: 100vh;
+}
+
+.app-layout__left-nav {
+  grid-row: 1 / -1;
+  border-right: var(--border-width-thick) solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.app-layout__right-nav {
+  grid-row: 1 / -1;
+  border-left: var(--border-width-thick) solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.app-layout__query-bar {
+  grid-column: 2;
+  border-bottom: var(--border-width-thick) solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--spacing-4);
+}
+
+.app-layout__main {
+  grid-column: 2;
+  padding: var(--spacing-6);
+  overflow-y: auto;
+}
+
+.app-layout__footer {
+  grid-column: 2;
+  border-top: var(--border-width-base) solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+/* ========== Utilities ========== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-uppercase { text-transform: uppercase; }
+
+.mt-4 { margin-top: var(--spacing-4); }
+.mb-4 { margin-bottom: var(--spacing-4); }
+.my-4 { margin-top: var(--spacing-4); margin-bottom: var(--spacing-4); }
+
+.p-4 { padding: var(--spacing-4); }
+.px-4 { padding-left: var(--spacing-4); padding-right: var(--spacing-4); }
+.py-4 { padding-top: var(--spacing-4); padding-bottom: var(--spacing-4); }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: var(--spacing-2); }
+.gap-4 { gap: var(--spacing-4); }

@@ -1,0 +1,635 @@
+openapi: 3.0.3
+info:
+  title: naPO Backend API
+  description: |
+    naPO (National Policy Observatory) Backend API
+
+    자연어 쿼리를 통해 한국 선거 및 정책 데이터에 접근하는 API입니다.
+
+    ## 주요 기능
+    - 자연어 쿼리 파싱 및 실행
+    - 공공데이터 API 연동 (선거관리위원회, 정당정책 등)
+    - PDF 문서 파싱 (OCR 지원)
+    - 웹 크롤링
+    - 데이터 내보내기 (CSV, JSON)
+
+  version: 1.0.0
+  contact:
+    name: naPO Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3001/api/v1
+    description: Development server
+
+tags:
+  - name: Query
+    description: 자연어 쿼리 처리
+  - name: Sources
+    description: API 소스 관리
+  - name: Crawl
+    description: 웹 크롤링
+  - name: Parse
+    description: PDF 파싱
+  - name: Export
+    description: 데이터 내보내기
+  - name: Auth
+    description: 인증
+  - name: History
+    description: 쿼리 히스토리
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: 서버 상태 확인
+      responses:
+        '200':
+          description: 서버 정상
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /query:
+    post:
+      tags:
+        - Query
+      summary: 자연어 쿼리 파싱
+      description: 자연어 질문을 구조화된 쿼리로 변환합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                  example: "2024년 총선 결과 알려줘"
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParsedQueryResponse'
+        '400':
+          description: 유효성 검증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /query/execute:
+    post:
+      tags:
+        - Query
+      summary: 쿼리 실행
+      description: 파싱된 쿼리를 실행하여 데이터를 조회합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - parsedQuery
+              properties:
+                parsedQuery:
+                  $ref: '#/components/schemas/ParsedQuery'
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecuteQueryResponse'
+        '400':
+          description: 유효성 검증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /sources/apis:
+    get:
+      tags:
+        - Sources
+      summary: API 소스 목록
+      description: 등록된 모든 API 소스를 조회합니다.
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApiSource'
+
+  /sources/apis/{id}:
+    get:
+      tags:
+        - Sources
+      summary: API 소스 상세
+      description: 특정 API 소스의 상세 정보를 조회합니다.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/ApiSource'
+        '404':
+          description: 소스를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /crawl:
+    post:
+      tags:
+        - Crawl
+      summary: 크롤링 작업 시작
+      description: 새로운 웹 크롤링 작업을 시작합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - crawlerType
+              properties:
+                crawlerType:
+                  type: string
+                  enum:
+                    - custom
+                    - nec_library
+                options:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                      format: uri
+                    downloadFiles:
+                      type: boolean
+      responses:
+        '200':
+          description: 작업 생성됨
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      jobId:
+                        type: string
+                      status:
+                        type: string
+        '400':
+          description: 유효성 검증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /crawl/{jobId}:
+    get:
+      tags:
+        - Crawl
+      summary: 크롤링 작업 상태
+      description: 크롤링 작업의 현재 상태를 조회합니다.
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/CrawlJob'
+        '404':
+          description: 작업을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /parse:
+    post:
+      tags:
+        - Parse
+      summary: PDF 파싱
+      description: PDF 파일을 파싱하여 텍스트를 추출합니다.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                parser:
+                  type: string
+                  enum:
+                    - pymupdf
+                    - clova_ocr
+                    - google_vision
+                    - dolphin
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/ParseResult'
+
+  /parse/parsers:
+    get:
+      tags:
+        - Parse
+      summary: 가용 파서 목록
+      description: 사용 가능한 PDF 파서 목록을 반환합니다.
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: string
+
+  /export:
+    post:
+      tags:
+        - Export
+      summary: 데이터 내보내기
+      description: 데이터를 CSV 또는 JSON 형식으로 내보냅니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - data
+                - format
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                format:
+                  type: string
+                  enum:
+                    - csv
+                    - json
+      responses:
+        '200':
+          description: 성공
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: 로그인
+      description: 이메일과 비밀번호로 로그인합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      user:
+                        type: object
+                        properties:
+                          email:
+                            type: string
+                          role:
+                            type: string
+
+  /history:
+    get:
+      tags:
+        - History
+      summary: 쿼리 히스토리
+      description: 이전 쿼리 기록을 조회합니다.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/QueryHistory'
+                      total:
+                        type: integer
+                      limit:
+                        type: integer
+                      offset:
+                        type: integer
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: Invalid request data
+
+    ParsedQuery:
+      type: object
+      properties:
+        intent:
+          type: string
+          enum:
+            - fetch_api
+            - crawl_site
+            - parse_pdf
+            - analyze_data
+            - export_data
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        source:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - api
+                - crawler
+                - local
+                - unknown
+            id:
+              type: string
+        filters:
+          type: object
+          additionalProperties: true
+        output:
+          type: object
+          properties:
+            format:
+              type: string
+            limit:
+              type: integer
+        rawQuery:
+          type: string
+
+    ParsedQueryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            parsedQuery:
+              $ref: '#/components/schemas/ParsedQuery'
+            explanation:
+              type: string
+            suggestedActions:
+              type: array
+              items:
+                type: string
+
+    ExecuteQueryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            data:
+              type: object
+            source:
+              type: string
+            isStubData:
+              type: boolean
+            metadata:
+              type: object
+              properties:
+                timestamp:
+                  type: string
+                  format: date-time
+
+    ApiSource:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        displayName:
+          type: string
+        baseUrl:
+          type: string
+        authType:
+          type: string
+        isActive:
+          type: boolean
+        apiKeys:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              label:
+                type: string
+              isActive:
+                type: boolean
+
+    CrawlJob:
+      type: object
+      properties:
+        id:
+          type: string
+        jobType:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - RUNNING
+            - COMPLETED
+            - FAILED
+        resultCount:
+          type: integer
+        errorMessage:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+
+    ParseResult:
+      type: object
+      properties:
+        content:
+          type: object
+          properties:
+            text:
+              type: string
+            pages:
+              type: array
+              items:
+                type: object
+        metadata:
+          type: object
+        parseTime:
+          type: number
+
+    QueryHistory:
+      type: object
+      properties:
+        id:
+          type: string
+        naturalQuery:
+          type: string
+        parsedIntent:
+          type: string
+        parsedParams:
+          type: object
+        executionTimeMs:
+          type: integer
+        resultCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

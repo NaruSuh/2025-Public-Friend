@@ -1,0 +1,165 @@
+/* ============================================
+   naPO (naru Public Observer) - Theme Variables
+   Design: Minimalist + Brutalist
+
+   이 파일만 수정하여 전체 디자인 변경 가능
+   ============================================ */
+
+:root {
+  /* ========== Colors ========== */
+  /* Primary - Stark Black & White */
+  --color-primary: #000000;
+  --color-primary-hover: #1a1a1a;
+  --color-secondary: #ffffff;
+
+  /* Accent - Bold Red (Brutalist touch) */
+  --color-accent: #ff0000;
+  --color-accent-hover: #cc0000;
+  --color-accent-light: #ffeeee;
+
+  /* Neutral */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+
+  /* Semantic */
+  --color-success: #00ff00;
+  --color-warning: #ffff00;
+  --color-error: #ff0000;
+  --color-info: #0000ff;
+
+  /* Background */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e5e5e5;
+  --bg-inverse: #000000;
+
+  /* Text */
+  --text-primary: #000000;
+  --text-secondary: #525252;
+  --text-muted: #737373;
+  --text-inverse: #ffffff;
+
+  /* ========== Typography ========== */
+  /* Font Family - Monospace for Brutalist feel */
+  --font-family-base: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-family-heading: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-family-code: 'IBM Plex Mono', monospace;
+
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ========== Spacing ========== */
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;   /* 4px */
+  --spacing-2: 0.5rem;    /* 8px */
+  --spacing-3: 0.75rem;   /* 12px */
+  --spacing-4: 1rem;      /* 16px */
+  --spacing-5: 1.25rem;   /* 20px */
+  --spacing-6: 1.5rem;    /* 24px */
+  --spacing-8: 2rem;      /* 32px */
+  --spacing-10: 2.5rem;   /* 40px */
+  --spacing-12: 3rem;     /* 48px */
+  --spacing-16: 4rem;     /* 64px */
+
+  /* ========== Layout ========== */
+  /* Navigation */
+  --nav-left-width: 260px;
+  --nav-right-width: 280px;
+  --nav-left-collapsed: 60px;
+
+  /* Header */
+  --header-height: 64px;
+  --query-bar-height: 56px;
+
+  /* Footer */
+  --footer-height: 40px;
+
+  /* Content */
+  --content-max-width: 1400px;
+  --content-padding: var(--spacing-6);
+
+  /* ========== Borders ========== */
+  /* Brutalist: Thick, stark borders */
+  --border-width-thin: 1px;
+  --border-width-base: 2px;
+  --border-width-thick: 4px;
+  --border-width-brutal: 6px;
+
+  --border-color: #000000;
+  --border-color-light: #e5e5e5;
+
+  --border-radius-none: 0;
+  --border-radius-sm: 2px;
+  --border-radius-base: 4px;
+  --border-radius-lg: 8px;
+
+  /* ========== Shadows ========== */
+  /* Brutalist: Hard shadows, no blur */
+  --shadow-none: none;
+  --shadow-sm: 2px 2px 0 #000000;
+  --shadow-base: 4px 4px 0 #000000;
+  --shadow-lg: 6px 6px 0 #000000;
+  --shadow-xl: 8px 8px 0 #000000;
+
+  /* ========== Transitions ========== */
+  --transition-fast: 100ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* ========== Z-Index ========== */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+}
+
+/* ========== Dark Mode Variables ========== */
+[data-theme="dark"] {
+  --color-primary: #ffffff;
+  --color-secondary: #000000;
+
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #171717;
+  --bg-tertiary: #262626;
+  --bg-inverse: #ffffff;
+
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --text-inverse: #000000;
+
+  --border-color: #ffffff;
+  --border-color-light: #404040;
+
+  --shadow-sm: 2px 2px 0 #ffffff;
+  --shadow-base: 4px 4px 0 #ffffff;
+  --shadow-lg: 6px 6px 0 #ffffff;
+}
