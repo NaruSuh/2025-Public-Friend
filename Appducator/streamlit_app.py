@@ -6,7 +6,10 @@ from typing import Dict, List
 
 import streamlit as st
 
+from html import escape as html_escape
+
 from app_utils import (
+    BASE_DIR,
     ensure_future_ready_extensions,
     ensure_relative_path,
     highlight_terms,
@@ -179,7 +182,7 @@ main .block-container {
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(ttl=300, show_spinner=False)
 def get_catalog() -> List[Dict[str, str]]:
     catalog: List[Dict[str, str]] = []
     for path in iter_markdown_files():
@@ -252,6 +255,11 @@ selected_label = st.sidebar.selectbox("학습 문서", option_labels)
 selected_item = next(item for item in path_options if f"{item['relative']} — {item['title']}" == selected_label)
 selected_path = Path(selected_item["path"])
 
+# SEC-002: Path traversal validation
+if BASE_DIR not in selected_path.resolve().parents and selected_path.resolve().parent != BASE_DIR:
+    st.error("Invalid file path")
+    st.stop()
+
 md_text, doc_title = load_markdown_content(selected_path)
 html = markdown_to_html(md_text)
 highlighted_html, highlighted_terms = highlight_terms(html, glossary)
@@ -297,9 +305,12 @@ with reader_tab:
 if st.session_state.get("modal_term"):
     term = st.session_state["modal_term"]
     details = glossary.get(term, {"short": "", "long": "정의가 없습니다."})
-    with st.modal(f"{term} — 상세 설명"):
+    # SEC-001: Sanitize term before using in modal title
+    safe_term = html_escape(term)
+    with st.modal(f"{safe_term} — 상세 설명"):
         st.write(details.get("long") or details.get("short"))
-        note = st.text_input("추가 메모", key=f"note-{term}", placeholder="개인 메모를 남겨주세요 (선택)")
+        # SEC-003: Add max_chars limit to prevent excessive input
+        note = st.text_input("추가 메모", key=f"note-{term}", placeholder="개인 메모를 남겨주세요 (선택)", max_chars=1000)
         if st.button("용어장에 저장", key=f"save-{term}"):
             definition = details.get("long") or details.get("short") or "정의 미등록"
             if note:
