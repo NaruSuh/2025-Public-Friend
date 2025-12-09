@@ -3,11 +3,12 @@ from __future__ import annotations
 import io
 import logging
 import os
+import secrets
 import tempfile
 import zipfile
 from pathlib import Path
 
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, session
 from werkzeug.utils import secure_filename
 
 from certgen.config_loader import load_config
@@ -21,9 +22,30 @@ app = Flask(__name__)
 # SEC-001: File upload security - size limit (16MB)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+# SEC-002: CSRF protection - secret key for session
+app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+
 # SEC-001: Allowed file extensions
 ALLOWED_SHEET_EXTENSIONS = {'.xlsx', '.xls', '.xlsm', '.csv'}
 ALLOWED_CONFIG_EXTENSIONS = {'.yaml', '.yml'}
+
+
+def _generate_csrf_token() -> str:
+    """Generate CSRF token for form protection."""
+    if 'csrf_token' not in session:
+        session['csrf_token'] = secrets.token_hex(32)
+    return session['csrf_token']
+
+
+def _validate_csrf_token() -> None:
+    """Validate CSRF token from form submission."""
+    token = request.form.get('csrf_token')
+    if not token or token != session.get('csrf_token'):
+        raise ValueError("잘못된 요청입니다. 페이지를 새로고침 후 다시 시도해 주세요.")
+
+
+# Make csrf_token available in all templates
+app.jinja_env.globals['csrf_token'] = _generate_csrf_token
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -36,7 +58,8 @@ def index():
             error = str(exc)
         except Exception as exc:  # pragma: no cover - runtime safety
             LOGGER.exception("Unexpected failure while generating certificates")
-            error = f"서버 처리 중 오류가 발생했습니다: {exc}"
+            # SEC-003: Generic error message to prevent internal info disclosure
+            error = "서버 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
         return render_template("index.html", error=error)
     return render_template("index.html")
 
@@ -52,6 +75,9 @@ def _validate_file_extension(filename: str, allowed_extensions: set) -> str:
 
 
 def _handle_submission():
+    # SEC-002: Validate CSRF token before processing
+    _validate_csrf_token()
+
     sheet_file = request.files.get("sheet")
     if not sheet_file or not sheet_file.filename:
         raise ValueError("Google Form 응답 파일을 업로드하세요.")
