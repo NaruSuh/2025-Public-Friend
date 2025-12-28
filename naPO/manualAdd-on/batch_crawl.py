@@ -95,10 +95,12 @@ class BatchCrawler:
             result["count"] = len(items)
 
             if items:
-                # 결과 저장
+                # 결과 저장 (JSONL + Markdown 이중 출력)
                 saver = ResultSaver(str(self.output_dir))
                 output_file = saver.save_jsonl(council_code, items)
+                md_file = saver.save_markdown(council_code, items)
                 result["output_file"] = str(output_file)
+                result["md_file"] = str(md_file)
                 result["success"] = True
             else:
                 result["success"] = False  # 0건이면 실패로 처리

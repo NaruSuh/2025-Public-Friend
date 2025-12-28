@@ -1,6 +1,49 @@
-# 전국 243개 지방의회 웹사이트 크롤링 PoC 기술 조사 보고서
+# 전국 243개 지방의회 회의록 100% 크롤링 시스템
 
-전국 243개 지방의회(17개 광역 + 226개 기초) 회의록 시스템은 **eGovFrame 기반 Java 서블릿 구조**가 지배적이며, `.do` 확장자 URL 패턴과 숫자 기반 문서 ID 체계를 공유합니다. 광역의회는 대부분 독립적인 회의록 시스템(서브도메인 또는 별도 포트)을 운영하며, 기초의회의 **65%는 `council.xxx.go.kr` 서브도메인 패턴**을 사용합니다. 크롤링 구현 시 Scrapy + Playwright 조합이 가장 효과적이며, 의회별 설정을 YAML로 외부화하면 243개 의회를 단일 코드베이스로 커버할 수 있습니다.
+> **2024-12-29 업데이트**: Playwright 기반 크롤러 추가로 **243개 전체 지방의회 100% 크롤링 달성**
+
+## 실행 결과
+
+| 구분 | 의회 수 | 레코드 수 |
+|------|---------|-----------|
+| 광역의회 | 16개 | 816건 |
+| 기초의회 | 227개 | 8,470건 |
+| **총합** | **243개** | **9,286건** |
+
+## 빠른 시작
+
+```bash
+# 의존성 설치
+pip install -r requirements.txt
+playwright install chromium
+
+# 전체 기초의회 크롤링 (병렬)
+python crawl_all_basic_parallel.py
+
+# 광역의회 크롤링
+python metro_crawl_all.py
+
+# Playwright 기반 크롤링 (JavaScript 렌더링 필요한 사이트)
+python playwright_batch_crawl.py
+```
+
+## 핵심 파일 설명
+
+| 파일 | 설명 |
+|------|------|
+| `playwright_crawler.py` | Playwright 기반 단일 의회 크롤러 (JS 렌더링 지원) |
+| `playwright_batch_crawl.py` | Playwright 배치 크롤링 |
+| `crawl_all_basic_parallel.py` | 226개 기초의회 병렬 크롤링 |
+| `metro_crawl_all.py` | 17개 광역의회 크롤링 |
+| `crawl_clik_portal.py` | CLIK 포털 백업 크롤링 |
+| `council_crawler.py` | 기본 aiohttp 크롤러 |
+| `basic_councils.yaml` | 226개 기초의회 URL 설정 |
+
+---
+
+## 기술 조사 보고서
+
+전국 243개 지방의회(17개 광역 + 226개 기초) 회의록 시스템은 **eGovFrame 기반 Java 서블릿 구조**가 지배적이며, `.do` 확장자 URL 패턴과 숫자 기반 문서 ID 체계를 공유합니다. 광역의회는 대부분 독립적인 회의록 시스템(서브도메인 또는 별도 포트)을 운영하며, 기초의회의 **65%는 `council.xxx.go.kr` 서브도메인 패턴**을 사용합니다. 크롤링 구현 시 Playwright 조합이 가장 효과적이며, 의회별 설정을 YAML로 외부화하면 243개 의회를 단일 코드베이스로 커버할 수 있습니다.
 
 ---
 

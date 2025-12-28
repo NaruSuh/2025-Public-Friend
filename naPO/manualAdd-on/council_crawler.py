@@ -16,6 +16,7 @@ Usage:
 import argparse
 import json
 import logging
+import random
 import re
 import sys
 import time
@@ -61,12 +62,13 @@ class MeetingMinutes:
     committee_name: str   # 위원회명
     meeting_date: str     # YYYY-MM-DD
     title: str
-    content_preview: str  # 본문 미리보기 (500자)
+    content_preview: str  # 본문 미리보기 (500자) - 하위호환용
+    full_content: str = ""  # 전체 회의록 본문
     pdf_url: Optional[str] = None
     hwp_url: Optional[str] = None
     source_url: str = ""
     scraped_at: str = ""
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
@@ -729,14 +731,18 @@ class HttpClient:
     def __init__(self, timeout: int = 30, max_retries: int = 3):
         self.session = requests.Session()
         self.session.headers.update(self.DEFAULT_HEADERS)
+        self.session.verify = False  # SSL 인증서 검증 비활성화
         self.timeout = timeout
         self.max_retries = max_retries
-    
+        # SSL 경고 무시
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
     def get(self, url: str, **kwargs) -> Optional[requests.Response]:
         """GET 요청 with 재시도"""
         for attempt in range(self.max_retries):
             try:
-                response = self.session.get(url, timeout=self.timeout, **kwargs)
+                response = self.session.get(url, timeout=self.timeout, verify=False, **kwargs)
                 response.raise_for_status()
                 return response
             except requests.RequestException as e:
@@ -878,7 +884,7 @@ class BaseCouncilCrawler(ABC):
             return params[id_param][0]
         
         # 대체: 일반적인 ID 파라미터들 시도
-        for param in ["uid", "id", "mntsId", "key", "nttId", "bbsSn", "minuteSid"]:
+        for param in ["uid", "id", "mntsId", "key", "nttId", "bbsSn", "minuteSid", "MINTS_SN", "schSn"]:
             if param in params:
                 return params[param][0]
         
@@ -916,37 +922,24 @@ class BaseCouncilCrawler(ABC):
         title_selector = self.detail_selectors.get("title", ".view_title, h3.title")
         title_elem = soup.select_one(title_selector)
         title = title_elem.get_text(strip=True) if title_elem else meta.get("title", "")
-        
-        # 본문 추출
-        content_selector = self.detail_selectors.get("content", ".view_content")
-        content_elem = soup.select_one(content_selector)
-        
-        if not content_elem:
-            # 대체 셀렉터
-            for alt_sel in [".view_content", ".record_content", ".content", "#content", "article"]:
-                content_elem = soup.select_one(alt_sel)
-                if content_elem:
-                    break
-        
-        content_text = ""
-        if content_elem:
-            content_text = content_elem.get_text(separator=" ", strip=True)
-            content_text = re.sub(r"\s+", " ", content_text)
-        
+
+        # 전체 본문 추출
+        full_content = self._extract_full_content(soup, url)
+
         # 파일 다운로드 URL 생성
         pdf_url = None
         hwp_url = None
         meeting_id = meta.get("meeting_id", "")
-        
+
         file_download = self.config.get("file_download", {})
         if "pdf" in file_download and meeting_id:
             pdf_url = urljoin(self.base_url, file_download["pdf"].format(id=meeting_id))
         if "hwp" in file_download and meeting_id:
             hwp_url = urljoin(self.base_url, file_download["hwp"].format(id=meeting_id))
-        
+
         # 날짜 정규화
         meeting_date = self._normalize_date(meta.get("meeting_date", ""))
-        
+
         return MeetingMinutes(
             council_code=self.council_code,
             council_name=self.config["name"],
@@ -958,13 +951,97 @@ class BaseCouncilCrawler(ABC):
             committee_name=meta.get("committee", ""),
             meeting_date=meeting_date,
             title=title,
-            content_preview=content_text[:500] if content_text else "",
+            content_preview=full_content[:500] if full_content else "",
+            full_content=full_content,
             pdf_url=pdf_url,
             hwp_url=hwp_url,
             source_url=url,
             scraped_at=datetime.now().isoformat(),
         )
-    
+
+    def _extract_full_content(self, soup: BeautifulSoup, url: str) -> str:
+        """전체 회의록 본문 추출 - 기본 구현"""
+        # 본문 추출 - 여러 셀렉터 시도
+        content_selector = self.detail_selectors.get("content", ".view_content")
+        content_elem = soup.select_one(content_selector)
+
+        if not content_elem:
+            # 대체 셀렉터 목록
+            alt_selectors = [
+                "section.content #canvas",  # 서울시의회 형식
+                "#canvas",
+                ".content-wrapper .content",
+                ".record_area",
+                ".view_content",
+                ".record_content",
+                ".minutes_content",
+                ".content",
+                "#content",
+                "article",
+                ".bodyBx-1",  # 부산시의회 형식
+            ]
+            for alt_sel in alt_selectors:
+                content_elem = soup.select_one(alt_sel)
+                if content_elem and len(content_elem.get_text(strip=True)) > 100:
+                    break
+
+        if not content_elem:
+            return ""
+
+        # HTML을 깔끔한 텍스트로 변환
+        return self._html_to_text(content_elem)
+
+    def _html_to_text(self, elem) -> str:
+        """HTML 요소를 깔끔한 텍스트로 변환"""
+        if not elem:
+            return ""
+
+        # 불필요한 요소 제거 (스크립트, 스타일, 검색 UI 등)
+        for tag in elem.find_all(['script', 'style', 'nav', 'header', 'footer', 'aside']):
+            tag.decompose()
+
+        # 검색 관련 UI 요소 제거
+        for selector in ['.search', '.sidebar', '.util', '.bt_', '.btn', 'form', 'input', 'button']:
+            for el in elem.select(selector):
+                el.decompose()
+
+        # br 태그를 줄바꿈으로 변환
+        for br in elem.find_all('br'):
+            br.replace_with('\n')
+
+        # hr 태그를 구분선으로 변환
+        for hr in elem.find_all('hr'):
+            hr.replace_with('\n---\n')
+
+        # 제목 태그에 줄바꿈 추가
+        for tag in elem.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
+            tag.insert_before('\n\n')
+            tag.insert_after('\n')
+
+        # div, p 태그에 줄바꿈 추가
+        for tag in elem.find_all(['div', 'p']):
+            text = tag.get_text(strip=True)
+            if text:
+                tag.insert_after('\n')
+
+        # 텍스트 추출
+        text = elem.get_text(separator=' ')
+
+        # 정리
+        lines = []
+        for line in text.split('\n'):
+            line = line.strip()
+            # 중복 공백 제거
+            line = re.sub(r'\s+', ' ', line)
+            if line:
+                lines.append(line)
+
+        # 연속된 빈 줄 제거
+        result = '\n'.join(lines)
+        result = re.sub(r'\n{3,}', '\n\n', result)
+
+        return result.strip()
+
     def _normalize_date(self, date_str: str) -> str:
         """날짜 문자열 정규화 (YYYY-MM-DD)"""
         if not date_str:
@@ -1088,6 +1165,21 @@ class SeoulCouncilCrawler(BaseCouncilCrawler):
         params = parse_qs(parsed.query)
         return params.get("key", [None])[0]
 
+    def _extract_full_content(self, soup: BeautifulSoup, url: str) -> str:
+        """서울시의회 전체 회의록 본문 추출"""
+        # section.content 내의 #canvas div에서 전체 내용 추출
+        canvas = soup.select_one("section.content #canvas")
+        if canvas:
+            return self._html_to_text(canvas)
+
+        # 폴백: .content 시도
+        content = soup.select_one(".content")
+        if content:
+            return self._html_to_text(content)
+
+        # 최종 폴백
+        return super()._extract_full_content(soup, url)
+
 
 class EmsCouncilCrawler(BaseCouncilCrawler):
     """EMS 시스템 사용 의회 크롤러 (수원, 용인 등)"""
@@ -1134,11 +1226,14 @@ class AssemblyCouncilCrawler(BaseCouncilCrawler):
         """Assembly 시스템 목록 페이지 파싱"""
         meetings = []
 
+        # tbody가 있으면 tbody tr, 없으면 table tr
         rows = soup.select("table tbody tr")
+        if not rows:
+            rows = soup.select("table tr")
 
         for row in rows:
             cells = row.select("td")
-            if len(cells) < 5:
+            if len(cells) < 2:  # 최소 2개 셀만 필요
                 continue
 
             link = row.select_one("a[href]")
@@ -1146,6 +1241,9 @@ class AssemblyCouncilCrawler(BaseCouncilCrawler):
                 continue
 
             href = link.get("href", "")
+            if not href or href == "#" or href.startswith("javascript:void"):
+                continue
+
             detail_url = urljoin(page_url, href)
 
             # onclick에서 ID 추출 시도
@@ -1484,14 +1582,26 @@ class CouncilBookCrawler(BaseCouncilCrawler):
                 continue
 
             # 회의명 링크 찾기
-            link = row.select_one("a[href], a[onclick]")
+            link = row.select_one("a[href], a[onclick], a[data-uid]")
             if not link:
                 continue
 
             href = link.get("href", "")
             onclick = link.get("onclick", "")
+            data_uid = link.get("data-uid", "")
 
-            if href and not href.startswith("#"):
+            if data_uid:
+                # data-uid 속성 기반 (남구 등)
+                detail_url = f"{self.base_url}/record/main?uid={data_uid}"
+            elif href and href.startswith("javascript:fn_egov_selectView"):
+                # fn_egov_selectView('975') 형태 파싱 (수영구)
+                match = re.search(r"fn_egov_selectView\(['\"]?(\d+)['\"]?\)", href)
+                if match:
+                    bi_id = match.group(1)
+                    detail_url = f"{self.base_url}/minutes/source/pages/bill/bill.do?BI_ID={bi_id}&search=view"
+                else:
+                    continue
+            elif href and not href.startswith("#") and not href.startswith("javascript"):
                 detail_url = urljoin(page_url, href)
             elif onclick:
                 # ajaxMtrList('3181') 형태 파싱
@@ -1503,7 +1613,7 @@ class CouncilBookCrawler(BaseCouncilCrawler):
             else:
                 continue
 
-            meeting_id = self._extract_id_from_url(detail_url)
+            meeting_id = data_uid or self._extract_id_from_url(detail_url)
 
             meetings.append({
                 "detail_url": detail_url,
@@ -1604,114 +1714,395 @@ class BusanjinCrawler(BaseCouncilCrawler):
         return meetings
 
 
-class JeonbukMetroCrawler(BaseCouncilCrawler):
-    """전북특별자치도의회 전용 크롤러 (ul/li 구조)"""
+class XcomCrawler(BaseCouncilCrawler):
+    """Xcom 회의록 시스템 크롤러 (파주, 이천, 청주 등)"""
 
     def parse_list_page(self, soup: BeautifulSoup, page_url: str) -> List[Dict[str, Any]]:
-        """전북특별자치도의회 ul/li 구조 파싱"""
+        """Xcom 시스템 목록 파싱"""
         meetings = []
 
-        # a[href*='viewer'] 링크 찾기
-        links = soup.select("a[href*='viewer']")
+        rows = soup.select("table tbody tr")
 
-        for link in links:
-            href = link.get("href", "")
-            if not href:
+        for row in rows:
+            cells = row.select("td")
+            if len(cells) < 4:
                 continue
 
-            detail_url = urljoin(page_url, href)
+            link = row.select_one("a[href]")
+            if not link:
+                continue
 
-            # span에서 정보 추출
-            span = link.select_one("span.fll:not(.icon)")
-            if span:
-                text = span.get_text(separator=' ', strip=True)
-            else:
-                text = link.get_text(strip=True)
+            href = link.get("href", "")
+            if not href or href.startswith("#"):
+                continue
 
-            # 텍스트에서 정보 파싱: "제12대 422회 [임시회] 2차"
-            import re
-            assembly_match = re.search(r'제(\d+)대', text)
-            session_match = re.search(r'(\d+)회', text)
-            type_match = re.search(r'\[(정례회|임시회)\]', text)
-            order_match = re.search(r'(\d+)차', text)
+            # /minutes/xcom/web/minutesViewer.php?id=3814 형태
+            # /minutes/city/xcom/web/minutesViewer.php?id=3162 형태
+            # /minutes/svc/web/cms/mnts/SvcMntsViewer.php?schSn=3828 형태
+            detail_url = urljoin(self.base_url, href)
 
-            assembly_num = f"제{assembly_match.group(1)}대" if assembly_match else ""
-            session_num = f"{session_match.group(1)}회" if session_match else ""
-            meeting_type = type_match.group(1) if type_match else ""
-            order = f"{order_match.group(1)}차" if order_match else ""
+            # ID 추출
+            meeting_id = ""
+            if "id=" in href:
+                match = re.search(r'id=(\d+)', href)
+                if match:
+                    meeting_id = match.group(1)
+            elif "schSn=" in href:
+                match = re.search(r'schSn=(\d+)', href)
+                if match:
+                    meeting_id = match.group(1)
 
-            title = f"{session_num} {meeting_type} {order}".strip()
-            if not title:
-                title = text[:50]
-
+            # 테이블 구조: 연번, 회기, 차수, 회의명, 회의일
             meetings.append({
                 "detail_url": detail_url,
-                "meeting_id": self._extract_id_from_url(detail_url) or "",
-                "assembly_num": assembly_num,
-                "session_num": session_num,
-                "meeting_type": meeting_type,
+                "meeting_id": meeting_id,
+                "assembly_num": cells[1].get_text(strip=True) if len(cells) > 1 else "",
+                "session_num": cells[2].get_text(strip=True) if len(cells) > 2 else "",
+                "meeting_type": "",
                 "committee": "",
-                "meeting_date": "",
-                "title": title,
+                "meeting_date": cells[4].get_text(strip=True) if len(cells) > 4 else "",
+                "title": link.get_text(strip=True),
             })
 
         return meetings
+
+    def _extract_full_content(self, soup: BeautifulSoup, url: str) -> str:
+        """Xcom 뷰어에서 전체 내용 추출"""
+        content_parts = []
+
+        # 본문 영역 찾기 - 다양한 선택자 시도
+        content_area = None
+        for selector in ['#content', '.viewer_content', '.minutes_content', '.content', 'body']:
+            content_area = soup.select_one(selector)
+            if content_area:
+                break
+
+        if content_area:
+            # 불필요한 요소 제거
+            for tag in content_area.select('script, style, nav, header, footer, .sidenav, .skipNav, #top, #menu, .setting, .fnc_menu'):
+                tag.decompose()
+
+            text = content_area.get_text(separator='\n', strip=True)
+            # 정리
+            lines = []
+            for line in text.split('\n'):
+                line = line.strip()
+                if line and len(line) > 1:
+                    # 메뉴 항목 제외
+                    if line in ['바로가기', '본문으로 바로가기', '메뉴 바로가기', '설정메뉴', '기능메뉴', '맨위로 이동', '닫기']:
+                        continue
+                    if line.startswith('발언자 선택') or line.startswith('안건선택') or line.startswith('안건 선택'):
+                        continue
+                    lines.append(line)
+            content_parts.append('\n'.join(lines))
+
+        return '\n\n'.join(content_parts)
+
+
+class JeonbukMetroCrawler(BaseCouncilCrawler):
+    """전북특별자치도의회 전용 크롤러 (AJAX JSON API 사용)"""
+
+    def crawl(self, max_pages: int = 5, start_page: int = 1) -> Iterator[MeetingMinutes]:
+        """전북특별자치도의회 AJAX API로 목록 가져오기"""
+        council_name = self.config.get("name", self.council_code)
+        logger.info(f"=== {council_name} 크롤링 시작 ===")
+        logger.info(f"페이지 범위: {start_page} ~ {start_page + max_pages - 1}")
+
+        for page_num in range(start_page, start_page + max_pages):
+            try:
+                api_url = f"{self.base_url}/assem/recent/LoadingList.json"
+
+                params = {
+                    "searchCtGroup": "",
+                    "searchCdImsi": "",  # 전북은 빈 문자열로 해야 정상 동작
+                    "pageIndex": page_num,
+                    "recordCountPerPage": 20
+                }
+
+                response = self.client.session.post(api_url, data=params, timeout=30)
+                if response.status_code != 200:
+                    logger.warning(f"페이지 {page_num} API 호출 실패: {response.status_code}")
+                    continue
+
+                data = response.json()
+                meetings_list = data.get("list", [])
+
+                if not meetings_list:
+                    logger.info(f"페이지 {page_num}: 데이터 없음")
+                    break
+
+                logger.info(f"페이지 {page_num}: {len(meetings_list)}건 발견")
+
+                for item in meetings_list:
+                    try:
+                        cd_uid = item.get("cdUid")
+                        if not cd_uid:
+                            continue
+
+                        detail_url = f"{self.base_url}/assem/viewer.do?cdUid={cd_uid}"
+
+                        # 메타데이터 구성
+                        assembly_num = f"제{item.get('csDaesoo', '')}대"
+                        session_num = f"{item.get('csSession', '')}회"
+                        meeting_type = item.get("csTypeNm", "")
+                        committee = item.get("ctNm", "")
+                        meeting_date = item.get("cdDate", "").replace(".", "-")
+                        chasoo = item.get("cdChasoo", "")
+
+                        title = f"{session_num} {meeting_type} {chasoo}차 {committee}".strip()
+
+                        meta = {
+                            "detail_url": detail_url,
+                            "meeting_id": str(cd_uid),
+                            "assembly_num": assembly_num,
+                            "session_num": session_num,
+                            "meeting_type": meeting_type,
+                            "committee": committee,
+                            "meeting_date": meeting_date,
+                            "title": title,
+                        }
+
+                        # 상세 페이지 가져오기
+                        time.sleep(random.uniform(1.5, 3.0))
+                        detail_resp = self.client.session.get(detail_url, timeout=30)
+
+                        if detail_resp.status_code == 200:
+                            detail_soup = BeautifulSoup(detail_resp.text, 'html.parser')
+                            result = self.parse_detail_page(detail_soup, detail_url, meta)
+                            logger.info(f"  [{meetings_list.index(item)+1}] {meeting_date} | {title}...")
+                            yield result
+                        else:
+                            logger.warning(f"상세 페이지 로드 실패: {detail_url}")
+
+                    except Exception as e:
+                        logger.error(f"항목 처리 오류: {e}")
+                        continue
+
+                time.sleep(random.uniform(2.0, 4.0))
+
+            except Exception as e:
+                logger.error(f"페이지 {page_num} 처리 오류: {e}")
+                continue
+
+    def parse_list_page(self, soup: BeautifulSoup, page_url: str) -> List[Dict[str, Any]]:
+        """전북특별자치도의회는 AJAX 사용으로 이 메서드 사용 안함"""
+        return []
+
+    def _extract_full_content(self, soup: BeautifulSoup, url: str) -> str:
+        """전북특별자치도의회 전체 회의록 본문 추출"""
+        content_parts = []
+
+        # headBox에서 회의 정보 추출
+        head_box = soup.select_one("#headBox")
+        if head_box:
+            title_div = head_box.select_one(".fz36")
+            if title_div:
+                content_parts.append(title_div.get_text(strip=True))
+
+            date_div = head_box.select_one("#date")
+            if date_div:
+                content_parts.append(date_div.get_text(strip=True))
+            place_div = head_box.select_one("#place")
+            if place_div:
+                content_parts.append(place_div.get_text(strip=True))
+
+            purpose_box = head_box.select_one("#purposeBox")
+            if purpose_box:
+                content_parts.append("\n의사일정")
+                content_parts.append(purpose_box.get_text(separator='\n', strip=True))
+
+            content_parts.append("\n---\n")
+
+        # bodyBox에서 실제 회의 내용 추출
+        body_box = soup.select_one("#bodyBox")
+        if body_box:
+            for con93 in body_box.select(".con93"):
+                speaker = con93.select_one("label a, .labelAColor, .labelQColor")
+                if speaker:
+                    speaker_name = speaker.get_text(strip=True)
+                    content_parts.append(f"\n○ {speaker_name}")
+
+                for item_div in con93.select(".item"):
+                    for lineht in item_div.select(".lineht"):
+                        text = lineht.get_text(strip=True)
+                        if text:
+                            content_parts.append(text)
+
+            for time_div in body_box.select("#time .por"):
+                time_text = time_div.get_text(strip=True)
+                if time_text:
+                    content_parts.append(f"\n{time_text}\n")
+
+        # tailBox에서 출석 정보 추출
+        tail_box = soup.select_one("#tailBox")
+        if tail_box:
+            attend_member = tail_box.select_one("#attendMember")
+            if attend_member:
+                content_parts.append("\n---\n")
+                content_parts.append(attend_member.get_text(separator='\n', strip=True))
+
+        if content_parts:
+            return '\n'.join(content_parts)
+
+        return super()._extract_full_content(soup, url)
 
 
 class JeonnamMetroCrawler(BaseCouncilCrawler):
-    """전라남도의회 전용 크롤러 (ul/li 구조)"""
+    """전라남도의회 전용 크롤러 (AJAX JSON API 사용)"""
 
-    def parse_list_page(self, soup: BeautifulSoup, page_url: str) -> List[Dict[str, Any]]:
-        """전라남도의회 ul/li 구조 파싱"""
-        meetings = []
+    def crawl(self, max_pages: int = 5, start_page: int = 1) -> Iterator[MeetingMinutes]:
+        """전라남도의회 AJAX API로 목록 가져오기"""
+        council_name = self.config.get("name", self.council_code)
+        logger.info(f"=== {council_name} 크롤링 시작 ===")
+        logger.info(f"페이지 범위: {start_page} ~ {start_page + max_pages - 1}")
 
-        # a[href*='viewer'] 링크 찾기
-        links = soup.select("a[href*='viewer']")
+        for page_num in range(start_page, start_page + max_pages):
+            try:
+                # AJAX API 호출 (각 카테고리별로 호출)
+                # ctGroup: '' (전체), 'B' (본회의), 'S' (상임위), 'T' (특별위), 'Y' (예결위)
+                api_url = f"{self.base_url}/assem/recent/LoadingList.json"
 
-        for link in links:
-            href = link.get("href", "")
-            if not href:
+                params = {
+                    "searchCtGroup": "",  # 전체
+                    "searchCdImsi": "Y",  # 임시회의록 포함
+                    "pageIndex": page_num,
+                    "recordCountPerPage": 20
+                }
+
+                response = self.client.session.post(api_url, data=params, timeout=30)
+                if response.status_code != 200:
+                    logger.warning(f"페이지 {page_num} API 호출 실패: {response.status_code}")
+                    continue
+
+                data = response.json()
+                meetings_list = data.get("list", [])
+
+                if not meetings_list:
+                    logger.info(f"페이지 {page_num}: 데이터 없음")
+                    break
+
+                logger.info(f"페이지 {page_num}: {len(meetings_list)}건 발견")
+
+                for item in meetings_list:
+                    try:
+                        cd_uid = item.get("cdUid")
+                        if not cd_uid:
+                            continue
+
+                        detail_url = f"{self.base_url}/assem/viewer.do?cdUid={cd_uid}"
+
+                        # 메타데이터 구성
+                        assembly_num = f"제{item.get('csDaesoo', '')}대"
+                        session_num = f"{item.get('csSession', '')}회"
+                        meeting_type = item.get("csTypeNm", "")
+                        committee = item.get("ctNm", "")
+                        meeting_date = item.get("cdDate", "").replace(".", "-")
+                        chasoo = item.get("cdChasoo", "")
+
+                        title = f"{session_num} {meeting_type} {chasoo}차 {committee}".strip()
+
+                        meta = {
+                            "detail_url": detail_url,
+                            "meeting_id": str(cd_uid),
+                            "assembly_num": assembly_num,
+                            "session_num": session_num,
+                            "meeting_type": meeting_type,
+                            "committee": committee,
+                            "meeting_date": meeting_date,
+                            "title": title,
+                        }
+
+                        # 상세 페이지 가져오기
+                        time.sleep(random.uniform(1.5, 3.0))
+                        detail_resp = self.client.session.get(detail_url, timeout=30)
+
+                        if detail_resp.status_code == 200:
+                            detail_soup = BeautifulSoup(detail_resp.text, 'html.parser')
+                            result = self.parse_detail_page(detail_soup, detail_url, meta)
+                            logger.info(f"  [{meetings_list.index(item)+1}] {meeting_date} | {title}...")
+                            yield result
+                        else:
+                            logger.warning(f"상세 페이지 로드 실패: {detail_url}")
+
+                    except Exception as e:
+                        logger.error(f"항목 처리 오류: {e}")
+                        continue
+
+                time.sleep(random.uniform(2.0, 4.0))
+
+            except Exception as e:
+                logger.error(f"페이지 {page_num} 처리 오류: {e}")
                 continue
 
-            detail_url = urljoin(page_url, href)
+    def parse_list_page(self, soup: BeautifulSoup, page_url: str) -> List[Dict[str, Any]]:
+        """전라남도의회는 AJAX 사용으로 이 메서드 사용 안함"""
+        return []
 
-            # span에서 정보 추출
-            span = link.select_one("span.fll:not(.icon)")
-            if span:
-                text = span.get_text(separator=' ', strip=True)
-            else:
-                text = link.get_text(strip=True)
+    def _extract_full_content(self, soup: BeautifulSoup, url: str) -> str:
+        """전라남도의회 전체 회의록 본문 추출"""
+        content_parts = []
 
-            # 텍스트에서 정보 파싱
-            import re
-            assembly_match = re.search(r'제(\d+)대', text)
-            session_match = re.search(r'(\d+)회', text)
-            type_match = re.search(r'\[(정례회|임시회)\]', text)
-            order_match = re.search(r'(\d+)차', text)
-            committee_match = re.search(r'(본회의|위원회)', text)
+        # headBox에서 회의 정보 추출
+        head_box = soup.select_one("#headBox")
+        if head_box:
+            # 회의 제목
+            title_div = head_box.select_one(".fz36")
+            if title_div:
+                content_parts.append(title_div.get_text(strip=True))
 
-            assembly_num = f"제{assembly_match.group(1)}대" if assembly_match else ""
-            session_num = f"{session_match.group(1)}회" if session_match else ""
-            meeting_type = type_match.group(1) if type_match else ""
-            order = f"{order_match.group(1)}차" if order_match else ""
-            committee = committee_match.group(1) if committee_match else ""
+            # 일시, 장소
+            date_div = head_box.select_one("#date")
+            if date_div:
+                content_parts.append(date_div.get_text(strip=True))
+            place_div = head_box.select_one("#place")
+            if place_div:
+                content_parts.append(place_div.get_text(strip=True))
 
-            title = f"{session_num} {meeting_type} {order} {committee}".strip()
-            if not title:
-                title = text[:50]
+            # 의사일정
+            purpose_box = head_box.select_one("#purposeBox")
+            if purpose_box:
+                content_parts.append("\n의사일정")
+                content_parts.append(purpose_box.get_text(separator='\n', strip=True))
 
-            meetings.append({
-                "detail_url": detail_url,
-                "meeting_id": self._extract_id_from_url(detail_url) or "",
-                "assembly_num": assembly_num,
-                "session_num": session_num,
-                "meeting_type": meeting_type,
-                "committee": committee,
-                "meeting_date": "",
-                "title": title,
-            })
+            content_parts.append("\n---\n")
 
-        return meetings
+        # bodyBox에서 실제 회의 내용 추출
+        body_box = soup.select_one("#bodyBox")
+        if body_box:
+            # 각 발언 블록 처리
+            for con93 in body_box.select(".con93"):
+                # 발언자 추출
+                speaker = con93.select_one("label a, .labelAColor, .labelQColor")
+                if speaker:
+                    speaker_name = speaker.get_text(strip=True)
+                    content_parts.append(f"\n○ {speaker_name}")
+
+                # 발언 내용 추출
+                for item_div in con93.select(".item"):
+                    for lineht in item_div.select(".lineht"):
+                        text = lineht.get_text(strip=True)
+                        if text:
+                            content_parts.append(text)
+
+            # 시간 정보 추출
+            for time_div in body_box.select("#time .por"):
+                time_text = time_div.get_text(strip=True)
+                if time_text:
+                    content_parts.append(f"\n{time_text}\n")
+
+        # tailBox에서 출석 정보 추출
+        tail_box = soup.select_one("#tailBox")
+        if tail_box:
+            attend_member = tail_box.select_one("#attendMember")
+            if attend_member:
+                content_parts.append("\n---\n")
+                content_parts.append(attend_member.get_text(separator='\n', strip=True))
+
+        if content_parts:
+            return '\n'.join(content_parts)
+
+        # 폴백: 전체 텍스트
+        return super()._extract_full_content(soup, url)
 
 
 class IncheonMetroCrawler(BaseCouncilCrawler):
@@ -1777,6 +2168,72 @@ class IncheonMetroCrawler(BaseCouncilCrawler):
 
         return meetings
 
+    def _extract_full_content(self, soup: BeautifulSoup, url: str) -> str:
+        """인천광역시의회 전체 회의록 본문 추출 (전라남도와 동일한 시스템)"""
+        content_parts = []
+
+        # headBox에서 회의 정보 추출
+        head_box = soup.select_one("#headBox")
+        if head_box:
+            # 회의 제목
+            title_div = head_box.select_one(".fz36")
+            if title_div:
+                content_parts.append(title_div.get_text(strip=True))
+
+            # 일시, 장소
+            date_div = head_box.select_one("#date")
+            if date_div:
+                content_parts.append(date_div.get_text(strip=True))
+            place_div = head_box.select_one("#place")
+            if place_div:
+                content_parts.append(place_div.get_text(strip=True))
+
+            # 의사일정
+            purpose_box = head_box.select_one("#purposeBox")
+            if purpose_box:
+                content_parts.append("\n의사일정")
+                content_parts.append(purpose_box.get_text(separator='\n', strip=True))
+
+            content_parts.append("\n---\n")
+
+        # bodyBox에서 실제 회의 내용 추출
+        body_box = soup.select_one("#bodyBox")
+        if body_box:
+            # 각 발언 블록 처리
+            for con93 in body_box.select(".con93"):
+                # 발언자 추출
+                speaker = con93.select_one("label a, .labelAColor, .labelQColor")
+                if speaker:
+                    speaker_name = speaker.get_text(strip=True)
+                    content_parts.append(f"\n○ {speaker_name}")
+
+                # 발언 내용 추출
+                for item_div in con93.select(".item"):
+                    for lineht in item_div.select(".lineht"):
+                        text = lineht.get_text(strip=True)
+                        if text:
+                            content_parts.append(text)
+
+            # 시간 정보 추출
+            for time_div in body_box.select("#time .por"):
+                time_text = time_div.get_text(strip=True)
+                if time_text:
+                    content_parts.append(f"\n{time_text}\n")
+
+        # tailBox에서 출석 정보 추출
+        tail_box = soup.select_one("#tailBox")
+        if tail_box:
+            attend_member = tail_box.select_one("#attendMember")
+            if attend_member:
+                content_parts.append("\n---\n")
+                content_parts.append(attend_member.get_text(separator='\n', strip=True))
+
+        if content_parts:
+            return '\n'.join(content_parts)
+
+        # 폴백: 전체 텍스트
+        return super()._extract_full_content(soup, url)
+
 
 class BusanMetroCrawler(BaseCouncilCrawler):
     """부산광역시의회 전용 크롤러"""
@@ -1814,6 +2271,63 @@ class BusanMetroCrawler(BaseCouncilCrawler):
 
         return meetings
 
+    def _extract_full_content(self, soup: BeautifulSoup, url: str) -> str:
+        """부산광역시의회 전체 회의록 본문 추출"""
+        content_parts = []
+
+        # 회의록 헤더 정보 (headBx)
+        head_box = soup.select_one("#headBx")
+        if head_box:
+            header_text = head_box.get_text(separator='\n', strip=True)
+            if header_text:
+                content_parts.append(header_text)
+                content_parts.append("\n---\n")
+
+        # 모든 bodyBx-1 요소에서 발언 내용 추출
+        body_elements = soup.select(".bodyBx-1")
+
+        for elem in body_elements:
+            # 발언자 정보
+            speaker = elem.select_one(".member a, .member")
+            if speaker:
+                speaker_name = speaker.get_text(strip=True)
+                if speaker_name:
+                    content_parts.append(f"\n{speaker_name}")
+
+            # 발언 내용
+            text_div = elem.select_one(".text")
+            if text_div:
+                text = text_div.get_text(strip=True)
+                if text:
+                    content_parts.append(text)
+            else:
+                # .text가 없으면 직접 텍스트 추출
+                direct_text = elem.get_text(strip=True)
+                # 발언자 이름을 제외한 내용만
+                if direct_text and speaker:
+                    speaker_name = speaker.get_text(strip=True)
+                    direct_text = direct_text.replace(speaker_name, '', 1).strip()
+                if direct_text:
+                    content_parts.append(direct_text)
+
+        # 시간 정보
+        time_areas = soup.select(".timeArea")
+        for time_area in time_areas:
+            time_text = time_area.get_text(strip=True)
+            if time_text:
+                # 이미 추가된 내용에 포함되어 있을 수 있으므로 확인
+                pass
+
+        if not content_parts:
+            # 폴백: 기본 추출 방식 사용
+            return super()._extract_full_content(soup, url)
+
+        # 결과 조합
+        result = '\n'.join(content_parts)
+        # 연속 줄바꿈 정리
+        result = re.sub(r'\n{3,}', '\n\n', result)
+        return result.strip()
+
 
 # ============================================================================
 # 크롤러 팩토리
@@ -1850,6 +2364,8 @@ def get_crawler(council_code: str) -> Optional[BaseCouncilCrawler]:
         "saha": BusanBoardCrawler,  # 사하구도 게시판 형식
         "yeonje": BusanBoardCrawler,  # 연제구도 게시판 형식
         "sasang": BusanBoardCrawler,  # 사상구도 게시판 형식
+        # Xcom 시스템 (파주, 이천, 청주 등)
+        "xcom": XcomCrawler,
         # 광역의회 전용
         "busan_metro": BusanMetroCrawler,
         "jeonbuk_metro": JeonbukMetroCrawler,
@@ -1878,33 +2394,88 @@ def get_crawler(council_code: str) -> Optional[BaseCouncilCrawler]:
 # ============================================================================
 class ResultSaver:
     """크롤링 결과 저장"""
-    
+
     def __init__(self, output_dir: str = "output"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     def save_jsonl(self, council_code: str, results: List[MeetingMinutes]) -> Path:
         """JSONL 형식으로 저장"""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = self.output_dir / f"{council_code}_{timestamp}.jsonl"
-        
+        filename = self.output_dir / f"{council_code}.jsonl"
+
         with open(filename, "w", encoding="utf-8") as f:
             for item in results:
                 line = json.dumps(item.to_dict(), ensure_ascii=False)
                 f.write(line + "\n")
-        
+
         return filename
-    
+
     def save_json(self, council_code: str, results: List[MeetingMinutes]) -> Path:
         """JSON 형식으로 저장"""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = self.output_dir / f"{council_code}_{timestamp}.json"
-        
+        filename = self.output_dir / f"{council_code}.json"
+
         data = [item.to_dict() for item in results]
-        
+
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(data, ensure_ascii=False, indent=2, fp=f)
-        
+
+        return filename
+
+    def save_markdown(self, council_code: str, results: List[MeetingMinutes]) -> Path:
+        """마크다운 형식으로 저장 (사람이 읽기 쉬운 형식)"""
+        filename = self.output_dir / f"{council_code}.md"
+
+        if not results:
+            return filename
+
+        council_name = results[0].council_name
+
+        with open(filename, "w", encoding="utf-8") as f:
+            # 헤더
+            f.write(f"# {council_name} 회의록\n\n")
+            f.write(f"수집건수: {len(results)}건\n\n")
+            f.write("---\n\n")
+
+            # 각 회의록
+            for idx, item in enumerate(results, 1):
+                f.write(f"## {idx}. {item.title}\n\n")
+
+                # 메타 정보
+                f.write("| 항목 | 내용 |\n")
+                f.write("|------|------|\n")
+                f.write(f"| 의회 | {item.council_name} |\n")
+                if item.meeting_date:
+                    f.write(f"| 일시 | {item.meeting_date} |\n")
+                if item.assembly_number:
+                    f.write(f"| 대수 | {item.assembly_number} |\n")
+                if item.session_number:
+                    f.write(f"| 회기 | {item.session_number} |\n")
+                if item.meeting_type:
+                    f.write(f"| 회의종류 | {item.meeting_type} |\n")
+                if item.committee_name:
+                    f.write(f"| 위원회 | {item.committee_name} |\n")
+                if item.source_url:
+                    f.write(f"| 원문URL | {item.source_url} |\n")
+                if item.pdf_url:
+                    f.write(f"| PDF | {item.pdf_url} |\n")
+                if item.hwp_url:
+                    f.write(f"| HWP | {item.hwp_url} |\n")
+
+                f.write("\n")
+
+                # 회의 내용 (전문 또는 미리보기)
+                f.write("### 회의 내용\n\n")
+                if item.full_content:
+                    # 전체 내용 저장
+                    f.write(f"{item.full_content}\n\n")
+                elif item.content_preview:
+                    # 하위호환: 미리보기만 있는 경우
+                    f.write(f"{item.content_preview}\n\n")
+                else:
+                    f.write("(회의 내용을 가져올 수 없습니다)\n\n")
+
+                f.write("---\n\n")
+
         return filename
 
 # ============================================================================
@@ -1969,7 +2540,7 @@ def main():
     parser.add_argument("--max-pages", "-m", type=int, default=3, help="최대 크롤링 페이지 수 (기본: 3)")
     parser.add_argument("--start-page", "-s", type=int, default=1, help="시작 페이지 (기본: 1)")
     parser.add_argument("--output", "-o", type=str, default="output", help="출력 디렉토리 (기본: output)")
-    parser.add_argument("--format", "-f", choices=["json", "jsonl"], default="jsonl", help="출력 형식 (기본: jsonl)")
+    parser.add_argument("--format", "-f", choices=["json", "jsonl", "both"], default="both", help="출력 형식: jsonl, json, both(jsonl+md) (기본: both)")
     parser.add_argument("--list", "-l", action="store_true", help="지원 의회 목록 출력")
     parser.add_argument("--verbose", "-v", action="store_true", help="상세 로그 출력")
     
@@ -2008,13 +2579,20 @@ def main():
         
         # 결과 저장
         saver = ResultSaver(args.output)
-        
-        if args.format == "jsonl":
+
+        if args.format == "both":
+            # JSONL + Markdown 이중 출력 (기본값)
             output_file = saver.save_jsonl(args.council, results)
+            md_file = saver.save_markdown(args.council, results)
+            logger.info(f"저장 완료: {output_file}")
+            logger.info(f"저장 완료: {md_file}")
+        elif args.format == "jsonl":
+            output_file = saver.save_jsonl(args.council, results)
+            logger.info(f"저장 완료: {output_file}")
         else:
             output_file = saver.save_json(args.council, results)
-        
-        logger.info(f"저장 완료: {output_file}")
+            logger.info(f"저장 완료: {output_file}")
+
         logger.info(f"총 {len(results)}건의 회의록 수집")
         
         return 0
