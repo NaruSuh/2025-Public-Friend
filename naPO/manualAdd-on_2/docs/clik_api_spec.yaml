@@ -1,0 +1,395 @@
+# CLIK (국회지방의회의정포털) Open API 명세서
+# 작성일: 2025-12-29
+# 출처: https://clik.nanet.go.kr/potal/guide/resourceCenter.do
+# API 키: 4개 API 공용 사용 가능
+
+api:
+  base_url: https://clik.nanet.go.kr/openapi
+  provider: 국회도서관
+  service_type: RESTful
+  response_formats: [json, xml]
+
+common:
+  auth:
+    param: key
+    type: STRING
+    required: true
+    description: 발급된 인증키
+
+  error_codes:
+    SUCCESS: 정상 처리되었습니다.
+    ERROR01: 인증키가 유효하지 않습니다.
+    ERROR02: 응답결과타입(type) 값이 유효하지 않습니다.
+    ERROR03: 요청구분(displayType) 값이 유효하지 않습니다.
+    ERROR04: 요청시작위치(startCount) 값이 유효하지 않습니다.
+    ERROR05: 리스트개수(listCount) 값이 유효하지 않습니다.
+    ERROR06: 검색타입(searchType) 값이 유효하지 않습니다.
+    ERROR07: 검색어(searchKeyword) 값이 유효하지 않습니다.
+    ERROR08: 상세아이디(DOCID) 값이 유효하지 않습니다.
+    ERROR09: 일별 허용 트래픽을 초과 하였습니다.
+    ERROR10: 사용불가 상태 인증키 입니다.
+    ERROR11: 호출 중 오류가 발생 하였습니다.
+
+# =============================================================================
+# 1. 지방의회 회의록 API
+# =============================================================================
+minutes:
+  description: 17개 광역시도 및 175개 기초자치단체 회의록을 조회
+  total_count: 827210  # 2025-12-29 기준
+  sort: 회의일자(내림차순), 검색어 가중치(내림차순)
+
+  endpoints:
+    list:
+      url: /minutes.do
+      method: GET
+      sample: https://clik.nanet.go.kr/openapi/minutes.do?key={KEY}&type=json&displayType=list&startCount=0&listCount=5&searchType=ALL&searchKeyword=환율
+
+      request:
+        key: { type: STRING, required: true, description: 인증키 }
+        type: { type: STRING, required: true, description: 응답결과 타입, values: [xml, json] }
+        displayType: { type: STRING, required: true, description: 요청구분, value: list }
+        startCount: { type: INTEGER, required: true, description: 요청시작위치 }
+        listCount: { type: INTEGER, required: true, description: 가져올 리스트 개수 }
+        searchType:
+          type: STRING
+          required: true
+          description: 검색타입
+          values:
+            ALL: 전체
+            MTR_SJ: 안건
+            MINTS_HTML: 내용
+            RASMBLY_NM: 지방의회명
+            PRMPST_CMIT_NM: 위원회명
+        searchKeyword: { type: STRING, required: true, description: 검색어 }
+        rasmblyId: { type: STRING, required: false, description: 검색 할 지방의회 ID }
+
+      response:
+        SERVICE: 서비스명
+        RESULT_CODE: 결과코드
+        RESULT_MESSAGE: 결과메시지
+        TOTAL_COUNT: 전체카운트
+        LIST_COUNT: 조회카운트
+        LIST:
+          - DOCID: 회의록 ID
+            RASMBLY_ID: 지방의회 ID
+            RASMBLY_NM: 지방의회명
+            RASMBLY_NUMPR: 대수
+            RASMBLY_SESN: 회기
+            MINTS_ODR: 차수
+            MTGNM: 회의명 (본회의/상임위원회/특별위원회/사무감사조사)
+            MTG_DE: 회의일자
+
+    detail:
+      url: /minutes.do
+      method: GET
+      sample: https://clik.nanet.go.kr/openapi/minutes.do?key={KEY}&type=json&displayType=detail&docid=CLIKC4822849310289762
+
+      request:
+        key: { type: STRING, required: true, description: 인증키 }
+        type: { type: STRING, required: true, description: 응답결과 타입, values: [xml, json] }
+        displayType: { type: STRING, required: true, description: 요청구분, value: detail }
+        docid: { type: STRING, required: true, description: 회의록 ID }
+
+      response:
+        SERVICE: 서비스명
+        RESULT_CODE: 결과코드
+        RESULT_MESSAGE: 결과메시지
+        DOCID: 회의록 ID
+        RASMBLY_ID: 지방의회 ID
+        RASMBLY_NM: 지방의회명
+        RASMBLY_NUMPR: 대수
+        RASMBLY_SESN: 회기
+        MINTS_ODR: 차수
+        MTGNM: 회의명
+        MTG_DE: 회의일자
+        MTR_SJ: 안건정보
+        MINTS_HTML: 회의록 전문 (HTML)
+        ORGINL_FILE_URL: 원본 파일 URL
+
+# =============================================================================
+# 2. 지방의회 의안정보 API
+# =============================================================================
+bill:
+  description: 17개 광역시도 및 125개 기초자치단체 의안정보를 조회
+  total_count: 435978  # 2025-12-29 기준
+  sort: 제안일자(내림차순), 검색어 가중치(내림차순)
+
+  endpoints:
+    list:
+      url: /bill.do
+      method: GET
+      sample: https://clik.nanet.go.kr/openapi/bill.do?key={KEY}&type=json&displayType=list&startCount=0&listCount=5&searchType=ALL&searchKeyword=경제
+
+      request:
+        key: { type: STRING, required: true, description: 인증키 }
+        type: { type: STRING, required: true, description: 응답결과 타입, values: [xml, json] }
+        displayType: { type: STRING, required: true, description: 요청구분, value: list }
+        startCount: { type: INTEGER, required: true, description: 요청시작위치 }
+        listCount: { type: INTEGER, required: true, description: 가져올 리스트 개수 }
+        searchType:
+          type: STRING
+          required: true
+          description: 검색타입
+          values:
+            ALL: 전체
+            BI_SJ: 의안제목
+            PROPSR: 제안자
+            BI_OUTLINE: 의안요지
+        searchKeyword: { type: STRING, required: true, description: 검색어 }
+        rasmblyId: { type: STRING, required: false, description: 검색 할 지방의회 ID }
+        sort:
+          type: STRING
+          required: false
+          description: 정렬타입
+          values:
+            WEIGHT/DESC: 정확도
+            BI_SJ/ASC: 의안명(ㄱ~ㅎ순)
+            BI_SJ/DESC: 의안명(ㅎ~ㄱ순)
+            ITNC_DE/ASC: 제안일자(과거순)
+            ITNC_DE/DESC: 제안일자(최신순)
+
+      response:
+        SERVICE: 서비스명
+        RESULT_CODE: 결과코드
+        RESULT_MESSAGE: 결과메시지
+        TOTAL_COUNT: 전체카운트
+        LIST_COUNT: 조회카운트
+        LIST:
+          - DOCID: 의안 ID
+            RASMBLY_ID: 지방의회 ID
+            RASMBLY_NM: 지방의회명
+            BI_SJ: 의안 제목
+            BI_KND_STDCD_NM: 의안종류명
+            ITNC_DE: 제안일자
+
+    detail:
+      url: /bill.do
+      method: GET
+      sample: https://clik.nanet.go.kr/openapi/bill.do?key={KEY}&type=json&displayType=detail&docid=CLIKC6100788554853625
+
+      request:
+        key: { type: STRING, required: true, description: 인증키 }
+        type: { type: STRING, required: true, description: 응답결과 타입, values: [xml, json] }
+        displayType: { type: STRING, required: true, description: 요청구분, value: detail }
+        docid: { type: STRING, required: true, description: 의안 ID }
+
+      response:
+        SERVICE: 서비스명
+        RESULT_CODE: 결과코드
+        RESULT_MESSAGE: 결과메시지
+        DOCID: 의안 ID
+        RASMBLY_ID: 지방의회 ID
+        RASMBLY_NM: 지방의회명
+        RASMBLY_NUMPR: 대수
+        BI_SJ: 의안 제목
+        BI_NO: 의안번호
+        BI_KND_NM:
+          description: 의안종류
+          values: [조례안, 예산/결산안, 동의/승인안, 건의안, 결의안, 규칙/규정안, 규약안, 계획안, 의견청취, 의견제시, 재의/재의요구안, 청원, 기타]
+        ITNC_DE: 발의일자
+        CMIT_REPORT_DE: 위원회 회부일
+        CMIT_SBMISN_DE: 위원회 상정일
+        CMIT_PROCESS_DE: 위원회 심사일
+        CMIT_RESULT: 위원회 처리결과
+        PLNMT_REPORT_DE: 본회의 보고일
+        PLNMT_SBMISN_DE: 본회의 상정일
+        PLNMT_PROCESS_DE: 본회의 의결일
+        PLNMT_RESULT: 본회의 처리결과
+        PROPSR: 발의의원
+        BI_OUTLINE: 의안요지
+        BI_FILE_NM: 원안파일
+        TRNSF_DE: 집행기관 이송일
+        PRMLGT_NO: 공포번호
+        PRMLGT_DE: 공포일
+        DELETE_DT: 철회일자
+
+# =============================================================================
+# 3. 지방의회 의원정보 API
+# =============================================================================
+assemblyinfo:
+  description: 17개 광역시도 및 125개 기초자치단체 의원정보를 조회
+  total_count: 2160  # 2025-12-29 기준
+  sort: 의원명(오름차순), 검색어 가중치(내림차순)
+
+  endpoints:
+    list:
+      url: /assemblyinfo.do
+      method: GET
+      sample: https://clik.nanet.go.kr/openapi/assemblyinfo.do?key={KEY}&type=json&displayType=list&startCount=0&listCount=5&searchType=ALL&searchKeyword=김기
+
+      request:
+        key: { type: STRING, required: true, description: 인증키 }
+        type: { type: STRING, required: true, description: 응답결과 타입, values: [xml, json] }
+        displayType: { type: STRING, required: true, description: 요청구분, value: list }
+        startCount: { type: INTEGER, required: true, description: 요청시작위치 }
+        listCount: { type: INTEGER, required: true, description: 가져올 리스트 개수 }
+        searchType:
+          type: STRING
+          required: true
+          description: 검색타입
+          values:
+            ALL: 전체
+            ASEMBY_NM: 의원명
+            PPRTY_NM: 정당명
+            BI_SJ: 발의의안
+            MTGNM: 위원회명
+            SPKNG_CN: 회의발언내용
+        searchKeyword: { type: STRING, required: true, description: 검색어 }
+        rasmblyId: { type: STRING, required: false, description: 검색 할 지방의회 ID }
+
+      response:
+        SERVICE: 서비스명
+        RESULT_CODE: 결과코드
+        RESULT_MESSAGE: 결과메시지
+        TOTAL_COUNT: 전체카운트
+        LIST_COUNT: 조회카운트
+        LIST:
+          - DOCID: 의원 ID
+            RASMBLY_ID: 지방의회 ID
+            RASMBLY_NM: 지방의회명
+            PPRTY: 정당명
+            ASEMBY_NM: 의원명
+            PHOTO_FILE_URL: 의원사진 URL
+
+    detail:
+      url: /assemblyinfo.do
+      method: GET
+      sample: https://clik.nanet.go.kr/openapi/assemblyinfo.do?key={KEY}&type=json&displayType=detail&docid=CLIKA20140000054048
+
+      request:
+        key: { type: STRING, required: true, description: 인증키 }
+        type: { type: STRING, required: true, description: 응답결과 타입, values: [xml, json] }
+        displayType: { type: STRING, required: true, description: 요청구분, value: detail }
+        docid: { type: STRING, required: true, description: 의원 ID }
+
+      response:
+        SERVICE: 서비스명
+        RESULT_CODE: 결과코드
+        RESULT_MESSAGE: 결과메시지
+        DOCID: 의원 ID
+        RASMBLY_ID: 지방의회 ID
+        RASMBLY_NM: 지방의회명
+        PPRTY_NM: 정당명
+        ASEMBY_NM: 의원명
+        PHOTO_FILE_URL: 의원사진 URL
+        HMPG: 홈페이지 URL
+        BRTHDY: 생년월일
+        MTGNM_KND_NM: 선거구/대수
+        OFFM_TLPHON: 연락처
+        FAX: 팩스
+        FACEBOOK: 페이스북
+
+# =============================================================================
+# 4. 지방정책정보 API
+# =============================================================================
+policyinfo:
+  description: 각 지역 홈페이지에 게재된 지방정책정보를 조회
+  total_count: 85954  # 2025-12-29 기준
+  sort: 등록일자(내림차순)
+
+  endpoints:
+    list:
+      url: /policyinfoList.do
+      method: GET
+      sample: https://clik.nanet.go.kr/openapi/policyinfoList.do?key={KEY}&type=json&startCount=0&listCount=5&searchType=ALL&searchKeyword=재개발&region=002
+
+      request:
+        key: { type: STRING, required: true, description: 인증키 }
+        type: { type: STRING, required: true, description: 응답결과 타입, values: [xml, json] }
+        startCount: { type: INTEGER, required: true, description: 요청시작위치 }
+        listCount: { type: INTEGER, required: true, description: 가져올 리스트 개수 }
+        searchType:
+          type: STRING
+          required: true
+          description: 검색타입
+          values:
+            ALL: 전체
+            TITLE: 제목
+            SITENM: 수집사이트명
+        searchKeyword: { type: STRING, required: true, description: 검색어 }
+        region: { type: STRING, required: false, description: 지역코드 }
+
+      response:
+        SERVICE: 서비스명
+        RESULT_CODE: 결과코드
+        RESULT_MESSAGE: 결과메시지
+        TOTAL_COUNT: 전체카운트
+        LIST_COUNT: 조회카운트
+        LIST:
+          - DOCID: 정책정보 ID
+            TITLE: 제목
+            SEEDNM: 자료유형
+            SITENM: 수집사이트
+            WRITER: 작성자
+            CDATE: 게시일자
+
+    detail:
+      url: /policyinfoDetail.do
+      method: GET
+      sample: https://clik.nanet.go.kr/openapi/policyinfoDetail.do?key={KEY}&type=json&docid=CLIKC1909644874192730
+
+      request:
+        key: { type: STRING, required: true, description: 인증키 }
+        type: { type: STRING, required: true, description: 응답결과 타입, values: [xml, json] }
+        docid: { type: STRING, required: true, description: 정책정보 ID }
+
+      response:
+        SERVICE: 서비스명
+        RESULT_CODE: 결과코드
+        RESULT_MESSAGE: 결과메시지
+        DOCID: 정책 ID
+        TITLE: 제목
+        SEEDNM: 자료유형
+        SITENM: 수집사이트
+        CDATE: 게시일자
+        WRITER: 작성자
+        URL: 원문 URL
+        EXTRACTHTML: 내용 (HTML)
+
+# =============================================================================
+# RASMBLY_ID (지방의회 ID) 코드 체계
+# =============================================================================
+rasmbly_id_codes:
+  description: 지방의회 ID 코드 체계
+  format: "XXXYYY (XXX: 지역코드, YYY: 의회번호)"
+
+  region_codes:
+    "002": 서울특별시
+    "031": 경기도
+    "032": 인천광역시
+    "033": 강원도
+    "041": 충청남도
+    "042": 대전광역시
+    "043": 충청북도
+    "044": 세종특별자치시
+    "051": 부산광역시
+    "052": 울산광역시
+    "053": 대구광역시
+    "054": 경상북도
+    "055": 경상남도
+    "061": 전라남도
+    "062": 광주광역시
+    "063": 전라북도
+    "064": 제주특별자치도
+
+  council_codes:
+    "001": 광역의회 (시도의회)
+    "002~": 기초의회 (시군구의회)
+
+  examples:
+    "002001": 서울특별시의회
+    "002004": 서울특별시 강북구의회
+    "031024": 경기도 용인시의회
+    "051001": 부산광역시의회
+
+# =============================================================================
+# 수집 통계 (2025-12-29 기준)
+# =============================================================================
+statistics:
+  total_records: 1351302
+  breakdown:
+    minutes: 827210
+    bill: 435978
+    assemblyinfo: 2160
+    policyinfo: 85954
+  councils: 243
