@@ -1,0 +1,27 @@
+{
+  "conference_name": "2024 AI 국제학회",
+  "survey_date": "2024년 11월",
+  "estimated_attendees": "350명",
+
+  "score_columns": [
+    "overall_satisfaction",
+    "content_quality",
+    "speaker_quality",
+    "venue_satisfaction",
+    "organization"
+  ],
+
+  "column_labels": {
+    "overall_satisfaction": "전체 만족도",
+    "content_quality": "발표 내용의 질",
+    "speaker_quality": "발표자 수준",
+    "venue_satisfaction": "행사장 만족도",
+    "organization": "행사 진행 및 운영"
+  },
+
+  "text_columns": {
+    "positive_feedback": "좋았던 점",
+    "improvement_suggestions": "개선 제안사항",
+    "general_comments": "기타 의견"
+  }
+}

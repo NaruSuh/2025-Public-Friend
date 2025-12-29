@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./hack/thoughts_sync.sh:*)"
+    ]
+  },
+  "env": {
+    "MAX_THINKING_TOKENS": "32000"
+  }
+}

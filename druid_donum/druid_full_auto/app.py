@@ -109,9 +109,13 @@ def _append_history_log(entry: dict) -> None:
 
     lines.append("")
 
-    with _history_file_lock:
+    # CRIT-004 FIX: Removed threading lock - Streamlit is single-threaded per session
+    # Direct file write is safe in Streamlit context
+    try:
         with HISTORY_LOG_PATH.open("a", encoding="utf-8") as fp:
             fp.write("\n".join(lines) + "\n")
+    except OSError as e:
+        logging.warning(f"Failed to write history log: {e}")
 
 # 페이지 설정
 st.set_page_config(
@@ -216,10 +220,10 @@ for item in history_items:
     history_labels.append(label)
     history_map[label] = item
 
-with _session_lock:
-    selected_label = st.session_state.get("selected_history_label")
-    if selected_label not in history_labels:
-        st.session_state["selected_history_label"] = history_labels[0]
+# CRIT-005 FIX: Removed threading lock - Streamlit handles session state thread-safely
+selected_label = st.session_state.get("selected_history_label")
+if selected_label not in history_labels:
+    st.session_state["selected_history_label"] = history_labels[0]
 
 selected_history_label = st.sidebar.selectbox(
     "지금까지 캐시된 파일",
