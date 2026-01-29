@@ -1,7 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '@/lib/prisma';
+import { devAuth } from '@/middleware/auth.middleware';
 
 const router = Router();
+
+// Helper function to extract error message
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
 
 // Get all API sources with their keys
 router.get('/apis', async (req: Request, res: Response) => {
@@ -26,12 +32,12 @@ router.get('/apis', async (req: Request, res: Response) => {
       success: true,
       data: sources,
     });
-  } catch (error: any) {
+  } catch (error) {
     return res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error.message,
+        message: getErrorMessage(error),
       },
     });
   }
@@ -70,19 +76,19 @@ router.get('/apis/:id', async (req: Request, res: Response) => {
       success: true,
       data: source,
     });
-  } catch (error: any) {
+  } catch (error) {
     return res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error.message,
+        message: getErrorMessage(error),
       },
     });
   }
 });
 
-// Add or update API key for a source
-router.post('/apis/:id/keys', async (req: Request, res: Response) => {
+// Add or update API key for a source (requires auth)
+router.post('/apis/:id/keys', devAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { keyValue, label } = req.body;
@@ -126,19 +132,19 @@ router.post('/apis/:id/keys', async (req: Request, res: Response) => {
         createdAt: apiKey.createdAt,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     return res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error.message,
+        message: getErrorMessage(error),
       },
     });
   }
 });
 
-// Toggle API key active status
-router.patch('/apis/:sourceId/keys/:keyId', async (req: Request, res: Response) => {
+// Toggle API key active status (requires auth)
+router.patch('/apis/:sourceId/keys/:keyId', devAuth, async (req: Request, res: Response) => {
   try {
     const { keyId } = req.params;
     const { isActive } = req.body;
@@ -155,19 +161,19 @@ router.patch('/apis/:sourceId/keys/:keyId', async (req: Request, res: Response) 
         isActive: apiKey.isActive,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     return res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error.message,
+        message: getErrorMessage(error),
       },
     });
   }
 });
 
-// Delete API key
-router.delete('/apis/:sourceId/keys/:keyId', async (req: Request, res: Response) => {
+// Delete API key (requires auth)
+router.delete('/apis/:sourceId/keys/:keyId', devAuth, async (req: Request, res: Response) => {
   try {
     const { keyId } = req.params;
 
@@ -179,12 +185,12 @@ router.delete('/apis/:sourceId/keys/:keyId', async (req: Request, res: Response)
       success: true,
       message: 'API key deleted',
     });
-  } catch (error: any) {
+  } catch (error) {
     return res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error.message,
+        message: getErrorMessage(error),
       },
     });
   }

@@ -3,6 +3,11 @@ import { prisma } from '@/lib/prisma';
 
 const router = Router();
 
+// Helper function to extract error message
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
+
 // Get query history
 router.get('/', async (req: Request, res: Response) => {
   try {
@@ -27,10 +32,13 @@ router.get('/', async (req: Request, res: Response) => {
         offset,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: getErrorMessage(error),
+      },
     });
   }
 });

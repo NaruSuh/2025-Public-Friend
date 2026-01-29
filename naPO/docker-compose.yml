@@ -6,9 +6,9 @@ services:
     image: postgres:16-alpine
     container_name: napo_postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: napo_dev
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-napo_dev}
     ports:
       - "5432:5432"
     volumes:
@@ -24,8 +24,8 @@ services:
     image: dpage/pgadmin4:latest
     container_name: napo_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@napo.local
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@napo.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     ports:
       - "5050:80"
     depends_on:

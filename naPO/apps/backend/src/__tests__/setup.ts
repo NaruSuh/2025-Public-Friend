@@ -4,8 +4,8 @@ import { beforeAll, afterAll, afterEach } from '@jest/globals';
 // Set test environment variables
 process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL =
-  process.env.TEST_DATABASE_URL || 'postgresql://test:test@localhost:5432/napo_test';
-process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
+  process.env.TEST_DATABASE_URL || 'postgresql://localhost:5432/napo_test';
+process.env.JWT_SECRET = process.env.TEST_JWT_SECRET || 'test-jwt-secret';
 process.env.PORT = '3999'; // Use different port for tests
 
 // Global test timeout

@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "crawlerId": "party_ppp",
+  "itemCount": 0,
+  "items": [],
+  "downloadedFiles": [],
+  "metadata": {
+    "startTime": "2025-12-09T08:48:08.382Z",
+    "endTime": "2025-12-09T08:48:11.131Z",
+    "durationMs": 2749,
+    "pagesProcessed": 1
+  }
+}

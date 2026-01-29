@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "crawlerId": "party_minjoo",
+  "itemCount": 0,
+  "items": [],
+  "downloadedFiles": [],
+  "metadata": {
+    "startTime": "2025-12-09T08:43:35.804Z",
+    "endTime": "2025-12-09T08:43:38.481Z",
+    "durationMs": 2677,
+    "pagesProcessed": 2
+  }
+}

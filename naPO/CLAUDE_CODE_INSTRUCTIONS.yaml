@@ -1,0 +1,214 @@
+# ============================================
+# Policy Data Collector - Claude Code CLI 실행 가이드
+# ============================================
+# 이 파일을 Claude Code CLI에 붙여넣어 개발을 시작하세요
+# ============================================
+
+project:
+  name: "Policy Data Collector"
+  codename: "PDC"
+  version: "1.0.0"
+  description: |
+    공공/정책/ESG 데이터를 체계적으로 수집, 분석, 출력하는 
+    범용 데이터 수집 플랫폼. 자연어 쿼리 지원.
+
+# ============================================
+# 개발 시작 명령
+# ============================================
+# 아래 내용을 Claude Code CLI에 순서대로 입력하세요
+
+instructions:
+  phase_1:
+    name: "Foundation"
+    estimated_time: "2 days"
+    command: |
+      Read the file PHASE_01_FOUNDATION.md and execute all steps in order:
+      
+      1. Create the monorepo structure with pnpm and Turborepo
+      2. Initialize backend with Express + TypeScript
+      3. Initialize frontend with React + Vite
+      4. Set up Prisma schema for PostgreSQL
+      5. Create environment variable files
+      6. Set up Docker Compose for local development
+      7. Create CSS theme files (Brutalist + Minimalist design)
+      
+      After completing each step, verify it works before moving to the next.
+      Report any errors encountered.
+    
+    verification: |
+      - Backend runs on http://localhost:3001/health
+      - Frontend runs on http://localhost:5173
+      - PostgreSQL container is running
+      - Prisma migrations applied successfully
+
+  phase_2:
+    name: "Backend Core"
+    estimated_time: "3 days"
+    command: |
+      Read the file PHASE_02_BACKEND_CORE.md and execute all steps in order:
+      
+      1. Create directory structure for services
+      2. Implement configuration files (env.ts, apis.ts)
+      3. Define TypeScript types for API, Crawler, Parser, NLP
+      4. Build BaseApiConnector with extensible design
+      5. Implement PublicDataConnector for Korean government APIs
+      6. Build BaseCrawler and NecLibraryCrawler
+      7. Implement PDF parsers (PyMuPDF, Clova OCR)
+      8. Create NL Query Engine with OpenAI GPT-4o
+      9. Build CSV Exporter
+      10. Set up API routes
+      
+      Test each module as you build it.
+    
+    verification: |
+      - API endpoint /api/v1 returns list of available endpoints
+      - NL Query parses Korean natural language correctly
+      - CSV export produces valid files
+
+  phase_3:
+    name: "Frontend"
+    estimated_time: "3 days"
+    command: |
+      Read the file PHASE_03_FRONTEND.md and execute all steps in order:
+      
+      1. Create component directory structure
+      2. Define shared TypeScript types
+      3. Set up Zustand stores (app, query, data)
+      4. Create API service layer with axios
+      5. Build custom hooks (useNLQuery, useExport)
+      6. Implement AppLayout with CSS Grid
+      7. Build LeftNav with collapsible sections
+      8. Create TopQueryBar with NL input
+      9. Implement DataTable with TanStack Table
+      10. Build Dashboard page
+      
+      Apply Brutalist design consistently.
+    
+    verification: |
+      - Layout displays correctly with left/right navs
+      - Query bar accepts input and shows parsed result
+      - Data table renders with sorting and pagination
+
+  phase_4:
+    name: "Integration & Deployment"
+    estimated_time: "2 days"
+    command: |
+      Read the file PHASE_04_INTEGRATION.md and execute all steps in order:
+      
+      1. Complete RightNav and Footer components
+      2. Finish all API routes (sources, crawl, parse, export)
+      3. Add error handling (ErrorBoundary, API middleware)
+      4. Configure environment files for dev/staging/prod
+      5. Set up Vercel deployment configuration
+      6. Create Docker production build
+      7. Write deployment scripts
+      8. Complete README documentation
+      
+      Run full integration tests.
+    
+    verification: |
+      - End-to-end flow works: query → fetch → display → export
+      - Docker build succeeds
+      - Vercel deployment ready
+
+# ============================================
+# 빠른 시작 (한 번에 실행)
+# ============================================
+quick_start:
+  description: |
+    아래 명령을 Claude Code CLI에 붙여넣으면 
+    Phase 1부터 순차적으로 실행됩니다.
+  
+  command: |
+    I need you to build a full-stack web application called "Policy Data Collector" (PDC).
+    
+    This is a comprehensive data collection platform for Korean public/policy/ESG data with:
+    - Natural language query interface (OpenAI GPT-4o)
+    - API connectors for Korean government public data portals
+    - Web crawlers for election library, BigKinds, Manifesto sites
+    - PDF parsers with OCR support (Clova, Google Vision, PyMuPDF, Dolphin)
+    - CSV/JSON/Excel export capabilities
+    - Brutalist + Minimalist design aesthetic
+    
+    Technical Stack:
+    - Frontend: React 18 + Vite + TypeScript + Zustand + TanStack Table
+    - Backend: Express.js + TypeScript + Prisma
+    - Database: PostgreSQL (Supabase compatible)
+    - Deployment: Vercel + Docker
+    
+    Please read the following files in order and execute each phase:
+    1. PHASE_01_FOUNDATION.md - Project setup
+    2. PHASE_02_BACKEND_CORE.md - Backend modules  
+    3. PHASE_03_FRONTEND.md - React frontend
+    4. PHASE_04_INTEGRATION.md - Integration and deployment
+    
+    Start with Phase 1. Create all necessary files and directories.
+    After completing Phase 1, ask me to confirm before proceeding to Phase 2.
+    
+    For each file you create, explain briefly what it does.
+    If you encounter any errors, stop and report them.
+
+# ============================================
+# 개별 Phase 실행 명령
+# ============================================
+individual_commands:
+  phase_1: |
+    Read PHASE_01_FOUNDATION.md and execute all steps.
+    Create the monorepo structure, initialize both frontend and backend,
+    set up the database schema, and configure the development environment.
+    
+  phase_2: |
+    Read PHASE_02_BACKEND_CORE.md and execute all steps.
+    Build the API connectors, crawlers, PDF parsers, and NL query engine.
+    
+  phase_3: |
+    Read PHASE_03_FRONTEND.md and execute all steps.
+    Create all React components, stores, hooks, and apply the Brutalist design.
+    
+  phase_4: |
+    Read PHASE_04_INTEGRATION.md and execute all steps.
+    Complete remaining components, set up deployment, and finalize documentation.
+
+# ============================================
+# 중단 후 재개
+# ============================================
+resume_commands:
+  check_progress: |
+    Check what files have been created so far and determine 
+    which phase we're currently in. List completed and pending tasks.
+    
+  resume_from_phase: |
+    Resume development from Phase [N]. 
+    First check what's already done, then continue with remaining tasks.
+
+# ============================================
+# 문제 해결
+# ============================================
+troubleshooting:
+  dependency_error: |
+    If you encounter dependency errors, run:
+    - pnpm install --force
+    - Delete node_modules and reinstall
+    
+  database_error: |
+    If database connection fails:
+    - Check if PostgreSQL container is running: docker ps
+    - Verify DATABASE_URL in .env
+    - Run: pnpm db:push
+    
+  build_error: |
+    If build fails:
+    - Check TypeScript errors: pnpm lint
+    - Ensure all imports are correct
+    - Verify tsconfig.json paths
+
+# ============================================
+# 파일 위치
+# ============================================
+file_locations:
+  master_plan: "DEVELOPMENT_MASTER_PLAN.md"
+  phase_1: "PHASE_01_FOUNDATION.md"
+  phase_2: "PHASE_02_BACKEND_CORE.md"
+  phase_3: "PHASE_03_FRONTEND.md"
+  phase_4: "PHASE_04_INTEGRATION.md"
+  this_file: "CLAUDE_CODE_INSTRUCTIONS.yaml"

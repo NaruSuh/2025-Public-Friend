@@ -29,9 +29,10 @@ export interface ApiEndpointConfig {
   defaultParams?: Record<string, string>;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
+  statusCode?: number;
   error?: {
     code: string;
     message: string;
@@ -44,6 +45,105 @@ export interface ApiResponse<T = any> {
     pageNo?: number;
     numOfRows?: number;
   };
+}
+
+// ==========================================
+// Query Execution Types
+// ==========================================
+
+export interface QueryExecutionResult<T = unknown> {
+  data: T;
+  source: string;
+  isStubData: boolean;
+  metadata?: QueryExecutionMetadata;
+}
+
+export interface QueryExecutionMetadata {
+  statusCode?: number;
+  timestamp: string;
+  apiChainUsed?: boolean;
+  stages?: string[];
+  electionId?: string;
+  electionType?: string;
+  queryType?: string;
+  queriedParties?: string[];
+  debug?: QueryDebugInfo;
+}
+
+export interface QueryDebugInfo {
+  originalFilters?: Record<string, unknown>;
+  adaptedParams?: Record<string, unknown>;
+  inferredInfo?: Record<string, string>;
+  candidateName?: string;
+  electionIds?: string[];
+  electionsQueried?: number;
+  successCount?: number;
+  failedCount?: number;
+  successParties?: string[];
+  failedParties?: string[];
+  queriedCombinations?: string[];
+}
+
+// ==========================================
+// Public Data API Raw Response Types
+// ==========================================
+
+export interface PublicDataRawResponse {
+  response?: {
+    header?: {
+      resultCode: string;
+      resultMsg: string;
+    };
+    body?: {
+      items?: {
+        item?: unknown | unknown[];
+      };
+      totalCount?: number;
+      pageNo?: number;
+      numOfRows?: number;
+    };
+  };
+}
+
+// ==========================================
+// Normalized Data Types
+// ==========================================
+
+export interface NormalizedWinnerData {
+  electionId: string;
+  electionName?: string;
+  electionType: string;
+  constituencyName?: string;
+  sido?: string;
+  sigungu?: string;
+  party: string;
+  nameKr: string;
+  nameCn?: string;
+  voteCount?: number;
+  voteRate?: number;
+  _raw?: Record<string, unknown>;
+}
+
+export interface NormalizedManifestoData {
+  electionId: string;
+  electionType: string;
+  candidateId: string;
+  district?: string;
+  sido?: string;
+  sigungu?: string;
+  party: string;
+  nameKr: string;
+  nameCn?: string;
+  pledgeCount: number;
+  pledges: PledgeItem[];
+  _raw?: Record<string, unknown>;
+}
+
+export interface PledgeItem {
+  order: number;
+  realm?: string;
+  title: string;
+  content?: string;
 }
 
 export interface ApiRequestParams {

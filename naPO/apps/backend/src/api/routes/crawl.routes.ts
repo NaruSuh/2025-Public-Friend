@@ -1,11 +1,16 @@
 import { Router, Request, Response } from 'express';
 import { CrawlerFactory } from '@/services/crawler/crawlerFactory';
-import { CrawlerType } from '@/types/crawler.types';
+import { CrawlerType, CrawlResult, CrawledItem } from '@/types/crawler.types';
 import { prisma } from '@/lib/prisma';
 import { requireCrawling } from '@/middleware/featureFlag.middleware';
 import { logger } from '@/config/logger';
 
 const router = Router();
+
+// Helper function to extract error message
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
 
 // Start a crawl job
 router.post('/', requireCrawling, async (req: Request, res: Response) => {
@@ -63,20 +68,20 @@ router.post('/', requireCrawling, async (req: Request, res: Response) => {
         // Add timeout to prevent hanging crawls
         const result = await Promise.race([
           crawler.crawl(options || {}),
-          new Promise((_, reject) =>
+          new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error('Crawl timeout: exceeded 10 minutes')), 600000)
           ),
-        ]) as any;
+        ]) as CrawlResult;
 
         // Save crawled data records
         if (result.items && Array.isArray(result.items)) {
           await prisma.dataRecord.createMany({
-            data: result.items.map((item: any) => ({
+            data: result.items.map((item: CrawledItem) => ({
               jobId: job.id,
-              rawData: item.data || item,
+              rawData: item.metadata || item,
               sourceUrl: item.url,
               sourceType: 'crawler',
-              tags: item.tags || [],
+              tags: item.category ? [item.category] : [],
             })),
           });
         }
@@ -90,21 +95,22 @@ router.post('/', requireCrawling, async (req: Request, res: Response) => {
             completedAt: new Date(),
           },
         });
-      } catch (error: any) {
-        logger.error(`Crawl job ${job.id} failed:`, { error: error.message });
+      } catch (error) {
+        const errMsg = getErrorMessage(error);
+        logger.error(`Crawl job ${job.id} failed:`, { error: errMsg });
 
         // Update job status to failed
         await prisma.dataJob.update({
           where: { id: job.id },
           data: {
             status: 'FAILED',
-            errorMessage: error.message || 'Unknown error',
+            errorMessage: errMsg,
             completedAt: new Date(),
           },
         });
       }
     })().catch((err) => {
-      logger.error(`Unhandled error in crawl job ${job.id}:`, { error: err.message });
+      logger.error(`Unhandled error in crawl job ${job.id}:`, { error: getErrorMessage(err) });
     });
 
     return res.json({
@@ -114,12 +120,12 @@ router.post('/', requireCrawling, async (req: Request, res: Response) => {
         status: job.status,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     return res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error.message,
+        message: getErrorMessage(error),
       },
     });
   }
@@ -161,12 +167,12 @@ router.get('/:jobId', async (req: Request, res: Response) => {
         completedAt: job.completedAt,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     return res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error.message,
+        message: getErrorMessage(error),
       },
     });
   }

@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { generateToken, authenticate } from '@/middleware/auth.middleware';
+import { authLimiter } from '@/middleware/rateLimiter';
 
 const router = Router();
 
@@ -7,7 +8,7 @@ const router = Router();
  * Simple development authentication endpoint
  * In production, this should be replaced with proper OAuth/OIDC or other auth mechanisms
  */
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', authLimiter, async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -53,12 +54,13 @@ router.post('/login', async (req: Request, res: Response) => {
         message: 'Production authentication not yet implemented. Please configure authentication provider.',
       },
     });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return res.status(500).json({
       success: false,
       error: {
         code: 'AUTH_ERROR',
-        message: error.message,
+        message,
       },
     });
   }
@@ -75,12 +77,13 @@ router.get('/verify', authenticate, async (req: Request, res: Response) => {
         user: req.user,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return res.status(500).json({
       success: false,
       error: {
         code: 'VERIFY_ERROR',
-        message: error.message,
+        message,
       },
     });
   }
@@ -97,12 +100,13 @@ router.get('/me', authenticate, async (req: Request, res: Response) => {
         user: req.user,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return res.status(500).json({
       success: false,
       error: {
         code: 'USER_ERROR',
-        message: error.message,
+        message,
       },
     });
   }

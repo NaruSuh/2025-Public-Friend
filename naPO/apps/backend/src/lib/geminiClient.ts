@@ -1,126 +1,89 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
-import { withRetry, RetryConfig } from './openaiRetry';
+import { logger } from '@/config/logger';
 
-/**
- * Gemini API Client with Retry Logic
- * OpenAI 호환 인터페이스 제공
- */
+interface GeminiClientOptions {
+  maxRetries?: number;
+  initialDelayMs?: number;
+  maxDelayMs?: number;
+}
 
-export interface GeminiChatMessage {
+interface Message {
   role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
-export interface GeminiChatResponse {
-  id: string;
-  choices: Array<{
-    message: {
-      role: string;
-      content: string | null;
-    };
-    finish_reason: string;
-  }>;
-  created: number;
-  model: string;
-  object: string;
+interface GenerateOptions {
+  messages: Message[];
+  temperature?: number;
 }
 
 export class GeminiClient {
   private genAI: GoogleGenerativeAI;
   private model: GenerativeModel;
-  private retryConfig: RetryConfig;
+  private maxRetries: number;
+  private initialDelayMs: number;
+  private maxDelayMs: number;
 
-  constructor(apiKey: string, retryConfig: RetryConfig = {}) {
+  constructor(apiKey: string, options: GeminiClientOptions = {}) {
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        temperature: 0.3,
-        topP: 1,
-        maxOutputTokens: 4096,
-      },
-    });
-    this.retryConfig = { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 30000, ...retryConfig };
+    this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    this.maxRetries = options.maxRetries ?? 3;
+    this.initialDelayMs = options.initialDelayMs ?? 1000;
+    this.maxDelayMs = options.maxDelayMs ?? 30000;
   }
 
   /**
-   * Chat completion with OpenAI-compatible interface
+   * Generate JSON response from Gemini
    */
-  async chatCompletion(params: {
-    model?: string;
-    messages: GeminiChatMessage[];
-    temperature?: number;
-  }): Promise<GeminiChatResponse> {
-    return withRetry(async () => {
-      // Gemini는 system/user/assistant를 구분하지 않으므로 메시지 병합
-      const systemMessages = params.messages.filter((m) => m.role === 'system');
-      const userMessages = params.messages.filter((m) => m.role !== 'system');
+  async generateJSON(options: GenerateOptions): Promise<Record<string, unknown>> {
+    const { messages, temperature = 0.3 } = options;
 
-      let prompt = '';
-      if (systemMessages.length > 0) {
-        prompt += systemMessages.map((m) => m.content).join('\n\n') + '\n\n';
+    // Build prompt from messages
+    let prompt = '';
+    for (const msg of messages) {
+      if (msg.role === 'system') {
+        prompt += `Instructions:\n${msg.content}\n\n`;
+      } else if (msg.role === 'user') {
+        prompt += `User Query: ${msg.content}\n`;
       }
+    }
 
-      // 대화 기록을 하나의 프롬프트로 결합
-      prompt += userMessages.map((m) => {
-        const prefix = m.role === 'user' ? 'User: ' : 'Assistant: ';
-        return prefix + m.content;
-      }).join('\n\n');
+    let lastError: Error | null = null;
+    let delay = this.initialDelayMs;
 
-      // Gemini API 호출
-      const result = await this.model.generateContent(prompt);
-      const response = result.response;
-      const text = response.text();
-
-      // OpenAI 형식으로 변환
-      return {
-        id: `gemini-${Date.now()}`,
-        choices: [
-          {
-            message: {
-              role: 'assistant',
-              content: text,
-            },
-            finish_reason: 'stop',
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        const result = await this.model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature,
+            responseMimeType: 'application/json',
           },
-        ],
-        created: Math.floor(Date.now() / 1000),
-        model: 'gemini-pro',
-        object: 'chat.completion',
-      };
-    }, this.retryConfig);
+        });
+
+        const response = result.response;
+        const text = response.text();
+
+        // Parse JSON response
+        const parsed = JSON.parse(text);
+        return parsed;
+      } catch (error) {
+        lastError = error as Error;
+        logger.warn(`Gemini API attempt ${attempt}/${this.maxRetries} failed:`, {
+          error: lastError.message,
+        });
+
+        if (attempt < this.maxRetries) {
+          await this.sleep(delay);
+          delay = Math.min(delay * 2, this.maxDelayMs);
+        }
+      }
+    }
+
+    throw new Error(`Gemini API failed after ${this.maxRetries} attempts: ${lastError?.message}`);
   }
 
-  /**
-   * Generate structured JSON response
-   */
-  async generateJSON(params: {
-    messages: GeminiChatMessage[];
-    temperature?: number;
-  }): Promise<any> {
-    const response = await this.chatCompletion(params);
-    const content = response.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error('Empty response from Gemini');
-    }
-
-    try {
-      // Gemini가 ```json ... ``` 로 감싸서 반환할 경우 처리
-      let jsonContent = content.trim();
-      if (jsonContent.startsWith('```json')) {
-        jsonContent = jsonContent.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
-      } else if (jsonContent.startsWith('```')) {
-        jsonContent = jsonContent.replace(/^```\n?/, '').replace(/\n?```$/, '').trim();
-      }
-
-      // JSON 응답 파싱
-      return JSON.parse(jsonContent);
-    } catch (error) {
-      // JSON 파싱 실패 시 로그 출력
-      console.warn('Failed to parse JSON response, retrying...');
-      console.warn('Raw response:', content);
-      throw new Error('Failed to parse JSON response from Gemini');
-    }
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

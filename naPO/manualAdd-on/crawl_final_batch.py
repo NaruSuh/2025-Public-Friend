@@ -12,7 +12,7 @@ from urllib.parse import urljoin, urlparse, parse_qs
 
 from playwright.async_api import async_playwright
 
-OUTPUT_DIR = "/home/naru/skyimpact/Labgod/apps/naPO/manualAdd-on/output/basic_minutes"
+OUTPUT_DIR = "/home/naru/dev/Labgod/apps/naPO/manualAdd-on/output/basic_minutes"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # 남은 의회들 - 웹검색에서 발견된 URL들

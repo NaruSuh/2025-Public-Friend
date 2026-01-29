@@ -52,9 +52,16 @@ export function useNLQuery() {
       debugRef.current.parseEndTime = parseEndTime;
       updateDebugInfo({ parseEndTime });
 
-      const message = error.message || 'Failed to parse query';
-      setQueryError(message);
-      toast.error(`Parse failed: ${message}`);
+      // 백엔드 에러 응답에서 메시지 추출
+      const message =
+        error.response?.data?.error?.message ||
+        error.response?.data?.message ||
+        error.message ||
+        '쿼리 파싱 실패';
+      const hint = error.response?.data?.error?.hint;
+
+      setQueryError(hint ? `${message} (${hint})` : message);
+      toast.error(message);
     },
     onSettled: () => {
       setIsParsingQuery(false);
@@ -109,9 +116,15 @@ export function useNLQuery() {
       debugRef.current.executeEndTime = executeEndTime;
       updateDebugInfo({ executeEndTime });
 
-      const message = error.message || 'Failed to execute query';
+      // 백엔드 에러 응답에서 메시지 추출
+      const message =
+        error.response?.data?.error?.message ||
+        error.response?.data?.message ||
+        error.message ||
+        '쿼리 실행 실패';
+
       setQueryError(message);
-      toast.error(`Execution failed: ${message}`);
+      toast.error(message);
     },
   });
 

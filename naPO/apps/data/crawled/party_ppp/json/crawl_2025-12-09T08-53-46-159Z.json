@@ -1,0 +1,124 @@
+{
+  "success": true,
+  "crawlerId": "party_ppp",
+  "itemCount": 10,
+  "items": [
+    {
+      "id": "ppp-policy-1765270423140-0",
+      "title": "2025 국정감사 백서",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/111262?page=1&",
+      "date": "2025-12-08",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    },
+    {
+      "id": "ppp-policy-1765270423140-1",
+      "title": "이재명 정부 100일 국정 파탄 실정",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/109013?page=1&",
+      "date": "2025-09-12",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    },
+    {
+      "id": "ppp-policy-1765270423140-2",
+      "title": "2024 국정감사 백서",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/104368?page=1&",
+      "date": "2024-11-19",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    },
+    {
+      "id": "ppp-policy-1765270423140-3",
+      "title": "[22대 국회의원선거] 국민의힘이 국민께 드리는 10대 약속",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/100647?page=1&",
+      "date": "2024-03-12",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    },
+    {
+      "id": "ppp-policy-1765270423140-4",
+      "title": "2023 국정감사 백서",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/99282?page=1&",
+      "date": "2023-11-24",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    },
+    {
+      "id": "ppp-policy-1765270423140-5",
+      "title": "2022 국정감사 백서",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/66299?page=1&",
+      "date": "2022-12-01",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    },
+    {
+      "id": "ppp-policy-1765270423140-6",
+      "title": "2021 국정감사 백서",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/66298?page=1&",
+      "date": "2021-12-02",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    },
+    {
+      "id": "ppp-policy-1765270423140-7",
+      "title": "김명수 대법원장 비리백서 [법치의 몰락 김명수 대명수 대법원장 1352일간의 기록]",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/66297?page=1&",
+      "date": "2021-06-16",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    },
+    {
+      "id": "ppp-policy-1765270423140-8",
+      "title": "4.7 재보궐선거 승리를 위한 국민의힘 『국민의힘 10대 약속』",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/66296?page=1&",
+      "date": "2021-03-17",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    },
+    {
+      "id": "ppp-policy-1765270423140-9",
+      "title": "[정책홍보물] (인쇄용) '내 집 마련' 위한 주거희망 사다리! 국민의힘이 다시 세우겠습니다.",
+      "url": "https://www.peoplepowerparty.kr/news/data_policy_view/66294?page=1&",
+      "date": "2020-12-31",
+      "category": "정책자료실",
+      "metadata": {
+        "partyName": "국민의힘",
+        "sourceSite": "party_ppp"
+      }
+    }
+  ],
+  "downloadedFiles": [],
+  "metadata": {
+    "startTime": "2025-12-09T08:53:36.768Z",
+    "endTime": "2025-12-09T08:53:46.159Z",
+    "durationMs": 9391,
+    "pagesProcessed": 2
+  }
+}

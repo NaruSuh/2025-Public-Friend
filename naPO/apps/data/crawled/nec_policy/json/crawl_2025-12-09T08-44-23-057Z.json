@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "crawlerId": "nec_policy",
+  "itemCount": 0,
+  "items": [],
+  "downloadedFiles": [],
+  "metadata": {
+    "startTime": "2025-12-09T08:44:16.595Z",
+    "endTime": "2025-12-09T08:44:23.057Z",
+    "durationMs": 6462,
+    "pagesProcessed": 2
+  }
+}

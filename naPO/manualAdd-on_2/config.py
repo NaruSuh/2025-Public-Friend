@@ -2,9 +2,15 @@
 CLIK API 설정
 국회지방의회의정포털 Open API
 """
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# .env 파일 로드 (Labgod 루트)
+load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
 
 # API 설정
-API_KEY = "f293719a372b4afca79ac42e03a82273"
+API_KEY = os.getenv("CLIK_API_KEY") or os.getenv("ASSEMBLY_PORTAL_API_KEY")
 API_BASE_URL = "https://clik.nanet.go.kr/openapi"
 
 # API 엔드포인트
@@ -23,12 +29,12 @@ API_LIMITS = {
 }
 
 # 디렉토리 설정
-from pathlib import Path
-
+# 데이터는 git repo 외부에 저장 (re-clone 시 손실 방지)
 BASE_DIR = Path(__file__).parent
-OUTPUT_DIR = BASE_DIR / "output" / "minutes"
-LOG_DIR = BASE_DIR / "logs"
-DATA_DIR = BASE_DIR / "data"
+EXTRACT_DIR = Path("/home/naru/Extract")
+OUTPUT_DIR = EXTRACT_DIR / "output"
+LOG_DIR = EXTRACT_DIR / "logs"
+DATA_DIR = EXTRACT_DIR / "data"
 
 # 파일 경로
 COUNCIL_LIST_FILE = DATA_DIR / "councils.json"        # 의회 목록

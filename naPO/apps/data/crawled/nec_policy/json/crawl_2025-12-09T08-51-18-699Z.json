@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "crawlerId": "nec_policy",
+  "itemCount": 4,
+  "items": [
+    {
+      "id": "nec-policy-더불어민주당-1765270278509",
+      "title": "더불어민주당 정당정책",
+      "url": "https://policy.nec.go.kr/plc/policy/initUPAPolicy.do?menuId=PARTY5",
+      "fileUrl": "https://policy.nec.go.kr/plc/cmm/downloadFile.do?dataPath=20250603%2FPDF%2FPARTY_PLC_PUB%2F007_100_20250510_1.pdf&orginlFileNm=20250603_%EB%8D%94%EB%B6%88%EC%96%B4%EB%AF%BC%EC%A3%BC%EB%8B%B9_%EC%A0%95%EB%8B%B9%EC%A0%95%EC%B1%85.pdf",
+      "category": "policy_pdf",
+      "metadata": {
+        "partyName": "더불어민주당",
+        "menuId": "PARTY5",
+        "sourceSite": "nec_policy",
+        "originalFileName": "20250603_더불어민주당_정당정책.pdf",
+        "pdfPath": "20250603/PDF/PARTY_PLC_PUB/007_100_20250510_1.pdf"
+      }
+    },
+    {
+      "id": "nec-policy-국민의힘-1765270278509",
+      "title": "국민의힘 정당정책",
+      "url": "https://policy.nec.go.kr/plc/policy/initUPAPolicy.do?menuId=PARTY5",
+      "fileUrl": "https://policy.nec.go.kr/plc/cmm/downloadFile.do?dataPath=20250603%2FPDF%2FPARTY_PLC_PUB%2F007_200_20250526_2.pdf&orginlFileNm=20250603_%EA%B5%AD%EB%AF%BC%EC%9D%98%ED%9E%98_%EC%A0%95%EB%8B%B9%EC%A0%95%EC%B1%85.pdf",
+      "category": "policy_pdf",
+      "metadata": {
+        "partyName": "국민의힘",
+        "menuId": "PARTY5",
+        "sourceSite": "nec_policy",
+        "originalFileName": "20250603_국민의힘_정당정책.pdf",
+        "pdfPath": "20250603/PDF/PARTY_PLC_PUB/007_200_20250526_2.pdf"
+      }
+    },
+    {
+      "id": "nec-policy-개혁신당-1765270278509",
+      "title": "개혁신당 정당정책",
+      "url": "https://policy.nec.go.kr/plc/policy/initUPAPolicy.do?menuId=PARTY5",
+      "fileUrl": "https://policy.nec.go.kr/plc/cmm/downloadFile.do?dataPath=20250603%2FPDF%2FPARTY_PLC_PUB%2F007_5070_20250510_1.pdf&orginlFileNm=20250603_%EA%B0%9C%ED%98%81%EC%8B%A0%EB%8B%B9_%EC%A0%95%EB%8B%B9%EC%A0%95%EC%B1%85.pdf",
+      "category": "policy_pdf",
+      "metadata": {
+        "partyName": "개혁신당",
+        "menuId": "PARTY5",
+        "sourceSite": "nec_policy",
+        "originalFileName": "20250603_개혁신당_정당정책.pdf",
+        "pdfPath": "20250603/PDF/PARTY_PLC_PUB/007_5070_20250510_1.pdf"
+      }
+    },
+    {
+      "id": "nec-policy-민주노동당-1765270278509",
+      "title": "민주노동당 정당정책",
+      "url": "https://policy.nec.go.kr/plc/policy/initUPAPolicy.do?menuId=PARTY5",
+      "fileUrl": "https://policy.nec.go.kr/plc/cmm/downloadFile.do?dataPath=20250603%2FPDF%2FPARTY_PLC_PUB%2F007_730_20250530_5.pdf&orginlFileNm=20250603_%EB%AF%BC%EC%A3%BC%EB%85%B8%EB%8F%99%EB%8B%B9_%EC%A0%95%EB%8B%B9%EC%A0%95%EC%B1%85.pdf",
+      "category": "policy_pdf",
+      "metadata": {
+        "partyName": "민주노동당",
+        "menuId": "PARTY5",
+        "sourceSite": "nec_policy",
+        "originalFileName": "20250603_민주노동당_정당정책.pdf",
+        "pdfPath": "20250603/PDF/PARTY_PLC_PUB/007_730_20250530_5.pdf"
+      }
+    }
+  ],
+  "downloadedFiles": [],
+  "metadata": {
+    "startTime": "2025-12-09T08:51:14.812Z",
+    "endTime": "2025-12-09T08:51:18.699Z",
+    "durationMs": 3887,
+    "pagesProcessed": 1
+  }
+}

@@ -1,0 +1,24 @@
+# CLIK Crawler Data Protection
+# 이 폴더들은 git repo 외부(/home/naru/clik_data/Extract)로 이동됨
+# 하지만 실수로 다시 생성될 경우를 대비해 gitignore 유지
+
+# 출력 데이터 (회의록 JSONL 파일)
+output/
+
+# 진행 상황 데이터 (DOCID, progress 등)
+data/
+
+# 로그 파일
+logs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# 환경
+.env.local

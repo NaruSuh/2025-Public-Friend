@@ -168,15 +168,18 @@ export function authorize(...allowedRoles: string[]) {
 
 /**
  * Development mode bypass - allows access without authentication in development
+ * WARNING: admin 권한 자동 부여 제거됨 - 보안 이슈로 user 권한만 부여
  */
 export function devAuth(req: Request, res: Response, next: NextFunction): void {
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-    // In development, create a mock user
+    // In development, create a mock user with LIMITED permissions
+    // SECURITY: admin 권한 부여하지 않음 - 필요시 명시적 로그인 필요
     req.user = {
       id: 'dev-user',
       email: 'dev@localhost',
-      role: 'admin',
+      role: 'user',  // Changed from 'admin' to 'user' for security
     };
+    console.warn('[SECURITY] devAuth: Using development bypass with LIMITED user role');
     next();
   } else {
     // In production, require real authentication

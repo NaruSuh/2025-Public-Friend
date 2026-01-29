@@ -85,6 +85,8 @@ export class PatternQueryParser {
     const region = this.extractRegion(query);
     if (region) {
       filters.region = region;
+      // 지역 정보를 region 객체로도 설정
+      filters.region = { sido: region };
     }
 
     // Extract keywords
@@ -97,6 +99,22 @@ export class PatternQueryParser {
     const election = this.extractElectionInfo(query);
     if (election) {
       filters.election = election;
+
+      // sgId 추론 (API에 필요)
+      if (election.year) {
+        const sgId = this.inferElectionId(election.year, election.type);
+        if (sgId) {
+          filters.sgId = sgId;
+        }
+      }
+
+      // sgTypecode 추론
+      if (election.type) {
+        const sgTypecode = this.getElectionTypeCode(election.type);
+        if (sgTypecode) {
+          filters.election.sgTypecode = sgTypecode;
+        }
+      }
     }
 
     return filters;
@@ -299,7 +317,7 @@ export class PatternQueryParser {
       type: 'unknown',
     };
 
-    // Detect API sources
+    // Detect API sources - R-ONE (부동산)
     if (
       query.includes('부동산') ||
       query.includes('집값') ||
@@ -308,15 +326,74 @@ export class PatternQueryParser {
     ) {
       source.type = 'api';
       source.id = 'rone';
-    } else if (query.includes('유튜브') || query.includes('youtube')) {
+      return source;
+    }
+
+    // YouTube
+    if (query.includes('유튜브') || query.includes('youtube')) {
       source.type = 'api';
       source.id = 'youtube';
-    } else if (query.includes('재정') || query.includes('경제통계')) {
+      return source;
+    }
+
+    // 재정/경제통계
+    if (query.includes('재정') || query.includes('경제통계')) {
       source.type = 'api';
       source.id = 'nabostats';
-    } else if (query.includes('선거') || query.includes('공약') || query.includes('후보')) {
+      return source;
+    }
+
+    // 선거 관련 - 세분화된 라우팅 (우선순위 중요!)
+    // 1. 당선자/득표율 → public_data_winner
+    if (
+      query.includes('당선자') ||
+      query.includes('당선인') ||
+      query.includes('득표율') ||
+      query.includes('득표수') ||
+      (query.includes('당선') && !query.includes('공약'))
+    ) {
+      source.type = 'api';
+      source.id = 'public_data_winner';
+      return source;
+    }
+
+    // 2. 정당 공약/정책 → public_data_party_policy
+    if (
+      (query.includes('정당') && (query.includes('공약') || query.includes('정책'))) ||
+      query.includes('주요정당') ||
+      (query.includes('정당별') && query.includes('공약'))
+    ) {
+      source.type = 'api';
+      source.id = 'public_data_party_policy';
+      return source;
+    }
+
+    // 3. 후보자 목록 (공약 없이) → public_data_candidate
+    if (
+      (query.includes('후보자') && !query.includes('공약')) ||
+      query.includes('후보 목록') ||
+      query.includes('출마자')
+    ) {
+      source.type = 'api';
+      source.id = 'public_data_candidate';
+      return source;
+    }
+
+    // 4. 특정 후보 공약 → public_data_election (NEC Manifesto)
+    if (
+      query.includes('공약') ||
+      (query.includes('후보') && query.includes('공약'))
+    ) {
       source.type = 'api';
       source.id = 'public_data_election';
+      return source;
+    }
+
+    // 5. 일반 선거 정보 → public_data_winner (기본)
+    if (query.includes('선거')) {
+      source.type = 'api';
+      source.id = 'public_data_winner';
+      return source;
     }
 
     // Detect crawler sources - set both id and crawlerType
@@ -324,9 +401,49 @@ export class PatternQueryParser {
       source.type = 'crawler';
       source.id = 'nec_library';
       source.crawlerType = 'nec_library';
+      return source;
     }
 
     return source;
+  }
+
+  /**
+   * 선거 ID(sgId) 추론
+   * 연도와 선거 유형으로 실제 선거 날짜 반환
+   */
+  private inferElectionId(year: number, electionType?: string): string | null {
+    const electionDates: Record<string, Record<number, string>> = {
+      '대통령선거': { 2022: '20220309', 2017: '20170509', 2012: '20121219' },
+      '총선': { 2024: '20240410', 2020: '20200415', 2016: '20160413' },
+      '지방선거': { 2022: '20220601', 2018: '20180613', 2014: '20140604' },
+    };
+
+    if (electionType && electionDates[electionType]?.[year]) {
+      return electionDates[electionType][year];
+    }
+
+    // 연도만 있으면 가장 가능성 높은 선거 추론
+    if (year === 2024) return '20240410'; // 총선
+    if (year === 2022) return '20220601'; // 지방선거 (더 데이터 많음)
+    if (year === 2020) return '20200415'; // 총선
+    if (year === 2017) return '20170509'; // 대선
+
+    return null;
+  }
+
+  /**
+   * 선거 유형 코드(sgTypecode) 반환
+   */
+  private getElectionTypeCode(electionType?: string): string | null {
+    const typeCodes: Record<string, string> = {
+      '대통령선거': '1',
+      '총선': '2',
+      '국회의원': '2',
+      '지방선거': '3',
+      '시도지사': '3',
+    };
+
+    return electionType ? typeCodes[electionType] || null : null;
   }
 
   private calculateConfidence(

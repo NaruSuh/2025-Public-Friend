@@ -59,13 +59,13 @@ export class NLQueryEngine {
     const systemPrompt = this.buildSystemPrompt();
 
     // Gemini API 호출
-    const parsed = await this.gemini.generateJSON({
+    const parsed = (await this.gemini.generateJSON({
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: naturalLanguageQuery },
       ],
       temperature: 0.3,
-    }) as ParsedQuery;
+    })) as unknown as ParsedQuery;
 
     parsed.rawQuery = naturalLanguageQuery;
 

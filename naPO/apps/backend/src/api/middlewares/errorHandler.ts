@@ -7,7 +7,7 @@
  * @module api/middlewares/errorHandler
  */
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { logger } from '@/config/logger';
 
 /**
@@ -33,11 +33,11 @@ function isValidationError(err: any): boolean {
   return err.type === 'entity.parse.failed' || err.type === 'charset.unsupported';
 }
 
-function isPrismaError(err: any): err is Prisma.PrismaClientKnownRequestError {
-  return err instanceof Prisma.PrismaClientKnownRequestError;
+function isPrismaError(err: any): err is PrismaClientKnownRequestError {
+  return err instanceof PrismaClientKnownRequestError;
 }
 
-function handlePrismaError(err: Prisma.PrismaClientKnownRequestError): {
+function handlePrismaError(err: PrismaClientKnownRequestError): {
   statusCode: number;
   code: string;
   message: string;
@@ -77,7 +77,7 @@ function handlePrismaError(err: Prisma.PrismaClientKnownRequestError): {
 }
 
 export function errorHandler(
-  err: ApiError | Prisma.PrismaClientKnownRequestError,
+  err: ApiError | PrismaClientKnownRequestError,
   req: Request,
   res: Response,
   next: NextFunction

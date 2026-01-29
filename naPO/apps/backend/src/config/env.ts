@@ -10,7 +10,7 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().default('http://localhost:5173'),
 
   // Database
-  DATABASE_URL: z.string().default('postgresql://localhost:5432/napo_dev'),
+  DATABASE_URL: z.string(),
   DATABASE_PROVIDER: z.enum(['supabase', 'local']).default('local'),
 
   // AI APIs

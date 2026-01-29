@@ -4,10 +4,19 @@ import { CsvExporter } from '@/services/export/csvExporter';
 const router = Router();
 const csvExporter = new CsvExporter();
 
+// Helper function to extract error message
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
+
 // Export data
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { data, format, options } = req.body;
+    const { data, format, options } = req.body as {
+      data: unknown[];
+      format: string;
+      options?: Record<string, unknown>;
+    };
 
     if (!data || !Array.isArray(data)) {
       return res.status(400).json({
@@ -52,12 +61,12 @@ router.post('/', async (req: Request, res: Response) => {
           },
         });
     }
-  } catch (error: any) {
+  } catch (error) {
     return res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error.message,
+        message: getErrorMessage(error),
       },
     });
   }

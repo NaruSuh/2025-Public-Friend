@@ -1,152 +1,61 @@
 import { prisma } from './prisma';
-import { encrypt, decrypt, maskSensitiveData } from './encryption';
+import { logger } from '@/config/logger';
 
 /**
- * Store an API key securely (encrypted)
- */
-export async function storeApiKey(params: {
-  sourceId: string;
-  keyValue: string;
-  label?: string;
-  expiresAt?: Date;
-}): Promise<{ id: string; maskedKey: string }> {
-  const { sourceId, keyValue, label, expiresAt } = params;
-
-  // Encrypt the API key before storing
-  const encryptedKey = encrypt(keyValue);
-
-  const apiKey = await prisma.apiKey.create({
-    data: {
-      sourceId,
-      keyValue: encryptedKey,
-      label: label || 'Default API Key',
-      expiresAt,
-      isActive: true,
-    },
-  });
-
-  return {
-    id: apiKey.id,
-    maskedKey: maskSensitiveData(keyValue),
-  };
-}
-
-/**
- * Retrieve and decrypt an API key by source name
+ * Get active API key for a given source
+ * @param sourceName - The name/id of the API source (e.g., 'public_data_election')
+ * @returns The API key value or null if not found
  */
 export async function getApiKey(sourceName: string): Promise<string | null> {
-  // First, find the API source by name
-  const apiSource = await prisma.apiSource.findFirst({
-    where: { name: sourceName },
-  });
-
-  if (!apiSource) {
-    console.warn(`API source not found: ${sourceName}`);
-    return null;
-  }
-
-  // Then find the active API key for this source
-  const apiKey = await prisma.apiKey.findFirst({
-    where: {
-      sourceId: apiSource.id,
-      isActive: true,
-      OR: [
-        { expiresAt: null },
-        { expiresAt: { gt: new Date() } }
-      ],
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-
-  if (!apiKey) {
-    return null;
-  }
-
   try {
-    // Decrypt the API key
-    return decrypt(apiKey.keyValue);
-  } catch (error) {
-    console.error(`Failed to decrypt API key for source ${sourceName}:`, error);
-    throw new Error('Failed to decrypt API key');
-  }
-}
+    // First try to find by source name
+    const apiSource = await prisma.apiSource.findFirst({
+      where: {
+        OR: [{ name: sourceName }, { id: sourceName }],
+        isActive: true,
+      },
+      include: {
+        apiKeys: {
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
 
-/**
- * Update an API key
- */
-export async function updateApiKey(
-  keyId: string,
-  updates: {
-    keyValue?: string;
-    label?: string;
-    isActive?: boolean;
-    expiresAt?: Date;
-  }
-): Promise<{ maskedKey?: string }> {
-  const data: any = { ...updates };
-
-  // If updating the key value, encrypt it
-  if (updates.keyValue) {
-    data.keyValue = encrypt(updates.keyValue);
-  }
-
-  await prisma.apiKey.update({
-    where: { id: keyId },
-    data,
-  });
-
-  return {
-    maskedKey: updates.keyValue ? maskSensitiveData(updates.keyValue) : undefined,
-  };
-}
-
-/**
- * Delete (deactivate) an API key
- */
-export async function deleteApiKey(keyId: string): Promise<void> {
-  await prisma.apiKey.update({
-    where: { id: keyId },
-    data: { isActive: false },
-  });
-}
-
-/**
- * List all API keys for a source (with masked values)
- */
-export async function listApiKeys(sourceId: string): Promise<
-  Array<{
-    id: string;
-    label: string | null;
-    maskedKey: string;
-    isActive: boolean;
-    createdAt: Date;
-    expiresAt: Date | null;
-  }>
-> {
-  const apiKeys = await prisma.apiKey.findMany({
-    where: { sourceId },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  return apiKeys.map((key) => {
-    let maskedKey = '***';
-    try {
-      const decrypted = decrypt(key.keyValue);
-      maskedKey = maskSensitiveData(decrypted);
-    } catch (error) {
-      // If decryption fails, show masked placeholder
-      maskedKey = '*** (encrypted)';
+    if (apiSource?.apiKeys?.[0]?.keyValue) {
+      return apiSource.apiKeys[0].keyValue;
     }
 
-    return {
-      id: key.id,
-      label: key.label,
-      maskedKey,
-      isActive: key.isActive,
-      createdAt: key.createdAt,
-      expiresAt: key.expiresAt,
+    // Fallback to environment variables
+    const envKeyMap: Record<string, string | undefined> = {
+      public_data_election: process.env.PUBLIC_DATA_API_KEY,
+      public_data_winner: process.env.PUBLIC_DATA_API_KEY,
+      public_data_candidate: process.env.PUBLIC_DATA_API_KEY,
+      public_data_party_policy: process.env.PUBLIC_DATA_API_KEY,
+      public_data_common_code: process.env.PUBLIC_DATA_API_KEY,
+      rone: process.env.RONE_API_KEY,
+      nabostats: process.env.NABOSTATS_API_KEY,
     };
-  });
+
+    const envKey = envKeyMap[sourceName];
+    if (envKey) {
+      logger.debug(`Using environment variable for API key: ${sourceName}`);
+      return envKey;
+    }
+
+    logger.warn(`No API key found for source: ${sourceName}`);
+    return null;
+  } catch (error) {
+    logger.error(`Error fetching API key for ${sourceName}:`, { error });
+    return null;
+  }
+}
+
+/**
+ * Check if an API source has a valid key configured
+ */
+export async function hasValidApiKey(sourceName: string): Promise<boolean> {
+  const key = await getApiKey(sourceName);
+  return key !== null && key.length > 0;
 }

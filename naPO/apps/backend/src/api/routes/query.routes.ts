@@ -13,6 +13,7 @@ import { RoneAdapter } from '@/services/api/adapters/roneAdapter';
 import { NecManifestoAdapter } from '@/services/api/adapters/necManifestoAdapter';
 import { PartyPolicyAdapter } from '@/services/api/adapters/partyPolicyAdapter';
 import { WinnerInfoAdapter } from '@/services/api/adapters/winnerInfoAdapter';
+import { NecCandidateAdapter } from '@/services/api/adapters/necCandidateAdapter';
 import { NecApiChainService } from '@/services/api/necApiChainService';
 import { logger } from '@/config/logger';
 
@@ -58,8 +59,16 @@ router.post('/', requireNLQuery, parseQueryValidation, async (req: Request, res:
       success: true,
       data: parsed,
     });
-  } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : '알 수 없는 오류';
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'PARSE_ERROR',
+        message: `쿼리 파싱 실패: ${message}`,
+        hint: 'Gemini API 키가 설정되어 있는지 확인하세요.',
+      },
+    });
   }
 });
 
@@ -102,14 +111,20 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
           // Real API connector logic
           const sourceId = parsedQuery.source.id;
           if (!sourceId) {
-            throw new Error('API source ID is required for fetch_api intent');
+            throw new Error(
+              '데이터 소스를 파악할 수 없습니다. ' +
+              '예시: "2022년 지방선거 당선자", "정당별 공약", "서울시장 후보자 공약"'
+            );
           }
 
           // Get API configuration from registry
           const apiRegistry = ApiRegistry.getInstance();
           const apiConfig = apiRegistry.get(sourceId);
           if (!apiConfig) {
-            throw new Error(`Unknown API source: ${sourceId}`);
+            throw new Error(
+              `"${sourceId}" API는 현재 지원되지 않습니다. ` +
+              '지원 API: 당선자정보, 후보자공약, 정당정책, R-ONE(부동산)'
+            );
           }
 
           // Find API source in database by name
@@ -118,14 +133,20 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
           });
 
           if (!apiSource) {
-            throw new Error(`API source not found in database: ${sourceId}`);
+            throw new Error(
+              `"${sourceId}" API가 데이터베이스에 등록되지 않았습니다. ` +
+              '관리자에게 문의하거나 "pnpm db:seed"를 실행해주세요.'
+            );
           }
 
           // Fetch and decrypt API key from database using the source's name
           const apiKeyValue = await getApiKey(sourceId);
 
           if (!apiKeyValue) {
-            throw new Error(`No active API key found for source: ${sourceId}`);
+            throw new Error(
+              `"${sourceId}" API 키가 설정되지 않았습니다. ` +
+              '설정 페이지에서 API 키를 등록하거나 .env에 PUBLIC_DATA_API_KEY를 설정해주세요.'
+            );
           }
 
           // Create connector with timeout and retry logic
@@ -139,10 +160,10 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
 
             if (sourceId === 'rone') {
               logger.debug('[R-ONE] NLP integration for R-ONE not yet implemented');
-              // TODO: Implement NLP filter adaptation for R-ONE
-              // apiParams = RoneAdapter.adaptFilters(parsedQuery.filters);
-              // const validation = RoneAdapter.validateParams(apiParams);
-              throw new Error('R-ONE NLP query integration not yet implemented. Use RoneService directly.');
+              throw new Error(
+                'R-ONE 부동산 통계 API는 현재 자연어 쿼리를 지원하지 않습니다. ' +
+                '직접 API 호출을 사용해주세요. (향후 지원 예정)'
+              );
             } else if (sourceId === 'public_data_party_policy') {
               logger.debug('[PARTY-POLICY] Adapting filters to Party Policy API format');
               logger.debug('[PARTY-POLICY] Original filters:', JSON.stringify(parsedQuery.filters));
@@ -326,9 +347,9 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
 
                 if (candidateKeywords.length === 0) {
                   throw new Error(
-                    'NEC Manifesto API requires specific candidate name. ' +
-                    'Please provide a candidate name (e.g., "윤석열", "이재명") or candidate ID (cnddtId). ' +
-                    'Queries like "주요정당 공약" are not supported by the NEC API.'
+                    '후보자 공약 조회를 위해 후보자 이름이 필요합니다. ' +
+                    '예시: "윤석열 공약", "이재명 정책", "김문수 후보 공약". ' +
+                    '"주요정당 공약"처럼 정당 공약을 원하시면 정당정책 API를 사용하세요.'
                   );
                 }
 
@@ -371,17 +392,104 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
               // Validate parameters
               const validation = NecManifestoAdapter.validateParams(apiParams);
               if (!validation.valid) {
-                throw new Error(`Invalid NEC Manifesto parameters: ${validation.errors.join(', ')}`);
+                throw new Error(
+                  `후보자 공약 조회 파라미터 오류: ${validation.errors.join(', ')}. ` +
+                  '선거ID(sgId), 선거종류(sgTypecode), 후보자ID(cnddtId)가 필요합니다.'
+                );
               }
 
               // NEC Manifesto specific: use getPromises endpoint
               if (!apiConfig.endpoints || !apiConfig.endpoints.getPromises) {
-                throw new Error('NEC Manifesto API endpoints not configured');
+                throw new Error(
+                  '후보자 공약 API 엔드포인트가 설정되지 않았습니다. ' +
+                  '관리자에게 문의하세요.'
+                );
               }
               endpoint = apiConfig.endpoints.getPromises;
               if (!endpoint) {
-                throw new Error('NEC Manifesto getPromises endpoint not configured');
+                throw new Error(
+                  '후보자 공약 API 엔드포인트가 설정되지 않았습니다. ' +
+                  '관리자에게 문의하세요.'
+                );
               }
+            } else if (sourceId === 'public_data_candidate') {
+              // 후보자 목록 조회 API 핸들러
+              logger.debug('[CANDIDATE] Adapting filters to Candidate API format');
+              logger.debug('[CANDIDATE] Original filters:', JSON.stringify(parsedQuery.filters));
+
+              // NL 필터를 후보자 API 파라미터로 변환
+              apiParams = NecCandidateAdapter.adaptFilters(parsedQuery.filters);
+
+              // sgId, sgTypecode 추론 (filters에서 가져오기)
+              if (!apiParams.sgId && parsedQuery.filters.sgId) {
+                apiParams.sgId = parsedQuery.filters.sgId;
+              }
+              if (!apiParams.sgTypecode && parsedQuery.filters.election?.sgTypecode) {
+                apiParams.sgTypecode = parsedQuery.filters.election.sgTypecode;
+              }
+
+              logger.debug('[CANDIDATE] Adapted params:', JSON.stringify(apiParams));
+
+              // 파라미터 검증
+              const candidateValidation = NecCandidateAdapter.validateParams(apiParams);
+              if (!candidateValidation.valid) {
+                throw new Error(
+                  `후보자 목록 조회를 위해 선거 정보가 필요합니다. ` +
+                  `예: "2022년 지방선거 후보자", "2024년 총선 후보 목록". ` +
+                  `오류: ${candidateValidation.errors.join(', ')}`
+                );
+              }
+
+              // 엔드포인트 설정
+              if (!apiConfig.endpoints || !apiConfig.endpoints.getCandidates) {
+                throw new Error(
+                  '후보자 목록 API 엔드포인트가 설정되지 않았습니다. ' +
+                  '관리자에게 문의하세요.'
+                );
+              }
+              endpoint = apiConfig.endpoints.getCandidates;
+
+              logger.debug(`[CANDIDATE] Querying with sgId=${apiParams.sgId}, sgTypecode=${apiParams.sgTypecode}`);
+
+              // API 요청 실행
+              const candidateResponse = await Promise.race([
+                connector.fetch({
+                  endpoint: endpoint,
+                  params: apiParams,
+                }),
+                new Promise((_, reject) =>
+                  setTimeout(() => reject(new Error('API request timeout')), 30000)
+                ),
+              ]) as any;
+
+              // 응답 정규화
+              normalizedData = NecCandidateAdapter.normalizeResponse(candidateResponse.data);
+
+              // API 에러 체크
+              if (!normalizedData.success && normalizedData.error) {
+                throw new Error(
+                  `후보자 목록 조회 실패: ${normalizedData.error.message || '알 수 없는 오류'}`
+                );
+              }
+
+              result = {
+                data: normalizedData,
+                source: sourceId,
+                isStubData: false,
+                metadata: {
+                  statusCode: candidateResponse.statusCode || 200,
+                  timestamp: new Date().toISOString(),
+                  electionId: apiParams.sgId,
+                  electionType: apiParams.sgTypecode,
+                  debug: {
+                    originalFilters: parsedQuery.filters,
+                    adaptedParams: apiParams,
+                  },
+                },
+              };
+
+              // Break early - 결과 반환
+              break;
             } else if (sourceId === 'public_data_winner') {
               // 당선인 정보 API 핸들러
               logger.debug('[WINNER-INFO] Adapting filters to Winner Info API format');
@@ -418,11 +526,17 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
 
               // Use getWinners endpoint
               if (!apiConfig.endpoints || !apiConfig.endpoints.getWinners) {
-                throw new Error('Winner Info API endpoints not configured');
+                throw new Error(
+                  '당선인 정보 API 엔드포인트가 설정되지 않았습니다. ' +
+                  '관리자에게 문의하세요.'
+                );
               }
               endpoint = apiConfig.endpoints.getWinners;
               if (!endpoint) {
-                throw new Error('Winner Info getWinners endpoint not configured');
+                throw new Error(
+                  '당선인 정보 API 엔드포인트가 설정되지 않았습니다. ' +
+                  '관리자에게 문의하세요.'
+                );
               }
 
               logger.debug(`[WINNER-INFO] Querying with sgId=${apiParams.sgId}, sgTypecode=${apiParams.sgTypecode}`);
@@ -523,7 +637,10 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
               const endpoints = apiConfig.endpoints || {};
               endpoint = parsedQuery.endpoint || Object.values(endpoints)[0];
               if (!endpoint) {
-                throw new Error(`No valid endpoint found for API: ${sourceId}`);
+                throw new Error(
+                  `"${sourceId}" API에 사용 가능한 엔드포인트가 없습니다. ` +
+                  '관리자에게 API 설정을 확인해주세요.'
+                );
               }
             }
 
@@ -566,9 +683,19 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
                 timestamp: new Date().toISOString(),
               },
             };
-          } catch (apiError: any) {
-            logger.error(`API request failed for ${sourceId}:`, { error: apiError.message, stack: apiError.stack });
-            throw new Error(`API request failed: ${apiError.message}`);
+          } catch (apiError: unknown) {
+            const apiErrMsg = apiError instanceof Error ? apiError.message : '알 수 없는 오류';
+            logger.error(`API request failed for ${sourceId}:`, { error: apiErrMsg });
+
+            // 타임아웃 에러 구체화
+            if (apiErrMsg.includes('timeout')) {
+              throw new Error(
+                `API 응답 시간이 초과되었습니다. 잠시 후 다시 시도해주세요. ` +
+                '공공데이터 API 서버가 느릴 수 있습니다.'
+              );
+            }
+
+            throw new Error(`API 요청 실패: ${apiErrMsg}`);
           }
           break;
         }
@@ -592,7 +719,10 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
           // Real crawler logic
           const crawlerType = parsedQuery.source.crawlerType;
           if (!crawlerType) {
-            throw new Error('Crawler type is required for crawl_site intent');
+            throw new Error(
+              '크롤러 타입이 지정되지 않았습니다. ' +
+              '지원 크롤러: nec (중앙선거관리위원회)'
+            );
           }
 
           // Check if crawler is available
@@ -603,7 +733,8 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
               success: false,
               error: {
                 code: 'SERVICE_UNAVAILABLE',
-                message: `Crawler type '${crawlerType}' is not yet implemented or unavailable`,
+                message: `"${crawlerType}" 크롤러는 현재 사용할 수 없습니다.`,
+                hint: `사용 가능한 크롤러: ${availableCrawlers.join(', ') || '없음'}`,
                 availableCrawlers,
               },
             });
@@ -633,9 +764,17 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
                 timestamp: new Date().toISOString(),
               },
             };
-          } catch (crawlError: any) {
-            logger.error(`Crawl failed for ${crawlerType}:`, { error: crawlError.message });
-            throw new Error(`Crawl failed: ${crawlError.message}`);
+          } catch (crawlError: unknown) {
+            const crawlErrMsg = crawlError instanceof Error ? crawlError.message : '알 수 없는 오류';
+            logger.error(`Crawl failed for ${crawlerType}:`, { error: crawlErrMsg });
+
+            if (crawlErrMsg.includes('timeout') || crawlErrMsg.includes('Timeout')) {
+              throw new Error(
+                '크롤링 시간이 초과되었습니다. 대상 사이트가 느리거나 접근이 차단되었을 수 있습니다.'
+              );
+            }
+
+            throw new Error(`크롤링 실패: ${crawlErrMsg}`);
           }
           break;
         }
@@ -656,7 +795,8 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
             result = {
               data: {
                 success: false,
-                message: `Query parsed as '${originalIntent}'. Data fetching initiated - please use 'fetch_api' intent directly or rephrase your query (e.g., "지방선거 공약 가져와").`,
+                message: `"${originalIntent}" 인텐트는 직접 지원되지 않습니다. 데이터를 먼저 가져온 후 분석/내보내기 하세요.`,
+                hint: '예시: "지방선거 공약 가져와" 처럼 "가져와"를 사용해주세요.',
                 suggestedQuery: parsedQuery.rawQuery?.replace(/요약|분석|정리/g, '가져와') || '지방선거 공약 가져와',
               },
               source: parsedQuery.source.id,
@@ -680,10 +820,13 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
         }
 
         default:
-          throw new Error(`Unsupported intent: ${parsedQuery.intent}`);
+          throw new Error(
+            `지원하지 않는 인텐트: "${parsedQuery.intent}". ` +
+            '지원 인텐트: fetch_api, crawl_site'
+          );
       }
-    } catch (error: any) {
-      executionError = error.message;
+    } catch (error: unknown) {
+      executionError = error instanceof Error ? error.message : '알 수 없는 오류';
       throw error;
     } finally {
       // Save query to history
@@ -705,17 +848,25 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
       success: true,
       data: result,
     });
-  } catch (error: any) {
-    logger.error('[QUERY EXECUTE ERROR]:', { error: error.message, stack: error.stack });
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : '알 수 없는 오류';
+    logger.error('[QUERY EXECUTE ERROR]:', { error: errMsg });
 
     // Return 400 for validation/user input errors, 500 for server errors
-    const isValidationError = error.message.includes('requires specific candidate name') ||
-                              error.message.includes('is required') ||
-                              error.message.includes('Invalid') ||
-                              error.message.includes('not supported');
+    const isValidationError = errMsg.includes('필요합니다') ||
+                              errMsg.includes('지원되지 않습니다') ||
+                              errMsg.includes('파악할 수 없습니다') ||
+                              errMsg.includes('오류:') ||
+                              errMsg.includes('지원하지 않는');
 
     const statusCode = isValidationError ? 400 : 500;
-    return res.status(statusCode).json({ error: error.message });
+    return res.status(statusCode).json({
+      success: false,
+      error: {
+        code: isValidationError ? 'VALIDATION_ERROR' : 'EXECUTION_ERROR',
+        message: errMsg,
+      },
+    });
   }
 });
 
