@@ -4,6 +4,11 @@ import { logger } from '@/config/logger';
 
 async function main() {
   const rootPath = process.argv[2];
+  if (!rootPath) {
+    logger.error('Usage: pnpm rag:ingest "<path-to-data-root>"');
+    process.exit(1);
+  }
+  logger.info('Starting RAG ingest script', { rootPath });
   const embedder = new EmbeddingService(process.env.GEMINI_API_KEY);
   const ingestor = new DocumentIngestor(embedder);
   const stats = await ingestor.ingestAll(rootPath);

@@ -98,6 +98,7 @@ export class EmbeddingService {
   private async getLocalPipeline() {
     if (!localPipelinePromise) {
       const modelId = env.RAG_EMBED_MODEL_LOCAL || DEFAULT_LOCAL_MODEL;
+       logger.info('Loading local embedding model (may download on first run)', { modelId });
       localPipelinePromise = pipeline('feature-extraction', modelId, { quantized: true });
     }
     return localPipelinePromise;

@@ -155,8 +155,17 @@ export class DocumentIngestor {
     const stats: IngestStats = { documents: 0, chunks: 0, skipped: 0 };
     const files = await this.walk(rootPath);
 
+    logger.info('RAG ingest started', {
+      rootPath,
+      totalFiles: files.length,
+      include: this.includePaths,
+      exclude: this.excludePaths,
+      maxDocs: this.maxDocs,
+    });
+
     let processedDocs = 0;
-    for (const filePath of files) {
+    for (let idx = 0; idx < files.length; idx++) {
+      const filePath = files[idx];
       if (this.maxDocs && processedDocs >= this.maxDocs) break;
       try {
         const ext = path.extname(filePath).toLowerCase();
@@ -176,11 +185,27 @@ export class DocumentIngestor {
         stats.chunks += docStats.chunks;
         stats.skipped += docStats.skipped;
         processedDocs += docStats.documents;
+        if ((idx + 1) % 50 === 0 || processedDocs % 10 === 0) {
+          logger.info('RAG ingest progress', {
+            processedFiles: idx + 1,
+            totalFiles: files.length,
+            documents: stats.documents,
+            chunks: stats.chunks,
+            skipped: stats.skipped,
+          });
+        }
       } catch (error) {
         logger.warn('RAG ingest failed', { filePath, error: (error as Error).message });
       }
     }
 
+    logger.info('RAG ingest finished', {
+      rootPath,
+      totalFiles: files.length,
+      documents: stats.documents,
+      chunks: stats.chunks,
+      skipped: stats.skipped,
+    });
     return stats;
   }
 
