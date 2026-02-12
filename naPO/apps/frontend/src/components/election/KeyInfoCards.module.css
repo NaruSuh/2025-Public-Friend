@@ -1,0 +1,76 @@
+/* KeyInfoCards Styles */
+
+.section {
+  padding: var(--spacing-6) 0;
+}
+
+.header {
+  margin-bottom: var(--spacing-6);
+}
+
+.title {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 var(--spacing-2) 0;
+}
+
+.subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-4);
+}
+
+/* Card */
+.card {
+  height: 100%;
+}
+
+.itemList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  padding: var(--spacing-2) 0 var(--spacing-2) var(--spacing-4);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Law Reference */
+.lawRef {
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--border-color-light);
+}
+
+.lawRef code {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: var(--spacing-1) var(--spacing-2);
+}

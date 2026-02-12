@@ -46,3 +46,9 @@ data/crawled/
 # Local scripts output
 *.local.ts
 *.local.js
+
+# RAG local database
+apps/backend/data/
+
+# Local data dumps
+naPO_DB/

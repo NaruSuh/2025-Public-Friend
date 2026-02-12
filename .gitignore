@@ -41,6 +41,9 @@ coverage/
 .coverage
 htmlcov/
 
+# Local data dumps
+naPO_DB/
+
 # Secrets
 *.pem
 *.key

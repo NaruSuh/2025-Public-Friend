@@ -1,0 +1,113 @@
+/* BrutalCard - Brutalist style card component */
+
+.card {
+  background: var(--bg-primary);
+  border: var(--border-width-thick) solid var(--border-color);
+  box-shadow: var(--shadow-base);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+}
+
+/* Size variants */
+.size-sm {
+  padding: var(--spacing-3);
+}
+
+.size-md {
+  padding: var(--spacing-4);
+}
+
+.size-lg {
+  padding: var(--spacing-6);
+}
+
+/* Color variants */
+.variant-default {
+  border-color: var(--border-color);
+}
+
+.variant-accent {
+  border-color: var(--color-accent);
+  box-shadow: 4px 4px 0 var(--color-accent);
+}
+
+.variant-warning {
+  border-color: var(--color-warning);
+  background: var(--color-accent-light);
+  box-shadow: 4px 4px 0 var(--color-warning);
+}
+
+.variant-success {
+  border-color: var(--color-success);
+  box-shadow: 4px 4px 0 var(--color-success);
+}
+
+/* Interactive states */
+.hoverable:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.clickable {
+  cursor: pointer;
+  border: var(--border-width-thick) solid var(--border-color);
+  font-family: inherit;
+}
+
+.clickable:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.clickable:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-none);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-3);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-inverse);
+  color: var(--text-inverse);
+  flex-shrink: 0;
+}
+
+.headerText {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: var(--spacing-1) 0 0 0;
+}
+
+/* Content */
+.content {
+  flex: 1;
+}

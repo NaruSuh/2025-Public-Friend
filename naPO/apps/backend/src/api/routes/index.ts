@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import type { Router as IRouter } from 'express';
-import authRoutes from './auth.routes.js';
-import queryRoutes from './query.routes.js';
-import sourcesRoutes from './sources.routes.js';
-import crawlRoutes from './crawl.routes.js';
-import parseRoutes from './parse.routes.js';
-import exportRoutes from './export.routes.js';
-import historyRoutes from './history.routes.js';
+import authRoutes from './auth.routes';
+import queryRoutes from './query.routes';
+import sourcesRoutes from './sources.routes';
+import crawlRoutes from './crawl.routes';
+import parseRoutes from './parse.routes';
+import exportRoutes from './export.routes';
+import historyRoutes from './history.routes';
+import chatRoutes from './chat.routes';
+import documentsRoutes from './documents.routes';
 
 const router: IRouter = Router();
 
@@ -22,5 +24,7 @@ router.use('/crawl', crawlRoutes);
 router.use('/parse', parseRoutes);
 router.use('/export', exportRoutes);
 router.use('/history', historyRoutes);
+router.use('/chat', chatRoutes);
+router.use('/documents', documentsRoutes);
 
 export default router;

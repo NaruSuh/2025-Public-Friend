@@ -7,11 +7,20 @@ import {
   ChevronLeft,
   ChevronRight,
   History,
+  Vote,
 } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import styles from './LeftNav.module.css';
 
 const navItems = [
+  {
+    id: 'election-info',
+    label: '선거법 정보',
+    icon: Vote,
+    children: [
+      { id: 'faq', label: 'FAQ 챗봇', path: 'faq-chat' },
+    ],
+  },
   {
     id: 'data-sources',
     label: 'DATA SOURCES',

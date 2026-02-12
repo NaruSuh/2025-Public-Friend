@@ -5,6 +5,7 @@ import Dashboard from '@/pages/Dashboard';
 import History from '@/pages/History';
 import Settings from '@/pages/Settings';
 import ApiSources from '@/pages/ApiSources';
+import FaqChat from '@/pages/FaqChat';
 import { useAppStore } from '@/stores/appStore';
 import '@/styles/globals.css';
 
@@ -27,7 +28,8 @@ export default function App() {
         {currentView === 'history' && <History />}
         {currentView === 'settings' && <Settings />}
         {currentView === '/sources/api' && <ApiSources />}
-        {!['dashboard', 'history', 'settings', '/sources/api'].includes(currentView) && (
+        {currentView === 'faq-chat' && <FaqChat />}
+        {!['dashboard', 'history', 'settings', '/sources/api', 'faq-chat'].includes(currentView) && (
           <Dashboard />
         )}
       </AppLayout>

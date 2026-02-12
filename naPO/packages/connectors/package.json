@@ -1,0 +1,70 @@
+{
+  "name": "@labgod/connectors",
+  "version": "1.0.0",
+  "description": "API connectors for Korean public data sources (KOSIS, ECOS, R-ONE, HUG, etc.)",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./kosis": {
+      "import": "./dist/kosis/index.mjs",
+      "require": "./dist/kosis/index.js",
+      "types": "./dist/kosis/index.d.ts"
+    },
+    "./ecos": {
+      "import": "./dist/ecos/index.mjs",
+      "require": "./dist/ecos/index.js",
+      "types": "./dist/ecos/index.d.ts"
+    },
+    "./rone": {
+      "import": "./dist/rone/index.mjs",
+      "require": "./dist/rone/index.js",
+      "types": "./dist/rone/index.d.ts"
+    },
+    "./hug": {
+      "import": "./dist/hug/index.mjs",
+      "require": "./dist/hug/index.js",
+      "types": "./dist/hug/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@labgod/core-types": "workspace:*",
+    "axios": "^1.6.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "keywords": [
+    "labgod",
+    "connectors",
+    "kosis",
+    "ecos",
+    "rone",
+    "hug",
+    "korean-public-data"
+  ],
+  "license": "MIT"
+}
