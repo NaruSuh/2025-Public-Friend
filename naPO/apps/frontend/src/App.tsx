@@ -2,17 +2,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import AppLayout from '@/components/layout/AppLayout';
 import Dashboard from '@/pages/Dashboard';
-import History from '@/pages/History';
 import Settings from '@/pages/Settings';
-import ApiSources from '@/pages/ApiSources';
-import FaqChat from '@/pages/FaqChat';
+import { ChatPanel } from '@/components/chat/ChatPanel';
 import { useAppStore } from '@/stores/appStore';
 import '@/styles/globals.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,
       retry: 1,
     },
   },
@@ -24,37 +22,22 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppLayout>
-        {currentView === 'dashboard' && <Dashboard />}
-        {currentView === 'history' && <History />}
+        {currentView === 'chat' && <ChatPanel />}
+        {currentView === 'data' && <Dashboard />}
         {currentView === 'settings' && <Settings />}
-        {currentView === '/sources/api' && <ApiSources />}
-        {currentView === 'faq-chat' && <FaqChat />}
-        {!['dashboard', 'history', 'settings', '/sources/api', 'faq-chat'].includes(currentView) && (
-          <Dashboard />
-        )}
+        {!['chat', 'data', 'settings'].includes(currentView) && <ChatPanel />}
       </AppLayout>
 
-      {/* Toast Notifications */}
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 3000,
           style: {
             background: 'var(--bg-secondary)',
             color: 'var(--text-primary)',
-            border: '1px solid var(--border-color)',
-          },
-          success: {
-            iconTheme: {
-              primary: '#10b981',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
+            border: '2px solid var(--border-color)',
+            fontFamily: 'var(--font-family-base)',
+            fontSize: '0.875rem',
           },
         }}
       />

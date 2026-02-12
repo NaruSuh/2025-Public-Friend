@@ -1,9 +1,6 @@
 import React, { useEffect } from 'react';
+import { MessageCircle, Database, Sun, Moon } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
-import LeftNav from './LeftNav';
-import RightNav from './RightNav';
-import TopQueryBar from './TopQueryBar';
-import Footer from './Footer';
 import styles from './AppLayout.module.css';
 
 interface AppLayoutProps {
@@ -11,43 +8,49 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  const { theme, leftNavOpen, leftNavCollapsed, rightNavOpen } = useAppStore();
+  const { theme, toggleTheme, currentView, setCurrentView } = useAppStore();
 
-  // Apply theme to document element for CSS variables to cascade properly
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   return (
-    <div
-      className={styles.layout}
-      data-theme={theme}
-      data-left-collapsed={leftNavCollapsed}
-      data-right-open={rightNavOpen}
-    >
-      {leftNavOpen && (
-        <aside className={styles.leftNav}>
-          <LeftNav />
-        </aside>
-      )}
+    <div className={styles.layout} data-theme={theme}>
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.logo} onClick={() => setCurrentView('chat')}>
+            <span className={styles.logoIcon}>🗳️</span>
+            <span className={styles.logoText}>naPO</span>
+          </h1>
+        </div>
 
-      <div className={styles.mainArea}>
-        <header className={styles.queryBar}>
-          <TopQueryBar />
-        </header>
+        <nav className={styles.nav}>
+          <button
+            className={`${styles.navBtn} ${currentView === 'chat' ? styles.navBtnActive : ''}`}
+            onClick={() => setCurrentView('chat')}
+          >
+            <MessageCircle size={16} />
+            <span>챗봇</span>
+          </button>
+          <button
+            className={`${styles.navBtn} ${currentView === 'data' ? styles.navBtnActive : ''}`}
+            onClick={() => setCurrentView('data')}
+          >
+            <Database size={16} />
+            <span>데이터조회</span>
+          </button>
+        </nav>
 
-        <main className={styles.content}>{children}</main>
+        <div className={styles.headerRight}>
+          <button className={styles.themeBtn} onClick={toggleTheme} title="테마 전환">
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
+        </div>
+      </header>
 
-        <footer className={styles.footer}>
-          <Footer />
-        </footer>
-      </div>
-
-      {rightNavOpen && (
-        <aside className={styles.rightNav}>
-          <RightNav />
-        </aside>
-      )}
+      <main className={styles.main}>
+        {children}
+      </main>
     </div>
   );
 }

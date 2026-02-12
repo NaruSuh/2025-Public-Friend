@@ -3,7 +3,7 @@ import { NLQueryEngine } from '@/services/nlp/queryEngine';
 import { ApiConnectorFactory } from '@/services/api/customConnector';
 import { CrawlerFactory } from '@/services/crawler/crawlerFactory';
 import { ApiRegistry } from '@/config/apis';
-import { prisma } from '@/lib/prisma';
+import { prisma, hasDatabase } from '@/lib/prisma';
 import { getApiKey } from '@/lib/apiKeyHelper';
 import { StubDataGenerator } from '@/services/api/stubDataGenerator';
 import { parseQueryValidation, executeQueryValidation } from '@/api/validators/query.validators';
@@ -90,6 +90,8 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
 
     const { parsedQuery } = req.body;
 
+    // (no demo mode guard — env var fallback handles missing DB)
+
     let result;
     let executionError = null;
 
@@ -127,19 +129,21 @@ router.post('/execute', requireNLQuery, executeQueryValidation, async (req: Requ
             );
           }
 
-          // Find API source in database by name
-          const apiSource = await prisma.apiSource.findFirst({
-            where: { name: sourceId },
-          });
+          // Find API source in database by name (skip when no DB — ApiRegistry already validated)
+          if (hasDatabase) {
+            const apiSource = await prisma.apiSource.findFirst({
+              where: { name: sourceId },
+            });
 
-          if (!apiSource) {
-            throw new Error(
-              `"${sourceId}" API가 데이터베이스에 등록되지 않았습니다. ` +
-              '관리자에게 문의하거나 "pnpm db:seed"를 실행해주세요.'
-            );
+            if (!apiSource) {
+              throw new Error(
+                `"${sourceId}" API가 데이터베이스에 등록되지 않았습니다. ` +
+                '관리자에게 문의하거나 "pnpm db:seed"를 실행해주세요.'
+              );
+            }
           }
 
-          // Fetch and decrypt API key from database using the source's name
+          // Fetch API key (DB → env var fallback)
           const apiKeyValue = await getApiKey(sourceId);
 
           if (!apiKeyValue) {

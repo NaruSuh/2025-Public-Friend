@@ -1,89 +1,126 @@
+/* Chat-First Layout */
 .layout {
-  display: grid;
-  grid-template-columns: var(--nav-left-width) 1fr var(--nav-right-width);
-  min-height: 100vh;
-  background-color: var(--bg-primary);
-}
-
-.layout[data-left-collapsed="true"] {
-  grid-template-columns: var(--nav-left-collapsed) 1fr var(--nav-right-width);
-}
-
-.layout[data-right-open="false"] {
-  grid-template-columns: var(--nav-left-width) 1fr;
-}
-
-.layout[data-left-collapsed="true"][data-right-open="false"] {
-  grid-template-columns: var(--nav-left-collapsed) 1fr;
-}
-
-.leftNav {
-  grid-row: 1 / -1;
-  border-right: var(--border-width-thick) solid var(--border-color);
-  background-color: var(--bg-secondary);
-  overflow-y: auto;
-}
-
-.rightNav {
-  grid-row: 1 / -1;
-  border-left: var(--border-width-thick) solid var(--border-color);
-  background-color: var(--bg-secondary);
-  overflow-y: auto;
-}
-
-.mainArea {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-}
-
-.queryBar {
-  height: var(--query-bar-height);
-  border-bottom: var(--border-width-thick) solid var(--border-color);
+  height: 100vh;
   background-color: var(--bg-primary);
+  overflow: hidden;
+}
+
+/* ===== Header ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 var(--spacing-4);
+  border-bottom: var(--border-width-base) solid var(--border-color);
+  background: var(--bg-primary);
   flex-shrink: 0;
 }
 
-.content {
+.headerLeft {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.logoIcon {
+  font-size: 1.25rem;
+}
+
+.logoText {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ===== Navigation ===== */
+.nav {
+  display: flex;
+  gap: 2px;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  background: transparent;
+  border: var(--border-width-base) solid transparent;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.navBtn:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.navBtnActive {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  background: var(--bg-secondary);
+  font-weight: var(--font-weight-bold);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
+.themeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: var(--border-width-base) solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.themeBtn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  background: var(--bg-secondary);
+}
+
+/* ===== Main Content ===== */
+.main {
   flex: 1;
-  padding: var(--content-padding);
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.footer {
-  height: var(--footer-height);
-  border-top: var(--border-width-base) solid var(--border-color);
-  background-color: var(--bg-secondary);
-  flex-shrink: 0;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .layout {
-    grid-template-columns: 1fr;
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+  .header {
+    padding: 0 var(--spacing-2);
   }
 
-  .leftNav,
-  .rightNav {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    z-index: var(--z-fixed);
-    transform: translateX(-100%);
-    transition: transform var(--transition-base);
+  .navBtn span {
+    display: none;
   }
 
-  .leftNav[data-open="true"] {
-    transform: translateX(0);
-  }
-
-  .rightNav {
-    right: 0;
-    left: auto;
-    transform: translateX(100%);
-  }
-
-  .rightNav[data-open="true"] {
-    transform: translateX(0);
+  .logoText {
+    font-size: var(--font-size-sm);
   }
 }

@@ -1,0 +1,86 @@
+# HuggingFace Spaces - Single Container Deployment
+# Build: docker build -f Dockerfile.hf -t napo-hf .
+# Run:   docker run -p 7860:7860 -e GEMINI_API_KEY=xxx napo-hf
+
+# ============================================
+# Stage 1: Install dependencies + Build
+# ============================================
+FROM node:20-slim AS builder
+WORKDIR /app
+
+# Native build tools for better-sqlite3
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
+# pnpm (match packageManager version)
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+# Skip heavy optional deps not needed for chat
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+# Copy package manifests first (cache layer)
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/backend/package.json ./apps/backend/
+COPY apps/frontend/package.json ./apps/frontend/
+COPY packages/types/package.json ./packages/types/
+COPY packages/utils/package.json ./packages/utils/
+COPY packages/core-types/package.json ./packages/core-types/
+COPY packages/connectors/package.json ./packages/connectors/
+COPY packages/auto-debug-collector/package.json ./packages/auto-debug-collector/
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Generate Prisma client (reads schema only, no DB needed)
+RUN pnpm db:generate
+
+# Build backend (tsc emits JS despite pre-existing type errors)
+RUN cd apps/backend && npx tsc; npx tsc-alias
+
+# Build frontend
+RUN cd apps/frontend && npx tsc && npx vite build
+
+# ============================================
+# Stage 2: Production Runtime (Debian slim for glibc/ONNX)
+# ============================================
+FROM node:20-slim
+WORKDIR /app
+
+# nginx + wget for health check + bash for startup script
+RUN apt-get update && apt-get install -y --no-install-recommends nginx wget bash && rm -rf /var/lib/apt/lists/*
+
+# Copy pnpm store (actual packages live here)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy backend (built JS + symlinked node_modules)
+COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+COPY --from=builder /app/apps/backend/node_modules ./apps/backend/node_modules
+COPY --from=builder /app/apps/backend/package.json ./apps/backend/
+COPY --from=builder /app/apps/backend/prisma ./apps/backend/prisma
+
+# Copy frontend (built static files)
+COPY --from=builder /app/apps/frontend/dist /var/www/html
+
+# Copy RAG database (pre-built, 159MB)
+COPY apps/backend/data/rag.sqlite ./apps/backend/data/rag.sqlite
+
+# HF Spaces nginx config (replace both sites-available and sites-enabled)
+COPY nginx.hf.conf /etc/nginx/sites-available/default
+COPY nginx.hf.conf /etc/nginx/sites-enabled/default
+COPY start-hf.sh ./start-hf.sh
+RUN chmod +x ./start-hf.sh
+
+# Environment defaults
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV DATABASE_URL=postgresql://skip:skip@localhost:5432/skip
+ENV DATABASE_PROVIDER=local
+ENV RAG_DB_PATH=/app/apps/backend/data/rag.sqlite
+ENV RAG_EMBED_PROVIDER=local
+ENV FRONTEND_URL=*
+
+EXPOSE 7860
+
+CMD ["./start-hf.sh"]

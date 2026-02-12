@@ -6,13 +6,13 @@ interface AppState {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
 
-  // Left Navigation
+  // Left Navigation (legacy, kept for compat)
   leftNavOpen: boolean;
   leftNavCollapsed: boolean;
   toggleLeftNav: () => void;
   collapseLeftNav: () => void;
 
-  // Right Navigation
+  // Right Navigation (legacy, kept for compat)
   rightNavOpen: boolean;
   toggleRightNav: () => void;
 
@@ -42,11 +42,12 @@ export const useAppStore = create<AppState>()(
       toggleRightNav: () => set((state) => ({ rightNavOpen: !state.rightNavOpen })),
 
       // Current View
-      currentView: 'dashboard',
+      currentView: 'chat',
       setCurrentView: (view) => set({ currentView: view }),
     }),
     {
-      name: 'napo-app-store',
+      name: 'napo-app-v2',
+      version: 2,
     }
   )
 );

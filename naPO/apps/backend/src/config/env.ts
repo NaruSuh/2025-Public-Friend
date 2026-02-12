@@ -21,8 +21,8 @@ const envSchema = z.object({
   PORT: z.string().default('3001'),
   FRONTEND_URL: z.string().default('http://localhost:5173'),
 
-  // Database
-  DATABASE_URL: z.string(),
+  // Database (optional for chat-only deployments like HF Spaces)
+  DATABASE_URL: z.string().optional(),
   DATABASE_PROVIDER: z.enum(['supabase', 'local']).default('local'),
 
   // AI APIs

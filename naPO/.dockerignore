@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+.git
+.env
+.env.local
+.env.development
+*.md
+!README.md
+docs/
+.husky/
+.vscode/
+.turbo/
+coverage/
+*.sqlite-journal
+*.sqlite-wal
+*.log
+.DS_Store
