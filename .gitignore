@@ -50,3 +50,4 @@ naPO_DB/
 credentials*.json
 secrets.toml
 .streamlit/secrets.toml
+naCP/

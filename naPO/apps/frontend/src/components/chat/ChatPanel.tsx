@@ -186,11 +186,6 @@ export function ChatPanel() {
                 {msg.citations && msg.citations.length > 0 && (
                   <CitationBlock citations={msg.citations} />
                 )}
-                {typeof msg.confidence === 'number' && msg.confidence > 0 && (
-                  <span className={styles.confidence}>
-                    신뢰도 {(msg.confidence * 100).toFixed(0)}%
-                  </span>
-                )}
               </div>
             </div>
           ))}
